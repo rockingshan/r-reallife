@@ -42,6 +42,6 @@ lco_list = lco_list[['Entity.Code']]
 
 ## run the loop according to the list and export csv for each LCO
 for (lcocode in lco_list) {
-  wallet_filtered = filter(wallet_end_date, lco==lcocode)
-  write.csv(wallet_filtered, paste(lcocode,".csv"), row.names = FALSE)
+  wallet_filtered = filter(wallet, Entity.Code==lcocode)
+  write.csv(wallet_filtered, paste(lcocode,".csv", sep = ""), row.names = FALSE)
   }
