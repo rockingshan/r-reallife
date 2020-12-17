@@ -2,7 +2,7 @@ library(tidyverse)
 library(here)
 library(dplyr)
 library(gapminder) 
-list_active = read.csv(here("", "4024002_LISTOFACTCUST.CSV"))
+list_active = read.csv(here("", "3990773_LISTOFACTCUST.CSV"))
 ## replace ' in column data, change to proper column names
 
 list_active$STB <- gsub("'","",list_active$STB)
