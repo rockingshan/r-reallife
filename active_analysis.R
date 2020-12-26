@@ -25,6 +25,10 @@ list_export_cond = list_active %>%
 active_pivot = list_export_cond %>% group_by(PLAN_NAME) %>%
   summarize(Plan_Count = n()) # make pivot table
 
+# list_bpc = list_active %>% filter(str_detect(ENTITY_CODE, "MSW")) %>%
+#   select(CUSTOMER_NBR,STB,MOBILE_PHONE,HOME_PHONE,ENTITY_CODE,ENTITY_NAME) %>% unique()
+# write.csv(list_bpc, "Berhampore_customer.CSV", row.names = FALSE)
+
 #head(list_active
 #wallet_filtered = filter(wallet, Plan.Details=="Alacarte Plan")
 #target = c("Star Jalsha @ 19", "Jalsha Movies @ 6")
