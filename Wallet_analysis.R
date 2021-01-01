@@ -23,8 +23,9 @@ plan_wise_op <- function(wallet_in){
 }
 
 lco_pivot_table <- function(wallet_in){
+  wallet_filt = filter(wallet_in, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Amount.Debit)
   ### Following blocks summarises code wise debit amount and export file --pivot table
-  lco_pivot = wallet_in %>% 
+  lco_pivot = wallet_filt %>% 
     group_by(Entity.Code) %>%
     summarize(Total_debit = sum(Amount.Debit))
   write.csv(lco_pivot, "LCO WALLET SUMMARY.csv", row.names = FALSE)
@@ -44,7 +45,7 @@ lcowise_data_export <- function(wallet_in){
 
 
 
-wallet = read.csv(here("data/4040924_WALLETSUMMLCONEW_NOV.CSV"))
+wallet = read.csv(here("data/4180940_WALLETSUMMLCONEW.CSV"))
 
 area_wise_op(wallet)
 
@@ -53,6 +54,8 @@ plan_wise_op(wallet)
 lco_pivot_table(wallet)
 
 lcowise_data_export(wallet)
+
+  
 
 
 # wallet_mod = read_excel(here("", "WALLET REPORT OCT2020.xlsx"))
