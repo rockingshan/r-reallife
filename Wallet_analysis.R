@@ -23,8 +23,9 @@ plan_wise_op <- function(wallet_in){
 }
 
 lco_pivot_table <- function(wallet_in){
+  wallet_filt = filter(wallet_in, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Amount.Debit)
   ### Following blocks summarises code wise debit amount and export file --pivot table
-  lco_pivot = wallet_in %>% 
+  lco_pivot = wallet_filt %>% 
     group_by(Entity.Code) %>%
     summarize(Total_debit = sum(Amount.Debit))
   write.csv(lco_pivot, "LCO WALLET SUMMARY.csv", row.names = FALSE)
@@ -44,9 +45,13 @@ lcowise_data_export <- function(wallet_in){
 
 
 
+<<<<<<< HEAD
 wallet = read.csv(here("data/4054603_WALLETSUMMLCONEW.CSV"))
 
 wallet_wrong = read_excel(here("data/OTS Invoices data.xlsx"))
+=======
+wallet = read.csv(here("data/4180940_WALLETSUMMLCONEW.CSV"))
+>>>>>>> 13565ac7750583fccd4d94b10d4e1c1fe0fd63db
 
 area_wise_op(wallet)
 
@@ -56,6 +61,7 @@ lco_pivot_table(wallet)
 
 lcowise_data_export(wallet)
 
+<<<<<<< HEAD
 account_view = filter(wallet, Customer.Nbr == "283569MD0299")
 view(account_view)
 
@@ -65,6 +71,10 @@ lco_pivot = wallet %>%
   group_by(Customer.Nbr) %>%
   summarize(Total_debit = sum(Amount.Debit))
 write.csv(lco_pivot, "acc SUMMARY.csv", row.names = FALSE)
+=======
+  
+
+>>>>>>> 13565ac7750583fccd4d94b10d4e1c1fe0fd63db
 
 cus_bill = wallet %>% select(Customer.Nbr, Billing.Frequency) %>% distinct()
 write.csv(cus_bill, "cusbill.csv", row.names = FALSE)

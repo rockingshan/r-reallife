@@ -2,7 +2,11 @@ library(tidyverse)
 library(here)
 library(dplyr)
 library(gapminder) 
+<<<<<<< HEAD
 list_active = read.csv(here("data/4050632_LISTOFACTCUST.CSV"))
+=======
+list_active = read.csv(here("", "3990773_LISTOFACTCUST.CSV"))
+>>>>>>> 13565ac7750583fccd4d94b10d4e1c1fe0fd63db
 ## replace ' in column data, change to proper column names
 
 list_active$STB <- gsub("'","",list_active$STB)
@@ -25,6 +29,10 @@ list_export_cond = list_active %>%
 
 active_pivot = list_export_cond %>% group_by(PLAN_NAME) %>%
   summarize(Plan_Count = n()) # make pivot table
+
+# list_bpc = list_active %>% filter(str_detect(ENTITY_CODE, "MSW")) %>%
+#   select(CUSTOMER_NBR,STB,MOBILE_PHONE,HOME_PHONE,ENTITY_CODE,ENTITY_NAME) %>% unique()
+# write.csv(list_bpc, "Berhampore_customer.CSV", row.names = FALSE)
 
 #head(list_active
 #wallet_filtered = filter(wallet, Plan.Details=="Alacarte Plan")
