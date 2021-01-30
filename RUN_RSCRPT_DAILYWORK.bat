@@ -1,0 +1,1 @@
+"C:\Program Files\R\R-4.0.3\bin\Rscript.exe" C:\Users\SHANTANU\Documents\github\r-reallife\DailyWork.R
