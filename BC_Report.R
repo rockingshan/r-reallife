@@ -5,7 +5,7 @@ library(readxl)
 library(skimr)
 library(kableExtra)
 
-bc_odisha = read_xlsx(here("data/4109450_STATE_BOUQUET_RPT_ODISHA_NOV20.XLS"),skip = 3,)
+bc_odisha = read_xlsx(here("data/4310064_STATE_BOUQUET_RPT_DEC_OD.XLS"),skip = 3,)
 #skimr::skim(bc_odisha)
 names(bc_odisha) = make.names(names(bc_odisha))
 bc_odisha = bc_odisha[!grepl("Plan Name", bc_odisha$Plan.Name),]

@@ -11,6 +11,7 @@ date_char = format(Sys.Date()-1, format="%d%m%Y") #previous date
 
 #create list from the files 
 file.list = list.files(path = "F:/drive2/Daily report/", pattern = paste(date_char,"*",sep = ""), all.files = FALSE, full.names = TRUE) #find file of yesterday
+file.list = list.files(path = "C:/Users/SHANTANU/Desktop/JAN/", pattern = NULL, all.files = FALSE, full.names = TRUE) #find file all month
 #create list from file names
 df.list <- lapply(file.list, read_excel)
 

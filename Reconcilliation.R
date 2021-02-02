@@ -2,7 +2,7 @@ library(tidyverse)
 library(here)
 library(dplyr)
 library(gapminder) 
-list_active = read.csv(here("", "4113900_LISTOFACTCUST.CSV"))
+list_active = read.csv(here("data", "4319101_LISTOFACTCUST.CSV"))
 
 ent_t = list_active %>% select(ENTITY_CODE) %>% distinct()
 write.csv(ent_t, "1.csv")
@@ -11,7 +11,7 @@ list_sfw = read.csv(here("data","safeview.CSV"),colClasses = c(SubscriptionID="c
 sfw_cas_data = list_sfw %>% unite(combined, c("SMCs","SubscriptionID"))
 
 #import gospell data
-list_gospell = read.csv(here("data", "Gospell.csv"))
+list_gospell = read.csv(here("data", "merge-csv.com__6017eff1db5c2.csv"))
 GSPL_cas_data = list_gospell %>% unite(combined, c("VC", "Product.ID"))
 
 ## replace ' in column data, change to proper column names

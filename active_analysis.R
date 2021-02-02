@@ -2,11 +2,14 @@ library(tidyverse)
 library(here)
 library(dplyr)
 library(gapminder) 
-<<<<<<< HEAD
-list_active = read.csv(here("data/4050632_LISTOFACTCUST.CSV"))
-=======
-list_active = read.csv(here("", "3990773_LISTOFACTCUST.CSV"))
->>>>>>> 13565ac7750583fccd4d94b10d4e1c1fe0fd63db
+library(qdapTools)
+
+list_active = read.csv(here("data/4319101_LISTOFACTCUST.CSV"))
+
+broadcaster = read.csv(here("data/4212628_PACK_DETAILS.CSV"))
+
+
+d1= list_active[,14] %l% broadcaster
 ## replace ' in column data, change to proper column names
 
 list_active$STB <- gsub("'","",list_active$STB)
@@ -17,6 +20,16 @@ list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get
 list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
 list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
 list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+
+##BROADCASTERWISE DATA
+list_active_bc = left_join(list_active,broadcaster,by="SERVICE_CODE")
+list_active_bc <- list_active_bc %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
+list_active_piv = list_active_bc %>% group_by(CUSTOMER_NBR,Broadcaster) %>% summarize(Acc_count = n())
+
+write.csv(list_active_short, "list_all.csv", row.names = FALSE)
+dq = list_active_piv %>% pivot_wider(names_from = Broadcaster, values_from = Acc_count)
+list_active_short <- list_active %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,VC,MOBILE_PHONE,HOME_PHONE) %>% unique()
+
 
 list_export_cond = filter(list_active, ENTITY_CODE == "MDBKT41")
 list_export_cond = list_export_cond %>% 

@@ -2,7 +2,7 @@ library(tidyverse)
 library(here)
 library(dplyr)
 
-activ_cust = read.csv(here("data/4178106_StatewiseActiveCustomerReport.CSV"))
+activ_cust = read.csv(here("data/4315618_StatewiseActiveCustomerReport.CSV"))
 active_cust_for_lookup = activ_cust %>% select(Entity.Code,Entity.Name) %>% unique()
 
 active_pivot = activ_cust %>% 
