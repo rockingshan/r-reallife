@@ -4,7 +4,7 @@ library(dplyr)
 library(gapminder) 
 library(qdapTools)
 
-list_active = read.csv(here("data/4319101_LISTOFACTCUST.CSV"))
+list_active = read_csv(here("data/4336957_LISTOFACTCUST.CSV"))
 
 broadcaster = read.csv(here("data/4212628_PACK_DETAILS.CSV"))
 
@@ -20,6 +20,10 @@ list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get
 list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
 list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
 list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+
+list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
+gospell_ac_vc = select(list_ac_GSPL, VC,CUSTOMER_NBR) %>% unique()
+write.csv(gospell_ac_vc, "gospell_active.csv", row.names = F)
 
 ##BROADCASTERWISE DATA
 list_active_bc = left_join(list_active,broadcaster,by="SERVICE_CODE")
