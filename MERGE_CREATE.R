@@ -30,3 +30,11 @@ lco_2 = read.csv(here("C:/Users/Shantanu/Desktop","DAS3_LCO.csv"))
 df_1 = data.frame(plan_code = c("MBBNGHD1","MBBNGHD2","MBHNHD1","MBHNHD2"), pricing = c("250.00","318.647","237.29","300.85"))
 new2 = merge(lco_2,df_1)
 write.csv(new2, "try1.csv")
+
+#################################################
+#PLAN AND CAS CODE CREATOR
+
+plan_config = read.csv("C:/Users/SHANTANU/Downloads/PRICE MASTER/PLAN_CONFIGURATIONS.CSV")
+cas_code = read.csv("C:/Users/SHANTANU/Downloads/PRICE MASTER/SERICE_CAS_CODES.CSV")
+merger = merge(plan_config,cas_code,all.x = T,all.y = F)
+write.csv(merger,"PLAN Config with CAS Codes.csv",row.names = F)
