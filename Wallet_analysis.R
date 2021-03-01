@@ -46,7 +46,7 @@ lcowise_data_export <- function(wallet_in){
 
 
 
-wallet = read.csv(here("C:/Users/SHANTANU/Downloads/WALLET REPORTS/all.CSV"))
+wallet = read.csv(here("data","4444924_WALLETSUMMLCONEW.CSV"))
 
 #wallet_wrong = read_excel(here("data/OTS Invoices data.xlsx"))
 
