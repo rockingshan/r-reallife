@@ -2,19 +2,28 @@ library(tidyverse)
 library(here)
 library(dplyr)
 library(gapminder) 
-list_active = read.csv(here("data", "4390774_LISTOFACTCUST.CSV"))
+library(readxl)
 
-ent_t = list_active %>% select(ENTITY_CODE) %>% distinct()
-write.csv(ent_t, "1.csv")
+list_active = read.csv(here("data", "4515484_LISTOFACTCUST.CSV"))  #import MQ data
+###inventory
+inventory = read.csv(here("data","4519064_INVENTDATA.CSV"),colClasses = c(SERIAL_NUMBER="character"))
+inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
+
+# ent_t = list_active %>% select(ENTITY_CODE) %>% distinct()
+# write.csv(ent_t, "1.csv")
 #import safeview data and searialze
 list_sfw = read.csv(here("data","safeview.CSV"),colClasses = c(SubscriptionID="character")) #specify particular column as character
 sfw_cas_data = list_sfw %>% unite(combined, c("SMCs","SubscriptionID"))
 
 #import gospell data
-list_gospell = read.csv(here("data", "gospell_all.csv"))
+list_gospell = read.csv(here("data", "gospell_all.csv")) #import old and current gospell combine data
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
-### area wise function
 
+##import ABV boxes
+abv_cas_data = read_xlsx(here("data/ABV.xlsx"))
+abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
+
+### area wise function
 areawise_data_export <- function(gospell){
   ## filter area code and remove duplicate then convert to a list for loop
   area_list = gospell %>% select(CITY) %>% distinct()
@@ -26,9 +35,7 @@ areawise_data_export <- function(gospell){
     write.csv(gospell_filtered, paste(areacode,".csv", sep = ""), row.names = FALSE)
   }
 }
-###inventory
-inventory = read.csv(here("data","4390767_INVENTDATA.CSV"),colClasses = c(SERIAL_NUMBER="character"))
-inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
+
 ## replace ' in column data, change to proper column names
 list_active$STB <- gsub("'","",list_active$STB)
 list_active$SC <- gsub("'","",list_active$SC)
@@ -54,7 +61,7 @@ recon_sfw_NA_output = reconcile_data_SFW %>% filter(is.na(CUSTOMER_NBR))
 recon_sfw_NA_output = separate(recon_sfw_NA_output, combined, c("vc","casocde"))
 write.csv(recon_sfw_NA_output, "Safeview_active_service_not_in_MQ.csv", row.names = F)
 
-#GOSPELL operationlist_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
+#GOSPELL operation GOSPELL
 gospell_ac_vc = select(list_ac_GSPL, VC,CUSTOMER_NBR) %>% unique()
 write.csv(gospell_ac_vc, "gospell_active.csv", row.names = F)
 
@@ -66,8 +73,7 @@ recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"
 recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)
 write.csv(recon_GSPL_NA_output, "Gospell_active_service_not_in_MQ.csv", row.names = F)
 
-
-gospell_log <- read.csv(here("F:/#reconcile_may_2018/all.txt"))
+gospell_log <- read.csv(here("F:/#reconcile_may_2018/all.txt"))# import all disconnections last few months
 gospell_log_sh <- filter(gospell_log, X2020.07.10.00.00.00 == "2030-12-31 00:00:00") %>%
   select(X67728364,X950) %>% unique()
 colnames(gospell_log_sh)[1] <- "VC"
@@ -84,3 +90,11 @@ write.csv(GSPL_all_AREA, "GOSPELL INACTIVE COMMANDS RECEND.CSV", row.names = F)
 
 gospell_all_citywise = read.csv("GOSPELL INACTIVE COMMANDS RECEND.CSV")
 areawise_data_export(gospell_all_citywise)
+
+#####ABV operation
+list_ac_ABV = list_ac_ABV %>% unite(combined, c("VC","CASCODE"))
+mq_ABV_data = list_ac_ABV %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>% distinct()
+reconcile_data_ABV = merge(x = abv_cas_data_combn, y = mq_ABV_data, by = "combined",all.x = TRUE)
+recon_ABV_NA_output = reconcile_data_ABV %>% filter(is.na(CUSTOMER_NBR))
+recon_ABV_NA_output = separate(recon_ABV_NA_output, combined, c("vc","cascode"))
+write.csv(recon_ABV_NA_output, "ABV_active_service_not_in_MQ.csv", row.names = F)
