@@ -1,5 +1,4 @@
 library(tidyverse)
-library(here)
 library(dplyr)
 library(readxl)
 library(stringr)
@@ -46,10 +45,7 @@ lcowise_data_export <- function(wallet_in){
 
 
 
-wallet = read.csv(here("data","4444924_WALLETSUMMLCONEW.CSV"))
-
-#wallet_wrong = read_excel(here("data/OTS Invoices data.xlsx"))
-
+wallet = read.csv(choose.files(default = "_WALLETSUMMARY",caption = "Select Wallet Report File",multi = FALSE,))
 
 area_wise_op(wallet)
 
@@ -61,10 +57,10 @@ lcowise_data_export(wallet)
 
 
 ##monthwise packagewise data
-wallet_sel = filter(wallet,Plan.Details == "SILVER BUDGET DIGITAL @ 180") %>%
-  select(Customer.Nbr,Entity.Code,Entity.Name,Plan.Details,Transaction.Date) %>% unique()
-
-write.csv(wallet_sel,"2.csv",row.names = F)
+# wallet_sel = filter(wallet,Plan.Details == "SILVER BUDGET DIGITAL @ 180") %>%
+#   select(Customer.Nbr,Entity.Code,Entity.Name,Plan.Details,Transaction.Date) %>% unique()
+# 
+# write.csv(wallet_sel,"2.csv",row.names = F)
 # account_view = filter(wallet, Customer.Nbr == "283569MD0299")
 # view(account_view)
 # 
@@ -100,8 +96,8 @@ write.csv(wallet_sel,"2.csv",row.names = F)
 ####read files and filter and output#######
 # file.list = list.files(path = "C:/Users/SHANTANU/Downloads/wallet/WALLET REPORTS", pattern = NULL, all.files = FALSE, full.names = TRUE) 
 # 
-# for (filename in file.list) {
-#   file_cont = read.csv(filename)
-   wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
-   write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
-# }
+# # for (filename in file.list) {
+# #   file_cont = read.csv(filename)
+#    wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
+#    write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
+# # }
