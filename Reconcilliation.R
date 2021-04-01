@@ -4,7 +4,7 @@ library(dplyr)
 library(gapminder) 
 library(readxl)
 
-list_active = read.csv(here("data", "4515484_LISTOFACTCUST.CSV"))  #import MQ data
+list_active = read.csv(here("data", "4593409_LISTOFACTCUST.CSV"))  #import MQ data
 ###inventory
 inventory = read.csv(here("data","4519064_INVENTDATA.CSV"),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
