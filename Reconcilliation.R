@@ -4,9 +4,9 @@ library(dplyr)
 library(gapminder) 
 library(readxl)
 
-list_active = read.csv(here("data", "4593409_LISTOFACTCUST.CSV"))  #import MQ data
+list_active = read.csv(choose.files(default = "_LISTOFACTIVE.CSV",caption = "Select Active Customer File",multi = FALSE,),colClasses = c(CASCODE="character"))  #import MQ data
 ###inventory
-inventory = read.csv(here("data","4519064_INVENTDATA.CSV"),colClasses = c(SERIAL_NUMBER="character"))
+inventory = read.csv(here("data","4666863_INVENTDATA.CSV"),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
 
 # ent_t = list_active %>% select(ENTITY_CODE) %>% distinct()
