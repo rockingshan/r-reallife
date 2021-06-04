@@ -66,3 +66,9 @@ reconcile_data_ABV = merge(x = abv_cas_data_combn, y = mq_ABV_data, by = "combin
 recon_ABV_NA_output = reconcile_data_ABV %>% filter(is.na(CUSTOMER_NBR))
 recon_ABV_NA_output = separate(recon_ABV_NA_output, combined, c("vc","cascode"))
 write.csv(recon_ABV_NA_output, "ABV_active_service_not_in_MQ.csv", row.names = F)
+
+
+
+list_active_bpc_ABV = list_ac_ABV %>% filter(str_detect(ENTITY_CODE, "MSW")) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,VC,STB,MOBILE_PHONE) %>% unique()
+write.csv(list_active_bpc_ABV,"bpc_ABV.csv",row.names = F)
+list_active_bpc_GSPL_1 = list_active %>% filter(str_detect(ENTITY_CODE, "MDSKWJV")) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,VC,STB,MOBILE_PHONE) %>% unique()
