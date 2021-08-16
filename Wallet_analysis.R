@@ -49,7 +49,7 @@ wallet = read.csv(choose.files(default = "_WALLETSUMMARY",caption = "Select Wall
 
 area_wise_op(wallet)
 
-plan_wise_op(wallet)
+#plan_wise_op(wallet)
 
 lco_pivot_table(wallet)
 
