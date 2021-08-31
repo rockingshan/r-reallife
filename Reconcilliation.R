@@ -4,21 +4,21 @@ library(readxl)
 library(purrr)
 
 ##opens a window to select files, 
-list_active = read.csv(choose.files(default = "_LISTOFACTIVE.CSV",caption = "Select Active Customer File",multi = FALSE,), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
+list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 ###inventory
-inventory = read.csv(choose.files(default = "_INVENTORY.CSV",caption = "Select Inventory File",multi = FALSE,),colClasses = c(SERIAL_NUMBER="character"))
+inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
 
 
 
 #import safeview data and searialze
-list_sfw = read.csv(choose.files(default = "",caption = "Select Safeview CAS File",multi = FALSE,),colClasses = c(SubscriptionID="character")) #specify particular column as character
+list_sfw = read.csv(file.choose(new = F),colClasses = c(SubscriptionID="character")) #specify particular column as character
 sfw_cas_data = list_sfw %>% unite(combined, c("SMCs","SubscriptionID"))
 
 #import gospell data 
 #### Gospell CAS file does not have column names. Please add column names, adding column names separately
-list_gospell = read.csv(choose.files(default = "",caption = "Select Gospell CAS File",multi = FALSE,), header = FALSE)
+list_gospell = read.csv(file.choose(new = F), header = FALSE)
 colnames(list_gospell) <- c("vc", "cascode")
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
 
