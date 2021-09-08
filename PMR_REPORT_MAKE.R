@@ -6,7 +6,7 @@ library(RCurl)
 bC_bouqet_raw = read_excel(choose.files(default = "_STATE_BOUQUET_RPT",caption = "Select Broadcaster report Bouquet File",multi = FALSE,), skip = 3)
 bc_alacarte_raw = read_excel(choose.files(default = "_STATE_ALACARTE_RPT",caption = "Select Broadcaster report Alacarte File",multi = FALSE,), skip = 3)
 #LOCATION - SUPPORT GOOGLE DRIVE -> mEGHBELA bILLS AND REPORTS - >PMR support files
-plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1WpHeGDD6syAEuEwrSil8CIewbjZweLHb&export=download"))
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1iHErLr_cL36BWzYwsQjOId-YlWWWbAr1&export=download"))
 trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=12DD_vNDdVqrObI59WalTL_F9cje50Gja&export=download"),encoding = "UTF-8")
 

@@ -45,7 +45,7 @@ lcowise_data_export <- function(wallet_in){
 
 
 
-wallet = read.csv(choose.files(default = "_WALLETSUMMARY",caption = "Select Wallet Report File",multi = FALSE,))
+wallet = read.csv(file.choose(new = F))
 
 area_wise_op(wallet)
 

@@ -3,13 +3,14 @@ library(dplyr)
 library(readxl)
 library(purrr)
 
-list_bouquet_dated = read.csv(choose.files(default = "",caption = "Select Bouquet Detail file",multi = FALSE,)) #import MQ data
-list_alacarte = read.csv(choose.files(default = "",caption = "Select ALacarte Detail file",multi = FALSE,)) 
-DF1 = read.csv(choose.files(default = "",caption = "Select Bouquet Detail file",multi = FALSE,))
-DF2 = read.csv(choose.files(default = "",caption = "Select Bouquet Detail file",multi = FALSE,))
+list_bouquet_dated = read.csv(file.choose(new = F)) #import MQ data bouquet
+list_alacarte = read.csv(file.choose(new = F)) #import MQ alacarte details
+DF1 = read.csv(file.choose(new = F)) #pack details
+DF2 = read.csv(file.choose(new = F)) #plan config with services, MAKE ONLY 30
 DF = merge(DF2,DF1)
+DF = DF %>% select(Service.Name,Channel) %>% unique()
 
-plan_names = read.csv(choose.files(default = "",caption = "Select Bouquet Detail file",multi = FALSE,))
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1iHErLr_cL36BWzYwsQjOId-YlWWWbAr1&export=download"))
 trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=12DD_vNDdVqrObI59WalTL_F9cje50Gja&export=download"),encoding = "UTF-8")
 

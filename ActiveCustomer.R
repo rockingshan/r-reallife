@@ -1,7 +1,8 @@
 library(tidyverse)
 library(dplyr)
+library(lubridate)
 
-activ_cust = read.csv(choose.files(default = "_StateWise",caption = "Select Active Customer File",multi = FALSE,))
+activ_cust = read.csv(file.choose(new = F))
 active_cust_for_lookup = activ_cust %>% select(Entity.Code,Entity.Name) %>% unique()
 
 active_pivot = activ_cust %>% 
@@ -12,5 +13,5 @@ active_pivot = active_pivot[, c(1,3,2)]
 #active_pivot_n = filter(active_pivot, grepl('MSW', Entity.Code,fixed = TRUE))
 
 
-write.csv(active_pivot, "LCOWISE_ACTIVE_CUST.csv", row.names = FALSE)
-#write.csv(active_pivot_n, "BPC_LCO_DATA.csv", row.names = FALSE)
+write.csv(active_pivot, sprintf("LCOWISE_ACTIVE_CUST_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
+#the month command pastes previous month

@@ -86,3 +86,10 @@ write.csv(recon_ABV_NA_output, "ABV_active_service_not_in_MQ.csv", row.names = F
 
 customer_data = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,LCO_CITY,LCO_STATE,FIRST_NAME,MOBILE_PHONE,PRI_STATE,PRI_CITY,PRI_ADDRESS1) %>% unique()
 write.csv(customer_data,"Customer.csv",row.names = F)
+
+df2 = read.csv(file.choose(new = F),)
+df1 <- list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,VC,SERVICE_CODE,SERVICE_NAME,PLAN_CODE,PLAN_NAME) %>% unique()
+colnames(df1)[7] <- "Plan.Name"
+df1 = semi_join(df1,df2)
+df1_pln <- semi_join(df1,plan_names,by = "Plan.Name") %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,VC,PLAN_CODE,Plan.Name) %>% unique()
+df1_plan_com <- df1_pln %>% unite(combined, c(CUSTOMER_NBR,Plan.Name))
