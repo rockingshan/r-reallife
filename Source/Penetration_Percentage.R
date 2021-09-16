@@ -1,11 +1,12 @@
 library(tidyverse)
 library(dplyr)
 library(readxl)
+library(openxlsx)
 
 ##opens a window to select files, 
 list_active = read.csv(choose.files(default = "_LISTOFACTIVE.CSV",caption = "Select Active Customer File",multi = FALSE,), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE")
-plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1WpHeGDD6syAEuEwrSil8CIewbjZweLHb&export=download"))
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1iHErLr_cL36BWzYwsQjOId-YlWWWbAr1&export=download"))
 list_bc = read.csv(choose.files(default = "_PACK_DETAILS.CSV",caption = "Select Package File",multi = FALSE,),)
 
@@ -33,14 +34,18 @@ remove(list_active,lsa_bkt,lsa_bqa,lsa_cndp,lsa_dh1,lsa_dh2,lsa_direct,lsa_hcs,l
 ###PLANWISE SEGREGATION
 list_ac_plan = filter(list_active_area, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,Area,STB,VC,PLAN_NAME) %>% unique()
 ac_plan_pivot = list_ac_plan %>% group_by(Area,PLAN_NAME) %>% summarize(Active.Cust = n())
-write.csv(ac_plan_pivot,"AreawisePlan.csv",row.names = F)
+#write.csv(ac_plan_pivot,"AreawisePlan.csv",row.names = F)
 
 ###alacarte segregate
 list_ac_ala = filter(list_active_area, PLAN_NAME == "Alacarte Plan") %>% select(CUSTOMER_NBR,ENTITY_CODE,Area,SERVICE_NAME,SERVICE_CODE,PLAN_NAME) %>% unique()
 list_ac_ala_bc = merge(list_ac_ala,list_bc,all.x = T)
-write.csv(list_ac_ala_bc,"Alacarte.csv",row.names = F)
+#write.csv(list_ac_ala_bc,"Alacarte.csv",row.names = F)
 
 list_ac_bq = filter(list_active_area, !(PLAN_NAME %in% plan_names$Plan.Name))
 list_ac_bq = filter(list_ac_bq, SERVICE_NAME %in% bouquet_names$Bouquet) %>% select(CUSTOMER_NBR,ENTITY_CODE,Area,SERVICE_NAME,SERVICE_CODE,PLAN_NAME) %>% unique()
 list_ac_bq_bc = merge(list_ac_bq,list_bc,all.x = T)
-write.csv(list_ac_bq_bc,"Bouquets.csv",row.names = F)
+#write.csv(list_ac_bq_bc,"Bouquets.csv",row.names = F)
+
+#add all data frames in a list with sheet names. requires openxlsx
+list_of_sheets = list("Areawiseplan" = ac_plan_pivot,"Alacarte"=list_ac_ala_bc,"Bouquets"=list_ac_bq_bc)
+write.xlsx(list_of_sheets, file = "Channel_penetration.xlsx")
