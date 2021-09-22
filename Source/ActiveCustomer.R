@@ -13,5 +13,5 @@ active_pivot = active_pivot[, c(1,3,2)]
 #active_pivot_n = filter(active_pivot, grepl('MSW', Entity.Code,fixed = TRUE))
 
 
-write.csv(active_pivot, sprintf("LCOWISE_ACTIVE_CUST_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
+write.csv(active_pivot, sprintf("Output/LCOWISE_ACTIVE_CUST_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 #the month command pastes previous month
