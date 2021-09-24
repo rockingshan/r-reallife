@@ -23,9 +23,9 @@ colnames(list_gospell) <- c("vc", "cascode")
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
 
 ##import ABV boxes
-sheets <- excel_sheets("CASEntitlement.xlsx")
+sheets <- excel_sheets(file.choose(new = F))
 data_sheets <- sheets[grepl("CASEntitlement", sheets)]
-sheet_df <- map_dfr(data_sheets, ~read_excel("CASEntitlement.xlsx", sheet = .x, skip = 1), id = .x)
+sheet_df <- map_dfr(data_sheets, ~read_excel(file.choose(new = F), sheet = .x, skip = 1), id = .x)
 abv_cas_data = filter(sheet_df, STATUS == "Activated")
 #abv_cas_data = read_xlsx(choose.files(default = "",caption = "Select ABV CAS File",multi = FALSE,))
 abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
@@ -53,7 +53,7 @@ mq_sfw_data = list_ac_SFW %>% select(combined,CUSTOMER_NBR,VC,STB,SERVICE_NAME) 
 reconcile_data_SFW = merge(x = sfw_cas_data, y = mq_sfw_data, by = "combined", all.x = TRUE) # vlookup cas data with mq data, cas data on left side
 recon_sfw_NA_output = reconcile_data_SFW %>% filter(is.na(CUSTOMER_NBR))
 recon_sfw_NA_output = separate(recon_sfw_NA_output, combined, c("vc","casocde"))
-write.csv(recon_sfw_NA_output, "Safeview_active_service_not_in_MQ.csv", row.names = F)
+write.csv(recon_sfw_NA_output, "Output/Safeview_active_service_not_in_MQ.csv", row.names = F)
 
 #GOSPELL operation GOSPELL
 list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))
@@ -62,7 +62,7 @@ reconcile_data_GSPL = merge(x = GSPL_cas_data, y = mq_GSPL_data, by = "combined"
 recon_GSPL_NA_output = reconcile_data_GSPL %>% filter(is.na(CUSTOMER_NBR))
 recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"))
 recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)
-write.csv(recon_GSPL_NA_output, "Gospell_active_service_not_in_MQ.csv", row.names = F)
+write.csv(recon_GSPL_NA_output, "Output/Gospell_active_service_not_in_MQ.csv", row.names = F)
 
 
 #####ABV operation
@@ -71,7 +71,7 @@ mq_ABV_data = list_ac_ABV %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>%
 reconcile_data_ABV = merge(x = abv_cas_data_combn, y = mq_ABV_data, by = "combined",all.x = TRUE)
 recon_ABV_NA_output = reconcile_data_ABV %>% filter(is.na(CUSTOMER_NBR))
 recon_ABV_NA_output = separate(recon_ABV_NA_output, combined, c("vc","cascode"))
-write.csv(recon_ABV_NA_output, "ABV_active_service_not_in_MQ.csv", row.names = F)
+write.csv(recon_ABV_NA_output, "Output/ABV_active_service_not_in_MQ.csv", row.names = F)
 
 
 

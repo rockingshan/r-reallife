@@ -67,7 +67,11 @@ GSPL_all <- rbind(recon_GSPL_NA_output,gspl) %>% unique()
 colnames(GSPL_all)[2] <- "cascode"
 colnames(GSPL_all)[1] <- "SERIAL_NUMBER"
 GSPL_all_AREA = left_join(GSPL_all,inventory_select,all.x = T)
-write.csv(GSPL_all_AREA, "GOSPELL INACTIVE COMMANDS RECEND.CSV", row.names = F)
+
+colnames(recon_GSPL_NA_output)[1] <- "SERIAL_NUMBER"
+GSPL_all_AREA = left_join(recon_GSPL_NA_output,inventory_select,all.x = T) ## without importing disconnection commands, straight compare
+
+write.csv(GSPL_all_AREA, "Output/GOSPELL INACTIVE COMMANDS RECEND.CSV", row.names = F)
 
 gospell_all_citywise = read.csv("GOSPELL INACTIVE COMMANDS RECEND.CSV")
 areawise_data_export(gospell_all_citywise)
