@@ -32,3 +32,17 @@ active_pivot = active_pivot[, c(1,3,2)] %>% adorn_totals("row")
 
 write.xlsx(as.data.frame(active_pivot), file="Output/Daily_disconnect_active.xlsx", sheetName="Active", row.names=FALSE)
 write.xlsx(as.data.frame(daily_dis_pv_cn), file="Output/Daily_disconnect_active.xlsx", sheetName="DailyDiscon", append=TRUE, row.names=FALSE)
+
+#############################
+################################
+#Find customers without basic pack in recharge
+wallet_list = read.csv(file.choose(new = F)) #import last few days wallet report
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
+colnames(wallet_list)[8]<-"Plan.Name" #change column name to match online file name
+wallet_list_filt = filter(wallet_list, Plan.Name %in% plan_names$Plan.Name) %>% select(Customer.Nbr,Contract.Number,Entity.Code,Plan.Name,Amount.Debit) %>% unique()
+wallet_accounts = wallet_list %>% select(Customer.Nbr) %>% unique()
+wallet_merge = merge(wallet_accounts,wallet_list_filt,all.x = T)
+wallet_na_basic = wallet_merge[is.na(wallet_merge$Amount.Debit),]
+wallet_pivot = wallet_list %>% group_by(Customer.Nbr) %>% summarize(Total.debit = sum(Amount.Debit))
+write.xlsx(as.data.frame(wallet_na_basic), file="Output/Wallet_basic_check.xlsx", sheetName="NoBasic", row.names=FALSE)
+write.xlsx(as.data.frame(wallet_pivot), file="Output/Wallet_basic_check.xlsx", sheetName="TotalDebit", append=TRUE, row.names=FALSE)
