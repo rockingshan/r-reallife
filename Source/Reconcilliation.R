@@ -9,7 +9,10 @@ colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTIT
 ###inventory
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
-
+sfw_vc_mq = inventory_select %>% filter(ITEM_CODE=="SAFEVIEWSC")
+sfw_vc_mq = separate(sfw_vc_mq, SERIAL_NUMBER, into = c("leftval", "rightval"), sep = 10, remove = FALSE)
+sfw_vc_mq$leftval = as.numeric(sfw_vc_mq$leftval)
+colnames(sfw_vc_mq)[2] = "vc"
 
 
 #import safeview data and searialze
@@ -53,7 +56,8 @@ mq_sfw_data = list_ac_SFW %>% select(combined,CUSTOMER_NBR,VC,STB,SERVICE_NAME) 
 reconcile_data_SFW = merge(x = sfw_cas_data, y = mq_sfw_data, by = "combined", all.x = TRUE) # vlookup cas data with mq data, cas data on left side
 recon_sfw_NA_output = reconcile_data_SFW %>% filter(is.na(CUSTOMER_NBR))
 recon_sfw_NA_output = separate(recon_sfw_NA_output, combined, c("vc","casocde"))
-write.csv(recon_sfw_NA_output, "Output/Safeview_active_service_not_in_MQ.csv", row.names = F)
+recon_sfw_NA_out_full = merge(recon_sfw_NA_output,sfw_vc_mq,all.x = T)
+write.csv(recon_sfw_NA_out_full, "Output/Safeview_active_service_not_in_MQ.csv", row.names = F)
 
 #GOSPELL operation GOSPELL
 list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))

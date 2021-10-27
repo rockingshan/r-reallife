@@ -8,9 +8,9 @@ library(stringr)
 area_wise_op <- function(wallet_in){
   # get wallet input and filter on starting condition and export areawise
   WALLET_AREA_BPC = wallet_in %>% filter(str_detect(Entity.Code, "MSW"))
-  write.csv(WALLET_AREA_BPC, "Berhampore.csv", row.names = FALSE)
+  write.csv(WALLET_AREA_BPC, "Output/Berhampore.csv", row.names = FALSE)
   WALLET_AREA_HLZ = wallet_in %>% filter(str_detect(Entity.Code, "HCS"))
-  write.csv(WALLET_AREA_HLZ, "Haldia.csv", row.names = FALSE)
+  write.csv(WALLET_AREA_HLZ, "Output/Haldia.csv", row.names = FALSE)
 }
 
 plan_wise_op <- function(wallet_in){
@@ -27,7 +27,7 @@ lco_pivot_table <- function(wallet_in){
   lco_pivot = wallet_filt %>% 
     group_by(Entity.Code) %>%
     summarize(Total_debit = sum(Amount.Debit))
-  write.csv(lco_pivot, "LCO WALLET SUMMARY.csv", row.names = FALSE)
+  write.csv(lco_pivot, "Output/LCO WALLET SUMMARY.csv", row.names = FALSE)
 }
 
 lcowise_data_export <- function(wallet_in){
@@ -38,7 +38,7 @@ lcowise_data_export <- function(wallet_in){
   ## run the loop according to the list and export csv for each LCO
   for (lcocode in lco_list) {
     wallet_filtered = filter(wallet_in, Entity.Code==lcocode)
-    write.csv(wallet_filtered, paste(lcocode,".csv", sep = ""), row.names = FALSE)
+    write.csv(wallet_filtered, paste("Output/",lcocode,".csv", sep = ""), row.names = FALSE)
   }
 }
 
