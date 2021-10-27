@@ -1,46 +1,34 @@
 library(tidyverse)
 library(dplyr)
-library(readxl)
-library(purrr)
+library(lubridate)
+library(janitor)
+library(xlsx)
 
-list_bouquet_dated = read.csv(file.choose(new = F)) #import MQ data bouquet
-list_alacarte = read.csv(file.choose(new = F)) #import MQ alacarte details
-DF1 = read.csv(file.choose(new = F)) #pack details
-DF2 = read.csv(file.choose(new = F)) #plan config with services, MAKE ONLY 30
-DF = merge(DF2,DF1)
-DF = DF %>% select(Service.Name,Channel) %>% unique()
+inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
+customer_data = read.csv(file.choose(new = F)) ##customer master data
+#work on chandipur inventory file
+inv_cndp = inventory %>% filter(str_detect(ENTITY_CODE, "HCS")) %>% filter(!(str_detect(ITEM_CODE, "SC"))) %>%
+  select(SERIAL_NUMBER,TYPE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
 
-plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
-bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1iHErLr_cL36BWzYwsQjOId-YlWWWbAr1&export=download"))
-trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=12DD_vNDdVqrObI59WalTL_F9cje50Gja&export=download"),encoding = "UTF-8")
+cust_sel = customer_data %>% select(Customer.Number,Created.Date,Customer.Status) %>% unique()
 
+inv_cust_data = merge(inv_cndp,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.Number", all.x = T)                                                                            
 
-bq_try = list_bouquet_dated %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n()) %>% filter(!(Bouquet == "Bronze Basic"))
+write.csv(inv_cust_data,"Output/Inventory_customer.csv",row.names = F)
 
-Bouquet_merged = merge(bq_try,DF,by.x = "Bouquet", by.y = "Service.Name" ) %>% select(Plan.Name,Bouquet,Channel,Active_count)
-colnames(Bouquet_merged)[4] <- "Monthly.Subs.of.the.Channel"
+######Daily disconnection and active customer data
+daily_discon = read.csv(file.choose(new = F))
+daily_discon_cn = daily_discon %>% filter(str_detect(Entity.Code, "MDCH"))
+daily_dis_pv_cn = daily_discon_cn %>% group_by(Entity.Code) %>% summarize(Discon.Count = n()) %>% adorn_totals("row")
 
-bc_bouquet_filtered = filter(Bouquet_merged, Plan.Name %in% plan_names$Plan.Name)
-bc_bouquet_filtered_bq = filter(bc_bouquet_filtered, Bouquet %in% bouquet_names$Bouquet)
-bc_bouquet_filtered_bq = add_column(bc_bouquet_filtered_bq, PackType ='DPO Pack with broadcaster bouquets',.after = 2)
+activ_cust = read.csv(file.choose(new = F))
+active_cust_for_lookup = activ_cust %>% filter(str_detect(Entity.Code, "MDCH")) %>% select(Entity.Code,Entity.Name) %>% unique()
+activ_cust = activ_cust %>% filter(str_detect(Entity.Code, "MDCH")) 
+active_pivot = activ_cust %>% 
+  group_by(Entity.Code) %>%
+  summarize(Total_Active = sum(Active.Customer))
+active_pivot = merge(active_pivot, active_cust_for_lookup)
+active_pivot = active_pivot[, c(1,3,2)] %>% adorn_totals("row")
 
-bc_bouquet_filtered_al = filter(bc_bouquet_filtered, !(Bouquet %in% bouquet_names$Bouquet))
-bc_bouquet_filtered_al = add_column(bc_bouquet_filtered_al, PackType ='DPO Pack with Alacarte',.after = 2)
-
-bc_bouquet_filtered_noDPO = filter(Bouquet_merged, !(Plan.Name %in% plan_names$Plan.Name))
-bc_bouquet_filtered_noDPO = filter(bc_bouquet_filtered_noDPO, !(Plan.Name %in% c('DD Channels','Platinum Digital Postpaid')))
-bc_bouquet_filtered_noDPO = add_column(bc_bouquet_filtered_noDPO, PackType ='Broadcaster Bouquets',.after = 2)
-
-bC_bouqet_final = rbind(bc_bouquet_filtered_bq,bc_bouquet_filtered_al,bc_bouquet_filtered_noDPO)
-bC_bouqet_final$Monthly.Subs.of.the.Channel = as.numeric(bC_bouqet_final$Monthly.Subs.of.the.Channel)
-bC_bouqet_final_pivot = bC_bouqet_final %>% group_by(Channel,PackType) %>% summarize(TotalMonthlySubs = sum(Monthly.Subs.of.the.Channel)) %>%
-  pivot_wider(names_from = PackType,values_from = TotalMonthlySubs)
-bc_bq_final_pvt_trai = merge(bC_bouqet_final_pivot,trai_names) %>% relocate(TRAI.name, .after = Channel) %>% relocate("DPO Pack with Alacarte", .after = "Broadcaster Bouquets")
-bc_bq_final_pvt_trai[is.na(bc_bq_final_pvt_trai)] <- 0
-
-####alacarte
-ala_count = list_alacarte %>% group_by(Channel.Name) %>% summarise(Monthly.Subs.of.the.Channel=n())
-colnames(ala_count)[1] <- "Channel"
-bc_ala_pvt_trai = merge(ala_count,trai_names) %>% relocate(TRAI.name, .after = Channel) ## move trai column before data
-write.csv(bc_bq_final_pvt_trai, "Broadcaster Bouquet report PMR.csv", row.names = F)
-write.csv(bc_ala_pvt_trai, "Broadcaster Alacarte report PMR.csv", row.names = F)
+write.xlsx(as.data.frame(active_pivot), file="Output/Daily_disconnect_active.xlsx", sheetName="Active", row.names=FALSE)
+write.xlsx(as.data.frame(daily_dis_pv_cn), file="Output/Daily_disconnect_active.xlsx", sheetName="DailyDiscon", append=TRUE, row.names=FALSE)

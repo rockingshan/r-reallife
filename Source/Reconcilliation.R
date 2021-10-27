@@ -2,6 +2,7 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(purrr)
+library(stringr)
 
 ##opens a window to select files, 
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
@@ -26,9 +27,10 @@ colnames(list_gospell) <- c("vc", "cascode")
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
 
 ##import ABV boxes
-sheets <- excel_sheets(file.choose(new = F))
+fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
+sheets <-  excel_sheets(fil_path_abv)
 data_sheets <- sheets[grepl("CASEntitlement", sheets)]
-sheet_df <- map_dfr(data_sheets, ~read_excel(file.choose(new = F), sheet = .x, skip = 1), id = .x)
+sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
 abv_cas_data = filter(sheet_df, STATUS == "Activated")
 #abv_cas_data = read_xlsx(choose.files(default = "",caption = "Select ABV CAS File",multi = FALSE,))
 abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
