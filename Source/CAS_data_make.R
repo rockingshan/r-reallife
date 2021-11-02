@@ -13,8 +13,9 @@ colnames(sfw_vc_mq)[2] = "SMCs"
 sfw_cas_final = merge(list_sfw,sfw_vc_mq,all.x = T) %>% select(SERIAL_NUMBER,SubscriptionID)
 write.csv(sfw_cas_final,"Output/Sfw_final.csv",row.names = F)
 
-sheets <- excel_sheets(file.choose(new = F))
+fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
+sheets <-  excel_sheets(fil_path_abv)
 data_sheets <- sheets[grepl("CASEntitlement", sheets)]
-sheet_df <- map_dfr(data_sheets, ~read_excel(file.choose(new = F), sheet = .x, skip = 1), id = .x)
+sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
 abv_cas_data = filter(sheet_df, STATUS == "Activated") %>% select(SMARTCARDNO,PACKAGEID)
 write.csv(abv_cas_data,"Output/ABV_final.csv",row.names = F)
