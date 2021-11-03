@@ -9,7 +9,7 @@ list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasse
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 ###inventory
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
-inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE)
+inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE,ITEM_CODE)
 sfw_vc_mq = inventory_select %>% filter(ITEM_CODE=="SAFEVIEWSC")
 sfw_vc_mq = separate(sfw_vc_mq, SERIAL_NUMBER, into = c("leftval", "rightval"), sep = 10, remove = FALSE)
 sfw_vc_mq$leftval = as.numeric(sfw_vc_mq$leftval)
