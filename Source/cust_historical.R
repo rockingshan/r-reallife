@@ -3,10 +3,10 @@ library(tidyverse)
 library(here)
 library(dplyr)
 cas_code = read.csv("4451414_ServiceDetails.CSV")
-cust_historical <- read_csv("5079444_CUSTOMERS_NETWORK.CSV")
+cust_historical <- read.csv(file.choose(new = F),)
 names(cust_historical)<-make.names(names(cust_historical),unique = TRUE)
 cust_hist_trim = select(cust_historical,Customer.Nbr,Set.Box.Number,Smartcard.Serialnumber,Name,Mobile) %>% unique()
-
+custhist_count = select(cust_hist_trim,Customer.Nbr) %>% unique()
 
 
 cust_historical <- cust_historical %>% mutate(VC.length = nchar(Smartcard.Serialnumber),  .after = 11)

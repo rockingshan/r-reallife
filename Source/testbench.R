@@ -46,3 +46,15 @@ wallet_na_basic = wallet_merge[is.na(wallet_merge$Amount.Debit),]
 wallet_pivot = wallet_list %>% group_by(Customer.Nbr) %>% summarize(Total.debit = sum(Amount.Debit))
 write.xlsx(as.data.frame(wallet_na_basic), file="Output/Wallet_basic_check.xlsx", sheetName="NoBasic", row.names=FALSE)
 write.xlsx(as.data.frame(wallet_pivot), file="Output/Wallet_basic_check.xlsx", sheetName="TotalDebit", append=TRUE, row.names=FALSE)
+
+
+#######################
+#find hd sd box count
+alacarte = read.csv(file.choose(new = F))
+bouquet = read.csv(file.choose(new = F))
+alacount = alacarte %>% select(Customer.Number) %>% unique()
+bouquetcount = bouquet %>% select(Customer.Number) %>% unique()
+totalcount = rbind(alacount,bouquetcount) %>% unique()
+bronze_basic = bouquet %>% filter(Week == 4) %>% select(Customer.Number,Bouquet,Plan.Name) %>% filter(Bouquet == "Bronze Basic") %>% unique()
+basic_pivot = bronze_basic %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())
+write.csv(basic_pivot,"4.csv",row.names = F)
