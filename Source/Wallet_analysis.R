@@ -63,6 +63,9 @@ lco_pivot_table(wallet)
 
 lcowise_data_export(wallet)
 
+crdr = read.csv(file.choose(new = F))
+crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
+write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
 ##monthwise packagewise data
 # wallet_sel = filter(wallet,Plan.Details == "SILVER BUDGET DIGITAL @ 180") %>%

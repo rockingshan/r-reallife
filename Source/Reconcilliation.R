@@ -3,6 +3,7 @@ library(dplyr)
 library(readxl)
 library(purrr)
 library(stringr)
+library(pivottabler)
 
 ##opens a window to select files, 
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
@@ -99,3 +100,13 @@ colnames(df1)[7] <- "Plan.Name"
 df1 = semi_join(df1,df2)
 df1_pln <- semi_join(df1,plan_names,by = "Plan.Name") %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,VC,PLAN_CODE,Plan.Name) %>% unique()
 df1_plan_com <- df1_pln %>% unite(combined, c(CUSTOMER_NBR,Plan.Name))
+
+
+
+#################################
+###dpo cal
+act_dpo = list_active %>% filter(PLAN_CODE == "DPOPROMBUN")
+#following code makes a pivot table with a count of product as columns
+actdpo_piv = act_dpo %>% group_by(CUSTOMER_NBR,SERVICE_NAME) %>% summarize(Transaction_count = n()) %>%
+  pivot_wider(names_from = SERVICE_NAME, values_from = Transaction_count)
+write.csv(actdpo_piv,"23.csv",row.names = F)
