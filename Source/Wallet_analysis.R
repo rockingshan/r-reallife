@@ -2,6 +2,7 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(stringr)
+library(lubridate)
 
 #function definitions....
 
@@ -27,7 +28,7 @@ lco_pivot_table <- function(wallet_in){
   lco_pivot = wallet_filt %>% 
     group_by(Entity.Code) %>%
     summarize(Total_debit = sum(Amount.Debit))
-  write.csv(lco_pivot, "Output/LCO WALLET SUMMARY.csv", row.names = FALSE)
+  write.csv(lco_pivot, sprintf("Output/LCOWISE_WALLET_SUMMARY_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(rollback(today()))), row.names = FALSE)
 }
 
 lcowise_data_export <- function(wallet_in){
@@ -38,7 +39,7 @@ lcowise_data_export <- function(wallet_in){
   ## run the loop according to the list and export csv for each LCO
   for (lcocode in lco_list) {
     wallet_filtered = filter(wallet_in, Entity.Code==lcocode)
-    write.csv(wallet_filtered, paste("Output/",lcocode,".csv", sep = ""), row.names = FALSE)
+    write.csv(wallet_filtered, sprintf("Output/%s_%s_%g.csv",lcocode,month(today() - months(1),label = TRUE, abbr = F),year(rollback(today()))), row.names = FALSE)
   }
 }
 

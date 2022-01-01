@@ -52,9 +52,13 @@ write.xlsx(as.data.frame(wallet_pivot), file="Output/Wallet_basic_check.xlsx", s
 #find hd sd box count
 alacarte = read.csv(file.choose(new = F))
 bouquet = read.csv(file.choose(new = F))
-alacount = alacarte %>% select(Customer.Number) %>% unique()
-bouquetcount = bouquet %>% select(Customer.Number) %>% unique()
+alacount = alacarte %>% select(Customer.Number,LCO.Code) %>% unique()
+bouquetcount = bouquet %>% select(Customer.Number,LCO.Code) %>% unique()
 totalcount = rbind(alacount,bouquetcount) %>% unique()
+COUNT_PIVOT = totalcount %>% group_by(LCO.Code) %>% summarise(COunt_ac = n())
+write.csv(COUNT_PIVOT,"OCT.CSV",row.names = F)
+
+
 bronze_basic = bouquet %>% filter(Week == 4) %>% select(Customer.Number,Bouquet,Plan.Name) %>% filter(Bouquet == "Bronze Basic") %>% unique()
 basic_pivot = bronze_basic %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())
 write.csv(basic_pivot,"4.csv",row.names = F)
