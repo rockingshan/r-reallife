@@ -12,6 +12,9 @@ area_wise_op <- function(wallet_in){
   write.csv(WALLET_AREA_BPC, "Output/Berhampore.csv", row.names = FALSE)
   WALLET_AREA_HLZ = wallet_in %>% filter(str_detect(Entity.Code, "HCS"))
   write.csv(WALLET_AREA_HLZ, "Output/Haldia.csv", row.names = FALSE)
+  zip_area_files = paste(normalizePath(dirname(list.files(path = "Output/", pattern = "\\.csv$", ignore.case = TRUE,full.names = T))),fsep= .Platform$file.sep,list.files(path = "Output/", pattern = "\\.csv$", ignore.case = TRUE),sep="")
+  zip(zipfile = sprintf("Output/Berhampore_Haldia_%s_%g",month(today() - months(1),label = TRUE, abbr = F),year(today())), files = zip_area_files, flags = " a -tzip -sdel",
+      zip = "C:\\Program Files\\7-Zip\\7Z")
 }
 
 plan_wise_op <- function(wallet_in){
@@ -40,7 +43,11 @@ lcowise_data_export <- function(wallet_in){
   for (lcocode in lco_list) {
     wallet_filtered = filter(wallet_in, Entity.Code==lcocode)
     write.csv(wallet_filtered, sprintf("Output/%s_%s_%g.csv",lcocode,month(today() - months(1),label = TRUE, abbr = F),year(rollback(today()))), row.names = FALSE)
+    zip_lco_files = paste(normalizePath(dirname(list.files(path = "Output/", pattern = "\\.csv$", ignore.case = TRUE,full.names = T))),fsep= .Platform$file.sep,list.files(path = "Output/", pattern = "\\.csv$", ignore.case = TRUE),sep="")
+    zip(zipfile = sprintf("Output/LCOWise_Wallet_Report_%s_%g",month(today() - months(1),label = TRUE, abbr = F),year(rollback(today()))), files = zip_lco_files, flags = " a -tzip -sdel",
+        zip = "C:\\Program Files\\7-Zip\\7Z")
   }
+ 
 }
 
 
@@ -56,6 +63,9 @@ lco_pivot_table(wallet)
 
 lcowise_data_export(wallet)
 
+crdr = read.csv(file.choose(new = F))
+crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
+write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
 ##monthwise packagewise data
 # wallet_sel = filter(wallet,Plan.Details == "SILVER BUDGET DIGITAL @ 180") %>%

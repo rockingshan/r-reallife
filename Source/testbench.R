@@ -17,11 +17,11 @@ inv_cust_data = merge(inv_cndp,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.
 write.csv(inv_cust_data,"Output/Inventory_customer.csv",row.names = F)
 
 ######Daily disconnection and active customer data
-daily_discon = read.csv(file.choose(new = F))
-daily_discon_cn = daily_discon %>% filter(str_detect(Entity.Code, "MDCH"))
+daily_discon = read.csv(file.choose(new = F))  ##Daily disconnection file
+daily_discon_cn = daily_discon %>% filter(str_detect(Entity.Code, "MDCH")) 
 daily_dis_pv_cn = daily_discon_cn %>% group_by(Entity.Code) %>% summarize(Discon.Count = n()) %>% adorn_totals("row")
 
-activ_cust = read.csv(file.choose(new = F))
+activ_cust = read.csv(file.choose(new = F)) #statewise active customer
 active_cust_for_lookup = activ_cust %>% filter(str_detect(Entity.Code, "MDCH")) %>% select(Entity.Code,Entity.Name) %>% unique()
 activ_cust = activ_cust %>% filter(str_detect(Entity.Code, "MDCH")) 
 active_pivot = activ_cust %>% 
@@ -62,3 +62,17 @@ write.csv(COUNT_PIVOT,"OCT.CSV",row.names = F)
 bronze_basic = bouquet %>% filter(Week == 4) %>% select(Customer.Number,Bouquet,Plan.Name) %>% filter(Bouquet == "Bronze Basic") %>% unique()
 basic_pivot = bronze_basic %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())
 write.csv(basic_pivot,"4.csv",row.names = F)
+
+#########################
+#Make active report for LCO in single row
+list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
+colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+list_active$STB <- gsub("'","",list_active$STB)
+list_active$SC <- gsub("'","",list_active$SC)
+colnames(list_active)[10] <- "VC"
+colnames(list_active)[11] <- "STB"
+list_active = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME,LAST_NAME,VC,STB,SERVICE_NAME,MOBILE_PHONE,PRI_ADDRESS1) %>% unique()
+list_act_combine = list_active %>% group_by(CUSTOMER_NBR) %>% summarise(Services=paste(SERVICE_NAME, collapse=","))
+list_act_filter = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME,LAST_NAME,VC,STB,MOBILE_PHONE,PRI_ADDRESS1) %>% unique()
+total_active = merge(list_act_combine,list_act_filter)
+write.csv(total_active, "LCO_active_data.csv", row.names = F)
