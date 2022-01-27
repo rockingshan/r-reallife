@@ -76,3 +76,7 @@ list_act_combine = list_active %>% group_by(CUSTOMER_NBR) %>% summarise(Services
 list_act_filter = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME,LAST_NAME,VC,STB,MOBILE_PHONE,PRI_ADDRESS1) %>% unique()
 total_active = merge(list_act_combine,list_act_filter)
 write.csv(total_active, "LCO_active_data.csv", row.names = F)
+
+###########make all customer data for checking city mapping
+list_active_1 = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,LCO_CITY,LCO_STATE,PRI_STATE,PRI_CITY) %>% unique()
+write.csv(list_active_1, "total_active.csv", row.names = F)
