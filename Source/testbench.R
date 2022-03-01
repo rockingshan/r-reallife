@@ -128,3 +128,4 @@ for (i in row.names(due_frwn_flt)) {
   readurl = read_lines(paste("http://1.rapidsms.co.in/api/push.json?apikey=60461d4b29af2&route=trans&sender=MCBSPL&mobileno=",due_frwn_flt[i,"Mobile.Phone"],"&text=Dear%20Customer%2C%20Your%20CABLE%20TV%20plan%20for%20account%20",due_frwn_flt[i,"Customer.Number"],"%20is%20expiring%20Today%20.%20Recharge%20now%20to%20avoid%20interruption%20-%20MEGHBELA",sep = ""))
   df[nrow(df) + 1,] = readurl
 }
+
