@@ -59,9 +59,11 @@ area_wise_op(wallet)
 
 #plan_wise_op(wallet)
 
+lcowise_data_export(wallet)
+
 lco_pivot_table(wallet)
 
-lcowise_data_export(wallet)
+
 
 crdr = read.csv(file.choose(new = F))
 crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))

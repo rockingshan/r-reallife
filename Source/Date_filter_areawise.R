@@ -14,6 +14,7 @@ colnames(list_active)[10] <- "VC"
 colnames(list_active)[11] <- "STB"
 list_active_hlz_cndp = list_active %>% filter(str_detect(ENTITY_CODE, c("HCS","MDCH"))) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,VC,STB) %>% unique()
 list_active_with_date = merge(x=list_active_hlz_cndp,y=dueforrenewal_select, by.x = 'CONTRACT_NUMBER',by.y = 'Contract.Number',all.x = TRUE)
+######make dueforrenewal dates proper
 list_active_with_date$Contract.End.Date <- parse_date_time(list_active_with_date$Contract.End.Date, orders = "dmy HMS")
 list_active_with_date$Contract.End.Date <- as.Date(list_active_with_date$Contract.End.Date)
 #list_active_date = separate(list_active_with_date, col = Contract.End.Date, into = c("Date","Time","HR"),sep = " ",fill = "right")

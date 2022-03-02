@@ -8,5 +8,6 @@ Data/*.xlx
 Output/*.csv
 Output/*.xlsx
 Output/*.xlx
+Output/*.zip
 *.csv
 *.xlsx
