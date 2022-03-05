@@ -82,6 +82,9 @@ write.csv(total_active, "LCO_active_data.csv", row.names = F)
 list_active_1 = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,LCO_CITY,LCO_STATE,PRI_STATE,PRI_CITY) %>% unique()
 write.csv(list_active_1, "total_active.csv", row.names = F)
 
+list_active_pivot = list_active_1 %>% group_by(ENTITY_CODE,PRI_CITY) %>% summarise(Active.Count = n())
+write.csv(list_active_pivot,"lcowise_active.csv",row.names = F)
+
 #########################provision log from sms
 pro_log = read.csv(file.choose(new = F))
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
@@ -101,7 +104,7 @@ list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
 list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
 list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))
 mq_GSPL_data = list_ac_GSPL %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>% distinct()
-gspl_combine = merge(GSPL_com_log,mq_GSPL_data, all.x = T,all.y = F)
+gspl_combine = merge(pro_log,mq_GSPL_data, all.x = T,all.y = F)
 recon_GSPL_NA_output = gspl_combine %>% filter(is.na(CUSTOMER_NBR))
 recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"))
 recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)
@@ -111,8 +114,8 @@ write.csv(recon_GSPL_NA_output_ent, "Output/Gospell_command log.csv", row.names 
 
 #####
 gspl_na = read_csv(file.choose(new = F))
-gspl_na_fl = gspl_na %>% filter(ENTITY_CODE == "MDBKT04")
-write.csv(gspl_na_fl, "Output/Gospell_command_LCOWISE_MDBKT04.csv", row.names = F)
+gspl_na_fl = gspl_na %>% filter(ENTITY_CODE == "MDCH161")
+write.csv(gspl_na_fl, "Output/Gospell_command_LCOWISE_MDch161.csv", row.names = F)
 
 
 ##############send sms - autorenewal\
@@ -128,4 +131,5 @@ for (i in row.names(due_frwn_flt)) {
   readurl = read_lines(paste("http://1.rapidsms.co.in/api/push.json?apikey=60461d4b29af2&route=trans&sender=MCBSPL&mobileno=",due_frwn_flt[i,"Mobile.Phone"],"&text=Dear%20Customer%2C%20Your%20CABLE%20TV%20plan%20for%20account%20",due_frwn_flt[i,"Customer.Number"],"%20is%20expiring%20Today%20.%20Recharge%20now%20to%20avoid%20interruption%20-%20MEGHBELA",sep = ""))
   df[nrow(df) + 1,] = readurl
 }
+
 

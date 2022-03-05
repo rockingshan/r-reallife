@@ -3,7 +3,7 @@ library(dplyr)
 library(readxl)
 library(stringr)
 library(knitr)
-library(kableExtra)
+#library(kableExtra)
 library(janitor)
 library(lubridate)
 
@@ -20,6 +20,10 @@ all_user_data <- bind_rows(df.list, .id = "id")
 names(all_user_data) = make.names(names(all_user_data))
 all_user_data <- all_user_data %>% mutate(since_midnight = hour(Date) * 60 + minute(Date)) %>% filter(since_midnight >= 10)
 all_user_data = all_user_data %>% select(Customer..,Transaction.type,Transaction.No,User.ID,Date,Description)
+
+
+#####IF CUSTOMER VERY LESS
+all_data_flt = all_user_data
 #remove provisioning logs
 all_data_flt = all_user_data %>% dplyr::filter(substr(Description,1,13) != 'IProvisioning') 
 
