@@ -4,6 +4,9 @@ library(lubridate)
 library(janitor)
 library(httr)
 library(xlsx)
+library(microbenchmark)
+
+mbm = microbenchmark::microbenchmark
 
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
 customer_data = read.csv(file.choose(new = F)) ##customer master data
@@ -220,11 +223,14 @@ discon_data_flt <- discon_data_flt[!(discon_data_flt$Disconnected.Date==""),]
 discon_data_flt$Disconnected.Date = as.Date(discon_data_flt$Disconnected.Date, format('%d-%b-%y'))
 discon_dt_max = discon_data_flt %>% group_by(Customer.Number) %>% mutate(Disc.Date = max(Disconnected.Date))
 discon_dt_max <- discon_dt_max %>% select(Customer.Number,Disc.Date) %>% unique()
-discon_data_filter = discon_dt_max %>% mutate(Ageing = (lubridate::today() - Disc.Date), .after = 2 )
-discon_data_age = discon_data_proper %>% mutate(Ageing.Slab = (ifelse(discon_data_proper$Ageing >= 0 & discon_data_proper$Ageing <= 30, '30 days',
-                                                                       ifelse(discon_data_proper$Ageing >= 30 & discon_data_proper$Ageing <= 60, '60 Days',
-                                                                              ifelse(discon_data_proper$Ageing >=60 & discon_data_proper$Ageing <= 90, '90 Days',
-                                                                                     ifelse(discon_data_proper$Ageing >= 90 & discon_data_proper$Ageing <= 180, '180 Days',
-                                                                                            ifelse(discon_data_proper$Ageing <= 180, 'MOre than 180 Days','6 Months')))))), .after = 5)
-discon_data_pivot = discon_data_age %>% group_by(Ageing.Slab) %>% summarise(Count.cus == n())
+discon_dt_max <- discon_dt_max %>% ungroup()
+discon_data_filter = discon_dt_max %>% mutate(Ageing = (lubridate::today() - Disc.Date), .after = NULL )
+
+discon_data_age = discon_data_filter %>% mutate(Ageing.Slab = (ifelse(discon_data_filter$Ageing >= 0 & discon_data_filter$Ageing <= 15, '0-15 days',
+                                                                       ifelse(discon_data_filter$Ageing >= 15 & discon_data_filter$Ageing <= 30, '15-30 Days',
+                                                                              ifelse(discon_data_filter$Ageing >=30 & discon_data_filter$Ageing <= 60, '30-60 Days',
+                                                                                     ifelse(discon_data_filter$Ageing >= 60 & discon_data_filter$Ageing <= 90, '60-90 Days',
+                                                                                            ifelse(discon_data_filter$Ageing >= 90 & discon_data_filter$Ageing <= 180, '90-180 Days',
+                                                                                            ifelse(discon_data_filter$Ageing >= 180, 'More than 180 Days','6 Months'))))))), .after = NULL)
+discon_data_pivot = discon_data_age %>% group_by(Ageing.Slab) %>% summarise(Count.cus = n())
 write.csv(discon_data_age, "ageing.csv",row.names = F)
