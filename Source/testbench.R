@@ -149,4 +149,82 @@ for (i in row.names(due_frwn_flt)) {
   df[nrow(df) + 1,] = readurl
 }
 
+#########################
+list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character") ) #import MQ data
+colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+list_active_1 = list_active %>% select(V1,V3,V5,V21,V22,V23,V24,V25,V26,V27,V28,V29,V30,V31,V32) %>% unique()
+write.csv(list_active_1, "total_active.csv", row.names = F)
 
+#######################  find discre;pencies in dpo plans
+list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
+colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
+plan_list = plan_names[['Plan.Name']]
+
+for (planname in plan_list) {
+active_flt = filter(list_active,PLAN_NAME==planname)
+actv_flt_pvot = active_flt %>% group_by(CUSTOMER_NBR,SERVICE_NAME) %>% summarise(Service_Count = n()) %>%
+  pivot_wider(names_from = SERVICE_NAME, values_from = Service_Count)
+actv_flt_pvot = adorn_totals(actv_flt_pvot, where = c("col"), fill = "-", na.rm = TRUE, name = "Grand Total")
+str_replace_all(planname, "[^[:alnum:]]", " ")
+write.csv(actv_flt_pvot,sprintf("Output/%s_.csv",planname),row.names = F)
+}
+
+########## find discrepencies of active cust with wallet
+wallet_d =  read.csv(file.choose(new = F))
+wallet_d_base = filter(wallet_d, Plan.Details %in% plan_names$Plan.Name) %>% select(Customer.Nbr, Contract.Number, Plan.Details, Amount.Debit, Transaction.Date) %>% unique()
+wallet_d_max = wallet_d_base %>% group_by(Customer.Nbr,Plan.Details) %>% mutate(Max.Date = max(Transaction.Date)) ##find last date of occurenece
+wallet_d_max = wallet_d_max %>% select(Customer.Nbr, Contract.Number, Plan.Details, Amount.Debit, Max.Date)
+wallet_d_max = wallet_d_max %>% unite(combined, c("Customer.Nbr","Plan.Details"))
+wallet_d_max = wallet_d_max %>% select(combined,Max.Date) %>% unique()
+active_c_flt = filter(list_active, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,PLAN_NAME,SC,BILLING_FREQUENCY) %>% unique()
+active_c_flt = active_c_flt %>% unite(combined, c("CUSTOMER_NBR","PLAN_NAME"))
+merge_res = merge(active_c_flt,wallet_d_max, all = T)
+write.csv(merge_res, "pack to wallet.csv",row.names = F)
+
+ ##########entitlement
+list_bouquet_dated = read.csv(file.choose(new = F)) #import MQ data bouquet
+
+plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
+plan_list = plan_names[['Plan.Name']]
+
+for (planname in plan_list) {
+  bq_flt = filter(list_bouquet_dated,Plan.Name==planname)
+  bq_pivot = bq_flt %>% group_by(Customer.Number,Bouquet) %>% summarise(Service_Count = n()) %>%
+    pivot_wider(names_from = Bouquet, values_from = Service_Count)
+  bq_pivot = adorn_totals(bq_pivot, where = c("col"), fill = "-", na.rm = TRUE, name = "Grand Total")
+  write.csv(bq_pivot,sprintf("Output/%s_.csv",planname),row.names = F)
+}
+
+
+###################customer manu
+
+customer_data = read.csv(file.choose(new = F)) ##customer master data
+customer_select = customer_data %>% select(Customer.Number,Entity.Code,Customer.Status,City,District,Billing.City,Billing.District)
+write.csv(customer_select,"customer_fiiltered.csv",row.names = F)
+
+#########################areawise plan details
+active_flt = filter(list_active,PLAN_NAME %in% plan_names$Plan.Name)
+active_flt = active_flt %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% unique()
+lco_master = read.csv(file.choose(new = F))
+active_area = merge(active_flt,lco_master,all.x = T)
+write.csv(active_area,"area-active.csv", row.names = F)
+
+
+#########disconnected summary
+discon_data = read.csv(file.choose(new = F))
+discon_data_flt = discon_data %>% filter(Smartcard.Number != "No SC")
+discon_data_flt = filter(discon_data_flt, Set.Top.Box.Number != "No SC")
+discon_data_flt <- discon_data_flt[-c(391023),]
+discon_data_flt <- discon_data_flt[!(discon_data_flt$Disconnected.Date==""),]
+discon_data_flt$Disconnected.Date = as.Date(discon_data_flt$Disconnected.Date, format('%d-%b-%y'))
+discon_dt_max = discon_data_flt %>% group_by(Customer.Number) %>% mutate(Disc.Date = max(Disconnected.Date))
+discon_dt_max <- discon_dt_max %>% select(Customer.Number,Disc.Date) %>% unique()
+discon_data_filter = discon_dt_max %>% mutate(Ageing = (lubridate::today() - Disc.Date), .after = 2 )
+discon_data_age = discon_data_proper %>% mutate(Ageing.Slab = (ifelse(discon_data_proper$Ageing >= 0 & discon_data_proper$Ageing <= 30, '30 days',
+                                                                       ifelse(discon_data_proper$Ageing >= 30 & discon_data_proper$Ageing <= 60, '60 Days',
+                                                                              ifelse(discon_data_proper$Ageing >=60 & discon_data_proper$Ageing <= 90, '90 Days',
+                                                                                     ifelse(discon_data_proper$Ageing >= 90 & discon_data_proper$Ageing <= 180, '180 Days',
+                                                                                            ifelse(discon_data_proper$Ageing <= 180, 'MOre than 180 Days','6 Months')))))), .after = 5)
+discon_data_pivot = discon_data_age %>% group_by(Ageing.Slab) %>% summarise(Count.cus == n())
+write.csv(discon_data_age, "ageing.csv",row.names = F)
