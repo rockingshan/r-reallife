@@ -4,9 +4,6 @@ library(lubridate)
 library(janitor)
 library(httr)
 library(xlsx)
-library(microbenchmark)
-
-mbm = microbenchmark::microbenchmark
 
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
 customer_data = read.csv(file.choose(new = F)) ##customer master data
@@ -216,6 +213,7 @@ write.csv(active_area,"area-active.csv", row.names = F)
 
 #########disconnected summary
 discon_data = read.csv(file.choose(new = F))
+customer_ent = read.csv(file.choose(new = F))
 discon_data_flt = discon_data %>% filter(Smartcard.Number != "No SC")
 discon_data_flt = filter(discon_data_flt, Set.Top.Box.Number != "No SC")
 discon_data_flt <- discon_data_flt[-c(391023),]
@@ -225,6 +223,7 @@ discon_dt_max = discon_data_flt %>% group_by(Customer.Number) %>% mutate(Disc.Da
 discon_dt_max <- discon_dt_max %>% select(Customer.Number,Disc.Date) %>% unique()
 discon_dt_max <- discon_dt_max %>% ungroup()
 discon_data_filter = discon_dt_max %>% mutate(Ageing = (lubridate::today() - Disc.Date), .after = NULL )
+discon_data_filter <- merge(discon_data_filter,customer_ent)
 
 discon_data_age = discon_data_filter %>% mutate(Ageing.Slab = (ifelse(discon_data_filter$Ageing >= 0 & discon_data_filter$Ageing <= 15, '0-15 days',
                                                                        ifelse(discon_data_filter$Ageing >= 15 & discon_data_filter$Ageing <= 30, '15-30 Days',
