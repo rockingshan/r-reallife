@@ -114,3 +114,7 @@ write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - mo
 #    wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
 #    write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
 # # }
+
+
+
+wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
