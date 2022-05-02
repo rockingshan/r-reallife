@@ -4,6 +4,7 @@ library(lubridate)
 library(janitor)
 library(httr)
 library(xlsx)
+library(readxl)
 
 
 DF1 = read.csv(file.choose(new = F)) #pack details
@@ -41,3 +42,27 @@ bouquet_pivot = bouquet_data_fl %>% group_by(LCO.Code,Bouquet,Week,Broadcaster.N
   pivot_wider(names_from = Week,values_from = WeeklySubs)
 bouquet_report = merge(bouquet_pivot,lco_area)
 write.csv(bouquet_report, "Bouquet_lcowise.csv",row.names = F)
+
+
+#######################LCOWISE MSR REPORT PROPER
+BQ_REPORT = read_xls(file.choose(new = F),skip = 1)
+AL_REPORT = read_xls(file.choose(new = F),skip = 1)
+names(BQ_REPORT) <- make.names(names(BQ_REPORT))
+names(AL_REPORT) <- make.names(names(AL_REPORT))
+hdnd_nm = c('MDKH','MDBKT','MDBQA','MDCNDP','MDDHH','MDHCNJV','MDOR','MDSKWJV','TESTENTITY')
+br_rm = c('ABP News Network Pvt Limited','Free to AIR','DD','Discontinued Channel','Republic TV')
+pln_rm = c('DPO Promotional Bundle','Discontinued Package @ No Renew')
+
+bq_rp_clr = filter(BQ_REPORT, !(Entity.Code %in% hdnd_nm))
+bq_rp_clr = filter(bq_rp_clr, !(Broadcaster.Name %in% br_rm))
+bq_rp_clr = filter(bq_rp_clr, !(Plan.Name %in% pln_rm))
+
+al_rp_clr = filter(AL_REPORT, !(Entity.Code %in% hdnd_nm))
+al_rp_clr = filter(al_rp_clr, !(Broadcaster.Name %in% br_rm))
+al_rp_clr = filter(al_rp_clr, !(Plan.Name %in% pln_rm))
+
+dpo_plan = filter(AL_REPORT, Plan.Name == 'DPO Promotional Bundle')
+
+write.csv(bq_rp_clr, "Output/Bouquet_Report_LCOWISE.csv", row.names = F)
+write.csv(al_rp_clr, "Output/Alacarte_Report_LCOWISE.csv", row.names = F)
+write.csv(dpo_plan, "Output/DPO_PROMOTIONAL_Plan_LCOWISE.csv", row.names = F)

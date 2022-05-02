@@ -4,17 +4,19 @@ library(readxl)
 library(purrr)
 library(stringr)
 library(pivottabler)
+source('Source/Functions.r')
 
 ##opens a window to select files, 
-list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
-colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+list_active <- mq_active_report()
 ###inventory
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE,ITEM_CODE)
 sfw_vc_mq = inventory_select %>% filter(ITEM_CODE=="SAFEVIEWSC")
+abv_vc_mq = inventory_select %>% filter(ITEM_CODE=="ABVSC")
 sfw_vc_mq = separate(sfw_vc_mq, SERIAL_NUMBER, into = c("leftval", "rightval"), sep = 10, remove = FALSE)
 sfw_vc_mq$leftval = as.numeric(sfw_vc_mq$leftval)
 colnames(sfw_vc_mq)[2] = "vc"
+colnames(abv_vc_mq)[1] = "vc"
 
 
 #import safeview data and searialze
@@ -28,24 +30,10 @@ colnames(list_gospell) <- c("vc", "cascode")
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
 
 ##import ABV boxes
-fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
-sheets <-  excel_sheets(fil_path_abv)
-data_sheets <- sheets[grepl("CASEntitlement", sheets)]
-sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
-abv_cas_data = filter(sheet_df, STATUS == "Activated")
-#abv_cas_data = read_xlsx(choose.files(default = "",caption = "Select ABV CAS File",multi = FALSE,))
-abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
+abv_cas_data_combn <- abv_data_import()
 
 ##following block must be run before running any cas block. This prepares the MQ data
-## replace ' in column data, change to proper column names
-list_active$STB <- gsub("'","",list_active$STB)
-list_active$SC <- gsub("'","",list_active$SC)
-colnames(list_active)[10] <- "VC"
-colnames(list_active)[11] <- "STB"
-list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
-list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
-list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
-list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+
 #CREATE SEPERATE DATA FOR CAS
 list_ac_SFW = filter(list_active, VC.length == "SAFEVIEW")
 list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
@@ -78,6 +66,7 @@ mq_ABV_data = list_ac_ABV %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>%
 reconcile_data_ABV = merge(x = abv_cas_data_combn, y = mq_ABV_data, by = "combined",all.x = TRUE)
 recon_ABV_NA_output = reconcile_data_ABV %>% filter(is.na(CUSTOMER_NBR))
 recon_ABV_NA_output = separate(recon_ABV_NA_output, combined, c("vc","cascode"))
+recon_ABV_NA_inv = merge(recon_ABV_NA_output,abv_vc_mq, all.x = T, all.y = F)
 write.csv(recon_ABV_NA_output, "Output/ABV_active_service_not_in_MQ.csv", row.names = F)
 
 

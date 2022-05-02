@@ -5,6 +5,10 @@ library(janitor)
 library(httr)
 library(xlsx)
 
+source('Source/Functions.r')
+
+send_daily_sms()
+
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
 customer_data = read.csv(file.choose(new = F)) ##customer master data
 lcoarea = read.csv(file.choose(new = F))
@@ -121,7 +125,8 @@ list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
 list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
 list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))
 mq_GSPL_data = list_ac_GSPL %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>% distinct()
-gspl_combine = merge(pro_log,mq_GSPL_data, all.x = T,all.y = F)
+gspl_combine = merge(GSPL_com_log,mq_GSPL_data, all.x = T,all.y = F) ###for run after some time. for laready generated run below line
+#gspl_combine = merge(pro_log,mq_GSPL_data, all.x = T,all.y = F)
 recon_GSPL_NA_output = gspl_combine %>% filter(is.na(CUSTOMER_NBR))
 recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"))
 recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)
@@ -135,19 +140,6 @@ gspl_na_fl = gspl_na %>% filter(ENTITY_CODE == "MDCH161")
 write.csv(gspl_na_fl, "Output/Gospell_command_LCOWISE_MDch161.csv", row.names = F)
 
 
-##############send sms - autorenewal\
-due_frwn = read.csv(file.choose(new = F))
-due_frwn$Mobile.Phone <- as.numeric(due_frwn$Mobile.Phone)
-due_frwn <- due_frwn %>% mutate(mob.len = nchar(Mobile.Phone),  .after = 5)
-due_frwn <- due_frwn %>% filter(mob.len == 10)
-df <- data.frame(matrix(ncol = 2, nrow = 0))
-due_frwn$Contract.End.Date <- parse_date_time(due_frwn$Contract.End.Date, orders = "dmy HMS")
-due_frwn$Contract.End.Date <- as.Date(due_frwn$Contract.End.Date)
-due_frwn_flt = due_frwn %>% filter(Contract.End.Date == lubridate::today()) %>% select(Customer.Number,Mobile.Phone)
-for (i in row.names(due_frwn_flt)) {
-  readurl = read_lines(paste("http://1.rapidsms.co.in/api/push.json?apikey=60461d4b29af2&route=trans&sender=MCBSPL&mobileno=",due_frwn_flt[i,"Mobile.Phone"],"&text=Dear%20Customer%2C%20Your%20CABLE%20TV%20plan%20for%20account%20",due_frwn_flt[i,"Customer.Number"],"%20is%20expiring%20Today%20.%20Recharge%20now%20to%20avoid%20interruption%20-%20MEGHBELA",sep = ""))
-  df[nrow(df) + 1,] = readurl
-}
 
 #########################
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character") ) #import MQ data
