@@ -1,7 +1,7 @@
 library(tidyverse)
 library(dplyr)
 library(readxl)
-
+library(microbenchmark)
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
 inventory_select = select(inventory, SERIAL_NUMBER,ITEM_CODE,ENTITY_CODE)
 
@@ -11,11 +11,15 @@ sfw_vc_mq = separate(sfw_vc_mq, SERIAL_NUMBER, into = c("leftval", "rightval"), 
 sfw_vc_mq$leftval = as.numeric(sfw_vc_mq$leftval)
 colnames(sfw_vc_mq)[2] = "SMCs"
 sfw_cas_final = merge(list_sfw,sfw_vc_mq,all.x = T) %>% select(SERIAL_NUMBER,SubscriptionID)
-write.csv(sfw_cas_final,"Output/Sfw_final.csv",row.names = F)
+dq <- sfw_cas_final %>% pivot_wider(names_from = NULL,names_prefix = "CAS",values_from = SubscriptionID)
+sf_dq <- dq %>% unnest_wider(CAS)
+write.csv(sf_dq,"Output/Sfw_final.csv",row.names = F)
 
 fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
 sheets <-  excel_sheets(fil_path_abv)
 data_sheets <- sheets[grepl("CASEntitlement", sheets)]
 sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
 abv_cas_data = filter(sheet_df, STATUS == "Activated") %>% select(SMARTCARDNO,PACKAGEID)
-write.csv(abv_cas_data,"Output/ABV_final.csv",row.names = F)
+dq1 <- abv_cas_data %>% pivot_wider(names_from = NULL,names_prefix = "CAS",values_from = PACKAGEID)
+abv_dq <- dq1 %>% unnest_wider(CAS)
+write.csv(abv_dq,"Output/ABV_final.csv",row.names = F)
