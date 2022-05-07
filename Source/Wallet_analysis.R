@@ -118,3 +118,5 @@ write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - mo
 
 
 wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
+customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
+write.csv(customer_dt, "Customer_amount.csv",row.names = F)
