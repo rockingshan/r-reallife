@@ -66,3 +66,19 @@ dpo_plan = filter(AL_REPORT, Plan.Name == 'DPO Promotional Bundle')
 write.csv(bq_rp_clr, "Output/Bouquet_Report_LCOWISE.csv", row.names = F)
 write.csv(al_rp_clr, "Output/Alacarte_Report_LCOWISE.csv", row.names = F)
 write.csv(dpo_plan, "Output/DPO_PROMOTIONAL_Plan_LCOWISE.csv", row.names = F)
+
+
+
+##############make plan count
+list_bouquet_ = read.csv(file.choose(new = F), header = F)[,17:26]
+colnames(list_bouquet_) <-c("Broadcaster","Plan","Bouquet","Channel_count","Channels","7th","14th","21st","28th","Monthly_average")
+list_bq_flt = filter(list_bouquet_, !(Broadcaster %in% br_rm))
+list_bq_flt$Monthly_average <- gsub(",","",list_bq_flt$Monthly_average)
+list_bq_flt$Monthly_average <- as.numeric(list_bq_flt$Monthly_average)
+list_bq_pvt = list_bq_flt %>% group_by(Plan,Bouquet) %>% summarise(Subs_count = sum(Monthly_average)) %>%
+  group_by(Plan) %>% summarise(Max_count = max(Subs_count))
+write.csv(list_bq_pvt,"march.csv",row.names = F)
+
+
+
+
