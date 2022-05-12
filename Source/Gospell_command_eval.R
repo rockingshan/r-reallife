@@ -75,3 +75,38 @@ write.csv(GSPL_all_AREA, "Output/GOSPELL INACTIVE COMMANDS RECEND.CSV", row.name
 
 gospell_all_citywise = read.csv("GOSPELL INACTIVE COMMANDS RECEND.CSV")
 areawise_data_export(gospell_all_citywise)
+
+
+################## gospell already resend command
+#########################provision log from sms
+pro_log = read.csv(file.choose(new = F))
+inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character"))
+inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE,ITEM_CODE)
+colnames(inventory_select)[1] <- "vc"
+list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
+colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+PRO_LOG_1 = pro_log %>% filter(Prov.System.Name == "GOSPELL",Status =="Disconnected") %>% select(Unique.Id,Provsion.Code) %>% unique()
+colnames(PRO_LOG_1) <- c("vc", "cascode")
+GSPL_com_log = PRO_LOG_1 %>% unite(combined, c("vc", "cascode"))
+list_active$STB <- gsub("'","",list_active$STB)
+list_active$SC <- gsub("'","",list_active$SC)
+colnames(list_active)[10] <- "VC"
+colnames(list_active)[11] <- "STB"
+list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
+list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
+list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
+list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))
+mq_GSPL_data = list_ac_GSPL %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>% distinct()
+gspl_combine = merge(GSPL_com_log,mq_GSPL_data, all.x = T,all.y = F) ###for run after some time. for laready generated run below line
+#gspl_combine = merge(pro_log,mq_GSPL_data, all.x = T,all.y = F)
+recon_GSPL_NA_output = gspl_combine %>% filter(is.na(CUSTOMER_NBR))
+recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"))
+recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)
+recon_GSPL_NA_output_ent = merge(recon_GSPL_NA_output,inventory_select, all.x = T)
+
+write.csv(recon_GSPL_NA_output_ent, "Output/Gospell_command log.csv", row.names = F)
+
+#####
+gspl_na = read_csv(file.choose(new = F))
+gspl_na_fl = gspl_na %>% filter(ENTITY_CODE == "MDCH161")
+write.csv(gspl_na_fl, "Output/Gospell_command_LCOWISE_MDch161.csv", row.names = F)
