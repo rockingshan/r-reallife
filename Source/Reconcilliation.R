@@ -99,3 +99,8 @@ act_dpo = list_active %>% filter(PLAN_CODE == "DPOPROMBUN")
 actdpo_piv = act_dpo %>% group_by(CUSTOMER_NBR,SERVICE_NAME) %>% summarize(Transaction_count = n()) %>%
   pivot_wider(names_from = SERVICE_NAME, values_from = Transaction_count)
 write.csv(actdpo_piv,"23.csv",row.names = F)
+
+####customer_plan
+
+list_act_sl = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,ENTITY_CODE,STB,VC,PLAN_NAME,BILLING_FREQUENCY) %>% unique()
+write.csv(list_act_sl,"sfiow47rwif.csv")

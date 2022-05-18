@@ -3,36 +3,51 @@ library(here)
 library(dplyr)
 library(gapminder) 
 library(qdapTools)
+source('Source/Functions.r')
 
-list_active = read_csv(here("data/4336957_LISTOFACTCUST.CSV"))
+##opens a window to select files, 
+list_active <- mq_active_report()
 
-broadcaster = read.csv(here("data/4212628_PACK_DETAILS.CSV"))
+broadcaster = read.csv(file.choose(new = F))
 
 
-d1= list_active[,14] %l% broadcaster
+#d1= list_active[,14] %l% broadcaster
 ## replace ' in column data, change to proper column names
-
-list_active$STB <- gsub("'","",list_active$STB)
-list_active$SC <- gsub("'","",list_active$SC)
-colnames(list_active)[10] <- "VC"
-colnames(list_active)[11] <- "STB"
-list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
-list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
-list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
-list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
-
-list_ac_GSPL = filter(list_active, VC.length == "GOSPELL")
-gospell_ac_vc = select(list_ac_GSPL, VC,CUSTOMER_NBR) %>% unique()
-write.csv(gospell_ac_vc, "gospell_active.csv", row.names = F)
+list_active_flt = list_active %>% filter(SERVICE_CODE != '')
 
 ##BROADCASTERWISE DATA
-list_active_bc = left_join(list_active,broadcaster,by="SERVICE_CODE")
+list_active_bc = merge(list_active_flt,broadcaster,by.x="SERVICE_CODE",by.y = 'Service.Code',all.x = T,all.y = F)
 list_active_bc <- list_active_bc %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
 list_active_piv = list_active_bc %>% group_by(CUSTOMER_NBR,Broadcaster) %>% summarize(Acc_count = n())
 
-write.csv(list_active_short, "list_all.csv", row.names = FALSE)
+
 dq = list_active_piv %>% pivot_wider(names_from = Broadcaster, values_from = Acc_count)
 list_active_short <- list_active %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,VC,MOBILE_PHONE,HOME_PHONE) %>% unique()
+write.csv(list_active_short, "list_all.csv", row.names = FALSE)
+
+active_service = list_active %>% group_by(SERVICE_NAME) %>% summarise(Active_count = n())
+write.csv(active_service,"Service_count_list_active.csv",row.names = F)
+
+active_cust = list_active_flt %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE) %>% summarise(Active_cust = n())
+write.csv(active_cust, "customer.csv",row.names = F)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 list_export_cond = filter(list_active, ENTITY_CODE == "MDBKT41")
