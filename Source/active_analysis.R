@@ -32,21 +32,42 @@ active_cust = list_active_flt %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() 
 write.csv(active_cust, "customer.csv",row.names = F)
 
 
+###compare with SMS
+
+list_bouquet_dated = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ data bouquet
+list_alacarte = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ alacarte details
+list_bouquet_dated$Set.Top.Box <- gsub("'","",list_bouquet_dated$Set.Top.Box)
+list_alacarte$Set.Top.Box <- gsub("'","",list_alacarte$Set.Top.Box)
+
+ls_bq_com = list_bouquet_dated %>% select(Customer.Number,Set.Top.Box,Service.CAS.Code,Bouquet) %>% unite(combined, c("Set.Top.Box","Service.CAS.Code"))
+
+ls_act_com = list_active_flt %>% select(STB,CASCODE,ENTITY_CODE) %>% unite(combined, c("STB","CASCODE"))
+
+bouquet_diff = merge(ls_bq_com,ls_act_com,all.x = T,all.y = F)
+bouquet_diff_flt = bouquet_diff %>% filter(is.na(ENTITY_CODE)) %>% separate(combined,c("STB","cascode"))
+
+write.csv(bouquet_diff_flt, "Bouquets_in_MSR_notin_ListActive.csv",row.names = F)
 
 
+customer_num = list_bouquet_dated %>% select(Customer.Number,Set.Top.Box) %>% unique() %>% group_by(Customer.Number) %>% summarise(STB.Count = n())
+write.csv(customer_num,"Customer numbers with STB count.csv",row.names = F)
 
 
+#######cas entitlement
 
+cas_ent = read.csv(file.choose(new = F))
+cas_ent$Stb <- gsub("'","",cas_ent$Stb)
+cas_ent$Vc <- gsub("'","",cas_ent$Vc)
+colnames(cas_ent)[3] <- "VC"
+colnames(cas_ent)[4] <- "STB"
 
+ls_act_com = list_active_flt %>% select(CUSTOMER_NBR,VC,SERVICE_CODE,ENTITY_CODE) %>% unite(combined, c("VC","SERVICE_CODE"))
+cas_ent_com = cas_ent %>% select(Customer.Nbr,VC,Service.Code,Prov.System.Name) %>% unite(combined, c("VC","Service.Code"))
 
+cas_diff = merge(ls_act_com,cas_ent_com, all.x = T)
 
-
-
-
-
-
-
-
+not_in_ent_rep = cas_diff %>% filter(is.na(Prov.System.Name)) %>% separate(combined,c('VC','SERVICE_CODE'))
+write.csv(not_in_ent_rep, "Not in cas entitle report.csv", row.names = F)
 
 
 
