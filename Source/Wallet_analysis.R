@@ -50,10 +50,11 @@ lcowise_data_export <- function(wallet_in){
  
 }
 
-
+hdnd_nm = c('MDKH','MDBKT','MDBQA','MDCNDP','MDDHH','MDHCNJV','MDOR','MDSKWJV','TESTENTITY')
 
 
 wallet = read.csv(file.choose(new = F))
+wallet = filter(wallet, !(Entity.Code %in% hdnd_nm))
 
 area_wise_op(wallet)
 
