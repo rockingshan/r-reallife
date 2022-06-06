@@ -13,6 +13,7 @@ inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="characte
 inventory_select = select(inventory, SERIAL_NUMBER,ENTITY_CODE,ITEM_CODE)
 sfw_vc_mq = inventory_select %>% filter(ITEM_CODE=="SAFEVIEWSC")
 abv_vc_mq = inventory_select %>% filter(ITEM_CODE=="ABVSC")
+gos_vc_mq = inventory_select %>% filter(ITEM_CODE=="GOSPELLSC")
 sfw_vc_mq = separate(sfw_vc_mq, SERIAL_NUMBER, into = c("leftval", "rightval"), sep = 10, remove = FALSE)
 sfw_vc_mq$leftval = as.numeric(sfw_vc_mq$leftval)
 colnames(sfw_vc_mq)[2] = "vc"
