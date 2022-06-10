@@ -4,7 +4,7 @@ library(readxl)
 library(lubridate)
 library(janitor)
 library(httr)
-library(xlsx)
+#library(xlsx)
 
 ####MQ list of active customers report import
 mq_active_report <- function(){
