@@ -34,7 +34,7 @@ remove(list_active,lsa_bkt,lsa_bqa,lsa_cndp,lsa_dh1,lsa_dh2,lsa_direct,lsa_hcs,l
 ###PLANWISE SEGREGATION
 list_ac_plan = filter(list_active_area, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,Area,STB,VC,PLAN_NAME) %>% unique()
 ac_plan_pivot = list_ac_plan %>% group_by(Area,PLAN_NAME) %>% summarize(Active.Cust = n())
-#write.csv(ac_plan_pivot,"AreawisePlan.csv",row.names = F)
+write.csv(ac_plan_pivot,"AreawisePlan.csv",row.names = F)
 
 ###alacarte segregate
 list_ac_ala = filter(list_active_area, PLAN_NAME == "Alacarte Plan") %>% select(CUSTOMER_NBR,ENTITY_CODE,Area,SERVICE_NAME,SERVICE_CODE,PLAN_NAME) %>% unique()
