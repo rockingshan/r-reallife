@@ -11,7 +11,8 @@ lco_det <- lco_det %>% select(Lco.Code,Business.Name)
 colnames(lco_det)[1] <- "Entity.Code"  #change column name
 activ_cust = read.csv(file.choose(new = F)) #StateWiseActiveCust previous date
 activ_cust = activ_cust %>% filter(!(Entity.Code == 'MD0305')) ###remove pragati
-
+new_lco = read.csv("C:/Docu__/r-reallife/Data/lcolist.txt")
+pragati_vc = read.csv("C:/Docu__/r-reallife/Data/PRAGATI.csv",colClasses = c("character"))
   
 ##pragati 2 special - calculate from list of active
 pra_two = read.csv(file.choose(new = F)) #3list of active pragati two only
@@ -23,8 +24,7 @@ pra_two = pra_two %>% select(CUSTOMER_NBR,ENTITY_CODE,VC) %>% unique()
 pra_two_new = merge(pra_two,pragati_vc,all.x = F,all.y = F)
 pra_two_pivot =  pra_two_new %>% group_by(ENTITY_CODE) %>% summarise(Active = n())
 
-new_lco = read.csv("C:/Docu__/r-reallife/Data/lcolist.txt")
-pragati_vc = read.csv("C:/Docu__/r-reallife/Data/PRAGATI.csv",colClasses = c("character"))
+
 
 active_pivot = activ_cust %>% 
   group_by(Entity.Code) %>%

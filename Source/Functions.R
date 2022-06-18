@@ -2,8 +2,8 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(lubridate)
-library(janitor)
-library(httr)
+#library(janitor)
+#library(httr)
 library(xlsx)
 
 ####MQ list of active customers report import

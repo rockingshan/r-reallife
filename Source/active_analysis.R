@@ -1,5 +1,4 @@
 library(tidyverse)
-library(here)
 library(dplyr)
 library(gapminder) 
 library(qdapTools)
@@ -32,7 +31,7 @@ active_cust = list_active_flt %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() 
 write.csv(active_cust, "customer.csv",row.names = F)
 
 
-###compare with SMS
+###compare with SMS # RUN LIST_ACT_FLT FROM ABOVE FIRST
 
 list_bouquet_dated = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ data bouquet
 list_alacarte = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ alacarte details
