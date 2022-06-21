@@ -26,20 +26,3 @@ for (lcocode in lco_list) {
 
 ########inventorywise customer status
 
-inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
-customer_data = read.csv(file.choose(new = F)) ##customer master data
-lcoarea = read.csv(file.choose(new = F))
-####work on all area inventory file
-
-inv_all = inventory %>% filter(!(str_detect(ITEM_CODE, "Smart Card"))) %>% filter(!(str_detect(ITEM_CODE, "SC"))) %>%
-  select(SERIAL_NUMBER,TYPE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
-
-cust_sel = customer_data %>% select(Customer.Number,Created.Date,Customer.Status) %>% unique()
-
-inv_cust_data = merge(inv_all,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.Number", all.x = T)                                                                            
-inv_cust_data$Customer.Status <- gsub("A","Active",inv_cust_data$Customer.Status)
-inv_cust_data$Customer.Status <- gsub("I","Inactive",inv_cust_data$Customer.Status)
-inv_cust_data$Customer.Status <- gsub("N","In LCO Store",inv_cust_data$Customer.Status)
-inv_cust_data$Customer.Status <- replace_na('In LCO Store')
-inv_data_area = merge(inv_cust_data,lcoarea,all.x = T,all.y = F)
-write.csv(inv_data_area,"Output/Inventory_customer.csv",row.names = F)
