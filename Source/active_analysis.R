@@ -24,7 +24,7 @@ dq = list_active_piv %>% pivot_wider(names_from = Broadcaster, values_from = Acc
 list_active_short <- list_active %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,VC,MOBILE_PHONE,HOME_PHONE) %>% unique()
 write.csv(list_active_short, "list_all.csv", row.names = FALSE)
 
-active_service = list_active %>% group_by(SERVICE_NAME) %>% summarise(Active_count = n())
+active_service = list_active_flt %>% group_by(SERVICE_NAME) %>% summarise(Active_count = n())
 write.csv(active_service,"Service_count_list_active.csv",row.names = F)
 
 active_cust = list_active_flt %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE) %>% summarise(Active_cust = n())

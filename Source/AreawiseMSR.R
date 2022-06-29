@@ -61,7 +61,10 @@ al_rp_clr = filter(AL_REPORT, !(Entity.Code %in% hdnd_nm))
 al_rp_clr = filter(al_rp_clr, !(Broadcaster.Name %in% br_rm))
 al_rp_clr = filter(al_rp_clr, !(Plan.Name %in% pln_rm))
 
-dpo_plan = filter(AL_REPORT, Plan.Name == 'DPO Promotional Bundle')
+dpo_plan_al = filter(AL_REPORT, Plan.Name == 'DPO Promotional Bundle')
+colnames(dpo_plan_al)[4] <- "Bouquet"
+dpo_plan_bq = filter(BQ_REPORT, Plan.Name == 'DPO Promotional Bundle')
+dpo_plan = rbind(dpo_plan_bq,dpo_plan_al)
 
 write.csv(bq_rp_clr, "Output/Bouquet_Report_LCOWISE.csv", row.names = F)
 write.csv(al_rp_clr, "Output/Alacarte_Report_LCOWISE.csv", row.names = F)
