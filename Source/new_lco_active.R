@@ -47,4 +47,4 @@ lco_active_new = lco_active_new[, c(1,3,2,4)]
 
 
 
-write.csv(lco_active_new,paste("Output/New_LCO_data_",date_char,".CSV",sep = ""), na = "",row.names = FALSE)
+write.csv(lco_active_new,paste("Output/new_lco_data/New_LCO_data_",date_char,".CSV",sep = ""), na = "",row.names = FALSE)

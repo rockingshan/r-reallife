@@ -25,10 +25,10 @@ inventory_acc = merge(x=inventory_acc,y=aging,by="CUSTOMER_NBR",all.x = F)
 write.csv(inventory_acc,"INVENTORY_acc.CSV",row.names = F)
 ####################################################
 
-lco_1 = read.csv(here("C:/Users/Shantanu/Desktop","DAS1_LCO.csv"))
-lco_2 = read.csv(here("C:/Users/Shantanu/Desktop","DAS3_LCO.csv"))
-df_1 = data.frame(plan_code = c("MBBNGHD1","MBBNGHD2","MBHNHD1","MBHNHD2"), pricing = c("250.00","318.647","237.29","300.85"))
-new2 = merge(lco_2,df_1)
+lco = read.csv(file.choose(new = F)) ##list of lco for pricing
+pricing = read.csv(file.choose(new = F)) ## one sample pricing file
+#df_1 = data.frame(plan_code = c("MBBNGHD1","MBBNGHD2","MBHNHD1","MBHNHD2"), pricing = c("250.00","318.647","237.29","300.85"))
+new2 = merge(lco,pricing, by.x = 'PRICEREGION',by.y = 'PRICEREGION')
 write.csv(new2, "try1.csv")
 
 #################################################
