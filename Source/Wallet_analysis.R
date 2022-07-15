@@ -68,7 +68,7 @@ lco_pivot_table(wallet)
 
 crdr = read.csv(file.choose(new = F))
 crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
-crdr1 = crdr1 %>% filter(!(ENTITY_CODE %in% hdnd_nm))
+#crdr1 = crdr1 %>% filter(!(ENTITY_CODE %in% hdnd_nm))
 write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
 ##monthwise packagewise data

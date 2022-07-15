@@ -17,14 +17,17 @@ inv_cust_data[inv_cust_data == ""] <- NA
 inv_cust_data$Customer.Status <- as.character(inv_cust_data$Customer.Status)
 inv_cust_data$Customer.Status <- gsub("A","Active",inv_cust_data$Customer.Status)
 inv_cust_data$Customer.Status <- gsub("I","Inactive",inv_cust_data$Customer.Status)
-inv_cust_data$Customer.Status <- gsub("N","In LCO Store",inv_cust_data$Customer.Status)
+inv_cust_data$Customer.Status <- gsub("N","Inactive",inv_cust_data$Customer.Status)
 inv_cust_data$Customer.Status[is.na(inv_cust_data$Customer.Status)] <- 'In LCO Store'
 inv_cust_pivot = inv_cust_data %>% group_by(ENTITY_CODE,Customer.Status) %>% summarise(STB.Count = n()) %>%
   pivot_wider(names_from = Customer.Status,values_from = STB.Count)
-write.csv(inv_cust_pivot,"Output/inv_cust_pivot.csv",row.names = F)
+write.csv(inv_cust_pivot,"Output/inv_cust_pivot_1.csv",row.names = F)
 
 
 ##find customers with one hardware
 
 inv_partial = inventory %>% group_by(CUSTOMER_NBR) %>% summarise(Hardware.Count = n())
 inv_partial = inv_partial %>% filter(Hardware.Count == 1)
+inv_partial = inv_partial %>% ungroup()
+inv_partial_dtls = merge(inventory,inv_partial,all.x = F,all.y = T)
+write.csv(inv_partial_dtls,"Single_hardware.csv",row.names = F)

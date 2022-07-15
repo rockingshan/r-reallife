@@ -9,10 +9,13 @@ lco_det = read.csv(file.choose(new = F)) #lco master file
 lco_det$Lco.Code <- gsub("'","",lco_det$Lco.Code)
 lco_det <- lco_det %>% select(Lco.Code,Business.Name)
 colnames(lco_det)[1] <- "Entity.Code"  #change column name
-activ_cust = read.csv(file.choose(new = F)) #StateWiseActiveCust previous date
-activ_cust = activ_cust %>% filter(!(Entity.Code == 'MD0305')) ###remove pragati
 new_lco = read.csv("C:/Docu__/r-reallife/Data/lcolist.txt")
 pragati_vc = read.csv("C:/Docu__/r-reallife/Data/PRAGATI.csv",colClasses = c("character"))
+
+
+activ_cust = read.csv(file.choose(new = F)) #StateWiseActiveCust previous date
+activ_cust = activ_cust %>% filter(!(Entity.Code == 'MD0305')) ###remove pragati
+
   
 ##pragati 2 special - calculate from list of active
 pra_two = read.csv(file.choose(new = F)) #3list of active pragati two only

@@ -83,5 +83,11 @@ list_bq_pvt = list_bq_flt %>% group_by(Plan,Bouquet) %>% summarise(Subs_count = 
 write.csv(list_bq_pvt,"march.csv",row.names = F)
 
 
-
-
+#####COMBINE BOTH REPORT AND FILTER AS A BROADCASTER
+colnames(al_rp_clr)[4] <- "Bouquet"
+comboReport = rbind(bq_rp_clr,al_rp_clr)
+comboReportFilter = filter(comboReport, Broadcaster.Name == "Star India Pvt. Ltd.")
+comboReportPivot = comboReportFilter %>% group_by(Plan.Name,Bouquet) %>% summarise(Monthly_average = sum(Monthly.Subs.of.the.Channel))
+comboReportPivot1 = comboReportPivot %>% group_by(Plan.Name) %>% summarise(Plan_count = max(Monthly_average))
+write.csv(comboReportPivot1,"Plan_counts.csv",row.names = F)
+write.csv(comboReportPivot, "STAR_India_combo_report.csv",row.names = F)

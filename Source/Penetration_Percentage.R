@@ -2,6 +2,7 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(openxlsx)
+source('Source/Functions.r')
 
 ##opens a window to select files, 
 list_active = read.csv(choose.files(default = "_LISTOFACTIVE.CSV",caption = "Select Active Customer File",multi = FALSE,), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
@@ -49,3 +50,11 @@ list_ac_bq_bc = merge(list_ac_bq,list_bc,all.x = T)
 #add all data frames in a list with sheet names. requires openxlsx
 list_of_sheets = list("Areawiseplan" = ac_plan_pivot,"Alacarte"=list_ac_ala_bc,"Bouquets"=list_ac_bq_bc)
 write.xlsx(list_of_sheets, file = "Channel_penetration.xlsx")
+
+##########New LCOs plan count
+promo_plans = read.csv("C:/Docu__/r-reallife/Data/PROMOPLAN.txt")
+new_lco = read.csv("C:/Docu__/r-reallife/Data/lcolist.txt")
+
+list_promo_plan = filter(list_active, ENTITY_CODE %in% new_lco$Entity.Code) %>%
+  filter(PLAN_NAME %in% promo_plans$PLAN_NAME)
+write.csv(list_promo_plan,"NEW_LCO_PLAN_DATA.CSV",row.names = F)
