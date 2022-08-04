@@ -3,7 +3,7 @@ library(dplyr)
 library(lubridate)
 library(janitor)
 library(httr)
-library(xlsx)
+#library(xlsx)
 
 source('Source/Functions.r')
 
@@ -187,3 +187,21 @@ list_bq_cst = list_bouquet_dated %>% select(Customer.Number,Month,Week) %>% uniq
 act_cust = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE) %>% unique()
 CUST_FILTER = merge(list_bq_cst,act_cust,by.x = 'Customer.Number',by.y = 'CUSTOMER_NBR', all.y = T)
 write.csv(CUST_FILTER,"adrfd.csv")
+
+#########################find gospell inactive cardss
+
+list_active = read.csv(file.choose(new = F))
+list_active$STB <- gsub("'","",list_active$STB)
+list_active$SC <- gsub("'","",list_active$SC)
+colnames(list_active)[10] <- "VC"
+colnames(list_active)[11] <- "STB"
+list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
+list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
+list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
+list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE)
+list_active_gs = list_active %>% filter(VC.length == 'GOSPELL') %>% select(STB,CUSTOMER_NBR) %>% unique()
+inventory_gs = inventory %>% filter(str_detect(ITEM_DESCR, 'GOSPELL')) %>% select(SERIAL_NUMBER,ITEM_DESCR)
+totalGospell = merge(inventory_gs,list_active_gs,by.x = 'SERIAL_NUMBER', by.y = 'STB',all.x = T)
+inactiveGospell = totalGospell %>% filter(is.na(CUSTOMER_NBR))
+inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n())
+write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)

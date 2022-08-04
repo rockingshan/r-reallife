@@ -105,3 +105,7 @@ write.csv(actdpo_piv,"23.csv",row.names = F)
 
 list_act_sl = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,ENTITY_CODE,STB,VC,PLAN_NAME,BILLING_FREQUENCY) %>% unique()
 write.csv(list_act_sl,"sfiow47rwif.csv")
+
+#########
+lst_gspl_act = list_ac_GSPL %>% filter(ENTITY_CODE == 'MDCH014') %>% select(CUSTOMER_NBR,VC) %>% unique()
+write.csv(lst_gspl_act,"sdfsdf.csv")
