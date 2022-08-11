@@ -205,3 +205,9 @@ totalGospell = merge(inventory_gs,list_active_gs,by.x = 'SERIAL_NUMBER', by.y = 
 inactiveGospell = totalGospell %>% filter(is.na(CUSTOMER_NBR))
 inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n())
 write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
+###########################
+
+df1 = read.csv(file.choose(new = F))
+df2 = read.csv(file.choose(new = F))
+DF_K = merge(df2,df1,all.x = T)
+write.csv(DF_K,"odisha_plans.csv")

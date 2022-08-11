@@ -22,7 +22,7 @@ write.csv(inventory_w,"INVENTORY_WORK.CSV",row.names = F)
 inventory_acc = inventory[(inventory$LOCATION_DESCR==""),]
 inventory_acc = merge(x=inventory_acc,y=aging,by="CUSTOMER_NBR",all.x = F)
 write.csv(inventory_acc,"INVENTORY_acc.CSV",row.names = F)
-#################################################### lco PRICING CREATOR
+#################################################### lco PRICING CREATOR ?????????????????????????????????????????
 
 lco = read.csv(file.choose(new = F)) ##list of lco for pricing
 pricing = read.csv(file.choose(new = F)) ## one sample pricing file
