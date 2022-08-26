@@ -71,6 +71,16 @@ crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
 #crdr1 = crdr1 %>% filter(!(ENTITY_CODE %in% hdnd_nm))
 write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
+#######with broadcaster
+service = read.csv(file.choose(new = F)) ### service details file
+plna_type = read.csv(file.choose(new = F)) ### plan type
+wallet_broad = merge(wallet_filt,service,all.x = T,all.y = F)
+wallet_final = merge(wallet_broad,plna_type)
+wallet_ordered = wallet_final %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,
+                                         Plan.Details,Type,Service.Name,Broadcaster,Amount.Debit,Transaction.Date,
+                                         Contract.Number,Billing.Frequency)
+
+write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 ##monthwise packagewise data
 # wallet_sel = filter(wallet,Plan.Details == "SILVER BUDGET DIGITAL @ 180") %>%
 #   select(Customer.Nbr,Entity.Code,Entity.Name,Plan.Details,Transaction.Date) %>% unique()

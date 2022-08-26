@@ -207,7 +207,47 @@ inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n
 write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
 ###########################
 
-df1 = read.csv(file.choose(new = F))
+df1 = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
 df2 = read.csv(file.choose(new = F))
-DF_K = merge(df2,df1,all.x = T)
+SAFE_CSCODE = read.csv(file.choose(new = F),colClasses = c(SubscriptionID="character"))
+DF_K = merge(df1,df2,all.x = T)
+DF_K$Provsion.Code <- gsub("'","",DF_K$Provsion.Code)
+DF_K = DF_K %>% mutate(Package = recode(Package,'CLASSIC HINDI @ 300'='CLASSIC_HIN_300','DIAMOND DIGITAL @ 380'='DIAMOND_DIG_380','GOLD DIGITAL @ 353'='GOLD_DIG_353',
+                                        'HD DHAMAKA @ 300'='HD_DHA_300','MB BANGLA HD 1 @ 455'='MB_HD_BENG_455','MB BANGLA HD 2 @ 550'='MB_HD_BENG_550','MB HINDI HD 1 @ 455'='MB_HD_HIN_455',
+                                        'MB HINDI HD 2 @ 550'='MB_HD_HIN_550','Meghbela Basic Pack @ 155'='Meghbela_Pac_155','Meghbela Bengali Starter @165'='Meghbela_Sta_165',
+                                        'Meghbela Bonanza @ 330'='Meghbela_Bon_330','Meghbela Bonanza Rural @ 245'='Meghbela_Rur_245','Meghbela Starter Pack @ 185'='Meghbela_Pac_185',
+                                        'ODISHA GOLD DIGITAL @ 200'='ODISHA_DIG_200','ODISHA ROYAL @ 185'='ODISHA_ROY_185','PLATINUM DIGITAL @ 450'='PLATINUM_DIG_450',
+                                        'RURAL PACK @ 263'='RURAL_PAC_263','SILVER DIGITAL PLUS- URBAN @ 270'='SILVER_URB_270','SILVER DIGITAL PLUS-RURAL @ 230'='SILVER_RUR_230',
+                                        'Silver Digital Power @ 276'='Silver_Pow_276','ODISHA ELITE @170'='ODISHA_ELI_170','ODISHA POWER @ 200'='ODISHA_POW_200','ODISHA SILVER DIGITAL @ 150'='ODISHA_DIG_150'
+                                        ))
+plan_name = DF_K %>% select(Package) %>% unique()
+plan_list = plan_name[['Package']]
+pck_srv_safe = filter(DF_K,Prov.Sys.Name == 'SAFEVIEW')
+pck_srv_gosp = filter(DF_K,Prov.Sys.Name == 'GOSPELL')
+pck_srv_abv = filter(DF_K,Prov.Sys.Name == 'ABV')
+planSafeviewChannel = merge(pck_srv_safe,SAFE_CSCODE,all.x = T,by.x = 'Provsion.Code',by.y = 'SubscriptionID') %>% select(Package,CHANNEL.NAME) %>% unique()
+planSafeviewChannel = planSafeviewChannel %>% arrange(CHANNEL.NAME)
+planSafeviewChannel = planSafeviewChannel %>% arrange(Package) ### sort data
+for (planname in plan_list) {
+  pq_flt = filter(planSafeviewChannel,Package==planname)
+  write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
+}
+
+abv_pack = read_excel(file.choose(new = F),skip = 1)
+planABVChannel = merge(pck_srv_abv,abv_pack,all.x = T,by.x = 'Provsion.Code',by.y = 'PACKAGEID') %>% select(Package,CHANNELID,CHANNELNAME) %>% unique()
+planABVChannel = planABVChannel %>% arrange(CHANNELID)
+planABVChannel = planABVChannel %>% arrange(Package) ### sort data
+for (planname in plan_list) {
+  pq_flt = filter(planABVChannel,Package==planname)
+  write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
+}
+
+GSPL_PACK  = read_excel(file.choose(new = F))
+planGSPLChannel = merge(pck_srv_gosp,GSPL_PACK,all.x = T,by.x = 'Provsion.Code',by.y = 'Product ID') %>% select('Package',ServiceID,'Service Name') %>% unique()
+planGSPLChannel = planGSPLChannel %>% arrange(ServiceID)
+planGSPLChannel = planGSPLChannel %>% arrange(Package) ### sort data
+for (planname in plan_list) {
+  pq_flt = filter(planGSPLChannel,Package==planname)
+  write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
+}
 write.csv(DF_K,"odisha_plans.csv")

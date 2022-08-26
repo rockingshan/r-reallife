@@ -48,6 +48,18 @@ bouquet_diff_flt = bouquet_diff %>% filter(is.na(ENTITY_CODE)) %>% separate(comb
 write.csv(bouquet_diff_flt, "Bouquets_in_MSR_notin_ListActive.csv",row.names = F)
 
 
+ls_al_com = list_alacarte %>% select(Customer.Number,Set.Top.Box,Service.CAS.Code,Channel.Name) %>% unite(combined, c("Set.Top.Box","Service.CAS.Code"))
+
+ala_diff = merge(ls_al_com,ls_act_com,all.x = T,all.y = F)
+ala_diff_flt = ala_diff %>% filter(is.na(ENTITY_CODE)) %>% separate(combined,c("STB","cascode"))
+
+write.csv(ala_diff_flt, "Alacarte_in_MSR_notin_ListActive.csv",row.names = F)
+
+
+
+
+
+
 customer_num = list_bouquet_dated %>% select(Customer.Number,Set.Top.Box) %>% unique() %>% group_by(Customer.Number) %>% summarise(STB.Count = n())
 write.csv(customer_num,"Customer numbers with STB count.csv",row.names = F)
 
