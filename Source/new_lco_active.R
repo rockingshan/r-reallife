@@ -36,7 +36,7 @@ active_pivot = activ_cust %>%
 ##extract a single element from dataframe and add to existing dataframe
 active_pivot = active_pivot %>% add_row(Entity.Code = 'MD0305', Total_Active = as.integer(pra_two_pivot[1,"Active"]) )
 
-inv_slt = inventory %>% filter(!(str_detect(ITEM_CODE, "SC"))) %>%
+inv_slt = inventory %>% filter(!(str_detect(ITEM_CODE, "SC"))) %>% filter(!(str_detect(ITEM_CODE, "NAGRA"))) %>%
   select(SERIAL_NUMBER,TYPE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
 inv_pivot = inv_slt %>% group_by(ENTITY_CODE) %>% summarise(Total_STB = n())
 colnames(inv_pivot)[1] <- 'Entity.Code'
@@ -57,5 +57,5 @@ dis_lco = dis_lco %>% filter(Disconnected.Date >= Sys.Date())
 dis_count = as.numeric(nrow(dis_lco))
 ###update a single cell based on column and row 
 lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"] <- lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"]+dis_count
-
+lco_active_new <- na.omit(lco_active_new)
 write.csv(lco_active_new,paste("Output/new_lco_data/New_LCO_data_",date_char,".CSV",sep = ""), na = "",row.names = FALSE)

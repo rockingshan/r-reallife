@@ -3,7 +3,7 @@ library(dplyr)
 library(lubridate)
 library(janitor)
 library(httr)
-#library(xlsx)
+library(xlsx)
 
 source('Source/Functions.r')
 
@@ -208,7 +208,7 @@ write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
 ###########################
 
 df1 = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
-df2 = read.csv(file.choose(new = F))
+df2 = read.csv(file.choose(new = F)) ##
 SAFE_CSCODE = read.csv(file.choose(new = F),colClasses = c(SubscriptionID="character"))
 DF_K = merge(df1,df2,all.x = T)
 DF_K$Provsion.Code <- gsub("'","",DF_K$Provsion.Code)
@@ -251,3 +251,16 @@ for (planname in plan_list) {
   write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
 }
 write.csv(DF_K,"odisha_plans.csv")
+
+######################################################
+list_active = read.csv(file.choose(new = F))
+list_active$Stb <- gsub("'","",list_active$Stb)
+list_active$Sc <- gsub("'","",list_active$Sc)
+colnames(list_active)[10] <- "VC"
+colnames(list_active)[11] <- "STB"
+list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
+list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
+list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
+list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+
+req_d = list_active %>% filter(Is.Auto.Renew == 'Y') %>% filter(VC.length == 'GOSPELL') %>% select(Customer.Nbr,VC) %>% unique()
