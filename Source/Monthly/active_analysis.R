@@ -104,3 +104,10 @@ active_pivot = list_export_cond %>% group_by(PLAN_NAME) %>%
 #wallet_filter_condition = filter(wallet_filtered, Service.Name %in% target)
 #export_condition = wallet_filter_condition %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Service.Name)
 write.csv(list_export_cond, "MDBKT41.csv", row.names = FALSE)
+
+
+
+##############list active to broadcaster count - run top block first
+lsactv_bc_fl = list_active_bc %>% filter(Broadcaster == 'Star India Pvt. Ltd.')
+lst_pck = lsactv_bc_fl %>% select(PLAN_NAME,SERVICE_NAME,CUSTOMER_NBR) %>% unique()
+LST_PCK_PIVOT = lst_pck %>% group_by(PLAN_NAME,SERVICE_NAME) %>% summarise(Active.count = n())
