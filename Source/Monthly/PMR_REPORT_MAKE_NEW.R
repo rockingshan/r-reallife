@@ -11,9 +11,9 @@ DF2 = DF2 %>% filter(Billing.Frequency=="30D")
 DF = merge(DF2,DF1)
 DF = DF %>% select(Service.Name,Channel) %>% unique()
 
-plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
-bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1iHErLr_cL36BWzYwsQjOId-YlWWWbAr1&export=download"))
-trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=12DD_vNDdVqrObI59WalTL_F9cje50Gja&export=download"),encoding = "UTF-8")
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
+trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1I8UNHSbOoPBvQQ37QgVbMqBqEos10mtL&export=download"),encoding = "UTF-8")
 
 #For Bronze Basic Channels
 basic_bouquet = list_bouquet_dated %>% filter(Bouquet=="Bronze Basic") %>% select(Customer.Number,Bouquet,Plan.Name) %>% unique()

@@ -1,7 +1,7 @@
 library(tidyverse)
 library(dplyr)
-library(gapminder) 
-library(qdapTools)
+#library(gapminder) 
+#library(qdapTools)
 source('Source/Functions.r')
 
 ##opens a window to select files, 
@@ -63,7 +63,15 @@ write.csv(ala_diff_flt, "Alacarte_in_MSR_notin_ListActive.csv",row.names = F)
 customer_num = list_bouquet_dated %>% select(Customer.Number,Set.Top.Box) %>% unique() %>% group_by(Customer.Number) %>% summarise(STB.Count = n())
 write.csv(customer_num,"Customer numbers with STB count.csv",row.names = F)
 
-
+#####PLAN COUNT
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+plan_names = plan_names %>% add_row(Plan.Name = c('DD Channels','Bronze basic','Odia FTA'))
+ACTV_PLAN = list_active_flt %>% filter(PLAN_NAME %in% plan_names$Plan.Name) %>% select(PLAN_NAME,ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR,) %>% unique()
+ACTV_PLAN_CNT = ACTV_PLAN %>% group_by(PLAN_NAME) %>% summarise(Active.Count = n())
+write.csv(ACTV_PLAN_CNT, "PLAN_COUNT_31082022.CSV")
+##plan_count with LCO
+lco_count = ACTV_PLAN %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarise(Active.Count = n())
+write.csv(lco_count, "LCOWISE_PLANCOUNT.CSV",row.names = F)
 #######cas entitlement
 
 cas_ent = read.csv(file.choose(new = F))
