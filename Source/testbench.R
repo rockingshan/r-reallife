@@ -264,3 +264,9 @@ list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRU
 list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
 
 req_d = list_active %>% filter(Is.Auto.Renew == 'Y') %>% filter(VC.length == 'GOSPELL') %>% select(Customer.Nbr,VC) %>% unique()
+
+
+################GOSPELL EMMM CORRECTION
+
+gos_emm = read.csv(file.choose(new = F))
+gos_1 = gos_emm %>% filter(Type == 'Entitlement') %>% select(CardID,StartTime) %>% unique()
