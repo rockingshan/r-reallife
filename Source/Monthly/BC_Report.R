@@ -62,11 +62,11 @@ bq_wb = bq_wb[!grepl("Broadcaster Name:*", bq_wb$Broadcaster.Name),]
 bq_wb_old_pack = bq_wb[!grepl("_", bq_wb$Plan.Name),] %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                  No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
 bq_wb_new_pack = bq_wb[grepl("_", bq_wb$Plan.Name),]
-bqwbnew_7 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.7th.Day)
-bqwbnew_14 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY)
-bqwbnew_21 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.21st.Day)
-bqwbnew_28 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY)
-bqwbnew_avg = bq_wb_new_pack %>% select(Plan.Name,Monthly.Subs.of.the.Channel)
+bqwbnew_7 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+bqwbnew_14 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY) %>% unique()
+bqwbnew_21 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+bqwbnew_28 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
+bqwbnew_avg = bq_wb_new_pack %>% select(Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
 pack_7 = read.csv(file.choose())
 pack_14 = read.csv(file.choose())
 pack_21 = read.csv(file.choose())
@@ -75,7 +75,7 @@ bqwbnew_7_pk = merge(bqwbnew_7,pack_7,all = T) %>% unique() %>% unite(combined, 
 bqwbnew_14_pk = merge(bqwbnew_14,pack_14,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bqwbnew_21_pk = merge(bqwbnew_21,pack_21,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bqwbnew_28_pk = merge(bqwbnew_28,pack_28,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk,all = T)
+bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk, all.y = F)
 bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_21_pk, all = T)
 bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
 bqwbnew_combo[is.na(bqwbnew_combo)] <- 0
@@ -84,6 +84,7 @@ bqwbnew_combo$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(bqwbnew_combo$No.of.
 bqwbnew_combo$No.of.Subs.On.21st.Day = as.numeric(bqwbnew_combo$No.of.Subs.On.21st.Day)
 bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY)
 bqwbnew_combo = bqwbnew_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(bqwbnew_combo, starts_with("No.of"))))
+#bqwbnew_combo = read.csv(file.choose())
 bqwbnew_combo_bouq = bqwbnew_combo %>% filter(X == 'Bouquet') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
 wb_bouquet_final = rbind(bq_wb_old_pack,bqwbnew_combo_bouq)

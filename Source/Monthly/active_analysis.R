@@ -16,7 +16,7 @@ list_active_flt = list_active %>% filter(SERVICE_CODE != '')
 
 ##BROADCASTERWISE DATA
 list_active_bc = merge(list_active_flt,broadcaster,by.x="SERVICE_CODE",by.y = 'Service.Code',all.x = T,all.y = F)
-list_active_bc <- list_active_bc %>% select(CUSTOMER_NBR,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
+list_active_bc <- list_active_bc %>% select(CUSTOMER_NBR,PRI_STATE,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
 list_active_piv = list_active_bc %>% group_by(CUSTOMER_NBR,Broadcaster) %>% summarize(Acc_count = n())
 
 
@@ -117,5 +117,5 @@ write.csv(list_export_cond, "MDBKT41.csv", row.names = FALSE)
 
 ##############list active to broadcaster count - run top block first
 lsactv_bc_fl = list_active_bc %>% filter(Broadcaster == 'Star India Pvt. Ltd.')
-lst_pck = lsactv_bc_fl %>% select(PLAN_NAME,SERVICE_NAME,CUSTOMER_NBR) %>% unique()
-LST_PCK_PIVOT = lst_pck %>% group_by(PLAN_NAME,SERVICE_NAME) %>% summarise(Active.count = n())
+lst_pck = lsactv_bc_fl %>% select(PLAN_NAME,SERVICE_NAME,PRI_STATE,CUSTOMER_NBR,Broadcaster) %>% unique()
+LST_PCK_PIVOT = lst_pck %>% group_by(PRI_STATE,PLAN_NAME,SERVICE_NAME,Broadcaster) %>% summarise(Active.count = n())

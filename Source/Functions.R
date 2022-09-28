@@ -22,13 +22,7 @@ mq_active_report <- function(){
 }
 
 abv_data_import <- function(){
-  fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
-  sheets <-  excel_sheets(fil_path_abv)
-  data_sheets <- sheets[grepl("CASEntitlement", sheets)]
-  sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
-  abv_cas_data = filter(sheet_df, STATUS == "Activated")
-  #abv_cas_data = read_xlsx(choose.files(default = "",caption = "Select ABV CAS File",multi = FALSE,))
-  abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
+  
   return(abv_cas_data_combn)
 }
 
