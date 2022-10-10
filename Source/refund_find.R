@@ -1,0 +1,22 @@
+library(tidyverse)
+library(lubridate)
+library(readxl)
+
+history_data = read_excel(file.choose())
+colnames(history_data) = colnames(history_data) %>% make.names()
+wallet = read.csv(file.choose(),colClasses = c(Unique.Id ="character"))
+#fcn_dis = dis_cust[grepl("MD0470",dis_cust$Customer.Number),]
+fcn_disc = history_data %>% filter(User.ID == 'MD0470')
+fcn_disc_refund = fcn_disc[grepl("Refund",fcn_disc$Description),] %>%
+  select(Customer..,Transaction.No,Date)
+fcn_wallet = wallet %>% select(Customer.Nbr,Unique.Id,Contract.Number,Amount.Debit,Transaction.Date,Billing.Frequency)
+fcn_wallet = na.omit(fcn_wallet)
+fcn_wallet = fcn_wallet %>%  mutate(across('Billing.Frequency', str_replace, ' Days', ''))
+fcn_wallet$Billing.Frequency = as.numeric(fcn_wallet$Billing.Frequency)
+fcn_wallet_discon = merge(fcn_wallet,fcn_disc_refund,by.x = 'Contract.Number',by.y = 'Transaction.No',all.x = F,all.y = T)
+fcn_wallet_discon = na.omit(fcn_wallet_discon)
+fcn_wallet_discon$Transaction.Date = as.Date(as.POSIXct(fcn_wallet_discon$Transaction.Date, format = "%d/%m/%Y %I:%M:%S %p"))
+fcn_wallet_discon$Date = as.Date(as.POSIXct(fcn_wallet_discon$Date, format = "%d/%m/%Y %I:%M:%S %p"))
+fcn_wallet_final = fcn_wallet_discon %>% mutate(credit = (Amount.Debit/Billing.Frequency)*as.numeric((Billing.Frequency-(Date-Transaction.Date))))
+fcn_wallet_final = fcn_wallet_final %>% unite(combined, c("Customer.Nbr", "Contract.Number"))
+write.csv(fcn_wallet_final,"credit_fcn.csv")
