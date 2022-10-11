@@ -75,7 +75,7 @@ bqwbnew_7_pk = merge(bqwbnew_7,pack_7,all = T) %>% unique() %>% unite(combined, 
 bqwbnew_14_pk = merge(bqwbnew_14,pack_14,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bqwbnew_21_pk = merge(bqwbnew_21,pack_21,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bqwbnew_28_pk = merge(bqwbnew_28,pack_28,all = T) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk, all.y = F)
+bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk, all = T)
 bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_21_pk, all = T)
 bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
 bqwbnew_combo[is.na(bqwbnew_combo)] <- 0
