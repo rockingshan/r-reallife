@@ -19,4 +19,5 @@ fcn_wallet_discon$Transaction.Date = as.Date(as.POSIXct(fcn_wallet_discon$Transa
 fcn_wallet_discon$Date = as.Date(as.POSIXct(fcn_wallet_discon$Date, format = "%d/%m/%Y %I:%M:%S %p"))
 fcn_wallet_final = fcn_wallet_discon %>% mutate(credit = (Amount.Debit/Billing.Frequency)*as.numeric((Billing.Frequency-(Date-Transaction.Date))))
 fcn_wallet_final = fcn_wallet_final %>% unite(combined, c("Customer.Nbr", "Contract.Number"))
+fcn_wallet_final$credit = round(fcn_wallet_final$credit,digits = 2)
 write.csv(fcn_wallet_final,"credit_fcn.csv")
