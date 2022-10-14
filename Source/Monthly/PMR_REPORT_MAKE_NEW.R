@@ -25,7 +25,7 @@ Bronze_pivot = merge(Bronze_pivot,trai_names) %>% relocate(TRAI.name, .after = C
 write.csv(Bronze_pivot,"Output/FTA_Channels.csv",row.names = F)
 
 #without bronze
-bq_try = list_bouquet_dated %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n()) %>% filter(!(Bouquet == "Bronze Basic"))
+bq_try = list_bouquet_dated %>% group_by(Plan.Name,Bouquet) %>% select(Customer.Number,Bouquet,Plan.Name,) %>% unique() %>% summarize(Active_count = n()) %>% filter(!(Bouquet == "Bronze Basic"))
 Bouquet_merged = merge(bq_try,DF,by.x = "Bouquet", by.y = "Service.Name" ) %>% select(Plan.Name,Bouquet,Channel,Active_count)
 colnames(Bouquet_merged)[4] <- "Monthly.Subs.of.the.Channel"
 
