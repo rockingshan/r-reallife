@@ -11,6 +11,8 @@ plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J
 plan_list = plan_names[['Plan.Name']]
 for (package in plan_list) {
   combo_file_flt = filter(combo_file, Package == package) %>% select(Package,Channel,Genre) %>% unique()
+  combo_file_flt$Genre = toupper(combo_file_flt$Genre)
+  combo_file_flt$Channel = toupper(combo_file_flt$Channel)
   genre_file = combo_file_flt %>% group_by(Genre) %>% summarise(Channel_list = paste(Channel,collapse=","))
   write.csv(genre_file,sprintf("Output/%s_.csv",package),row.names = F)
   }

@@ -23,3 +23,8 @@ fcn_wallet_final = fcn_wallet_final %>% unite(combined, c("Customer.Nbr", "Contr
 fcn_wallet_final$credit = round(fcn_wallet_final$credit,digits = 2)
 write.csv(fcn_wallet_final,"credit_fcn.csv")
 write.csv(fcn_wallet_na,"_fcn_nafile.csv")
+
+
+#####ANOTHER BLOCK
+wallet_work = wallet %>% group_by(Customer.Nbr,Contract.Number) %>% summarise(Plan_Details = paste(Plan.Details, collapse = ","),Services = paste(Service.Name, collapse = ","),Wallet_Debit = sum(Amount.Debit))
+write.csv(wallet_work,"FCN_WALLET.CSV",row.names = F)

@@ -5,7 +5,6 @@ library(janitor) #for making total
 
 date_char = format(Sys.Date()-1, format="%d%m%Y") #previous date 
 inventory = read.csv(file.choose(new = F))
-dis_cust = read.csv(file.choose(new = F))
 
 lco_det = read.csv(file.choose(new = F)) #lco master file
 lco_det$Lco.Code <- gsub("'","",lco_det$Lco.Code)
@@ -51,13 +50,13 @@ lco_active_new = merge(new_lco,lco_active,all.x = T)
 lco_active_new = lco_active_new[, c(1,3,2,4)]
 
 ###find future disconnected count
-dis_lco = dis_cust %>% filter(str_detect(Customer.Number, 'MD0443')) %>% 
-  filter(!(Prov.Sys.Name == ''))
-dis_lco$Disconnected.Date = as.Date(dis_lco$Disconnected.Date, format('%d-%b-%y'))
-dis_lco = dis_lco %>% filter(Disconnected.Date >= Sys.Date())
-dis_count = as.numeric(nrow(dis_lco))
-###update a single cell based on column and row 
-lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"] <- lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"]+dis_count
+# dis_lco = dis_cust %>% filter(str_detect(Customer.Number, 'MD0443')) %>% 
+#   filter(!(Prov.Sys.Name == ''))
+# dis_lco$Disconnected.Date = as.Date(dis_lco$Disconnected.Date, format('%d-%b-%y'))
+# dis_lco = dis_lco %>% filter(Disconnected.Date >= Sys.Date())
+# dis_count = as.numeric(nrow(dis_lco))
+# ###update a single cell based on column and row 
+# lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"] <- lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"]+dis_count
 lco_active_new <- na.omit(lco_active_new)
 lco_active_new <- lco_active_new %>% adorn_totals("row")
 lco_active_new <- lco_active_new %>% mutate(Percent_Active =paste0(round(Total_Active/Total_STB*100,2),"%") )

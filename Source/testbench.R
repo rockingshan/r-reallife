@@ -77,6 +77,7 @@ list_active$STB <- gsub("'","",list_active$STB)
 list_active$SC <- gsub("'","",list_active$SC)
 colnames(list_active)[10] <- "VC"
 colnames(list_active)[11] <- "STB"
+list_active = list_active %>% filter(!(PLAN_CODE == 'DPOPROMBUN'))
 list_active = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME,LAST_NAME,VC,STB,SERVICE_NAME,MOBILE_PHONE,PRI_ADDRESS1) %>% unique()
 list_act_combine = list_active %>% group_by(CUSTOMER_NBR) %>% summarise(Services=paste(SERVICE_NAME, collapse=","))
 list_act_filter = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME,LAST_NAME,VC,STB,MOBILE_PHONE,PRI_ADDRESS1) %>% unique()
