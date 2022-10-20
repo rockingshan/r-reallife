@@ -8,11 +8,20 @@ source('Source/Functions.r')
 list_active <- mq_active_report()
 
 broadcaster = read.csv(file.choose(new = F))
+broadcaster = broadcaster %>% select(Service.Code,Broadcaster) %>% unique()
 
+##make servicewise channel
+#import package details
+pack = read.csv(file.choose(new = F))
+pack = pack %>% select(Service.Code,Channel) %>% unique()
+#import planwise service
+planservice = read.csv(file.choose(new = F))
+planservice = planservice %>% select(Service.Code,Service.Name) %>% unique()
+service_channel = merge(planservice,pack)
 
 #d1= list_active[,14] %l% broadcaster
 ## replace ' in column data, change to proper column names
-list_active_flt = list_active %>% filter(SERVICE_CODE != '')
+list_active_flt = list_active %>% filter(SERVICE_CODE != '') %>% filter(!(PLAN_NAME == 'DPO Promotional Bundle'))
 
 ##BROADCASTERWISE DATA
 list_active_bc = merge(list_active_flt,broadcaster,by.x="SERVICE_CODE",by.y = 'Service.Code',all.x = T,all.y = F)
@@ -115,7 +124,27 @@ write.csv(list_export_cond, "MDBKT41.csv", row.names = FALSE)
 
 
 
-##############list active to broadcaster count - run top block first
+##############list active to broadcaster count - run top block first  MSR FORMATT
+#remove new plans
+new_plan = read.csv(file.choose(new = F))
+new_plan_srv = read.csv(file.choose(new = F))
+list_active_old = list_active_flt %>% filter(!(PLAN_NAME %in% new_plan$PLAN_NAME))
+list_active_new = list_active_flt %>% filter(PLAN_NAME %in% new_plan$PLAN_NAME)
+list_active_bc = merge(list_active_old,broadcaster,by.x="SERVICE_CODE",by.y = 'Service.Code',all.x = T,all.y = F)
 lsactv_bc_fl = list_active_bc %>% filter(Broadcaster == 'Star India Pvt. Ltd.')
-lst_pck = lsactv_bc_fl %>% select(PLAN_NAME,SERVICE_NAME,PRI_STATE,CUSTOMER_NBR,Broadcaster) %>% unique()
-LST_PCK_PIVOT = lst_pck %>% group_by(PRI_STATE,PLAN_NAME,SERVICE_NAME,Broadcaster) %>% summarise(Active.count = n())
+lsactv_old_ala = lsactv_bc_fl[grepl("@",lsactv_bc_fl$SERVICE_NAME),] %>% select(PLAN_NAME,SERVICE_NAME,PRI_STATE,CUSTOMER_NBR,Broadcaster)
+lsactv_old_ala_chnname = merge(lsactv_old_ala,service_channel,by.x = 'SERVICE_NAME',by.y = 'Service.Name',all.x = T,all.y = F)
+old_ala_final = lsactv_old_ala_chnname %>% select(PLAN_NAME,Channel,PRI_STATE,CUSTOMER_NBR,Broadcaster)
+colnames(old_ala_final)[2] <- 'SERVICE_NAME'
+lsactv_old_bq = lsactv_bc_fl[!grepl("@",lsactv_bc_fl$SERVICE_NAME),] %>% select(PLAN_NAME,SERVICE_NAME,PRI_STATE,CUSTOMER_NBR,Broadcaster)
+lst_pck = rbind(lsactv_old_bq,old_ala_final)
+
+actv_new_serv = merge(list_active_new,new_plan_srv, by.x = 'PLAN_NAME',by.y = 'Plan.Name',all.x = T)
+actv_new_serv_clean = actv_new_serv %>% select(PLAN_NAME,Bouquet,PRI_STATE,CUSTOMER_NBR,Broadcaster.Name) %>% unique()
+colnames(actv_new_serv_clean)[2] <- 'SERVICE_NAME'
+colnames(actv_new_serv_clean)[5] <- 'Broadcaster'
+final_data = rbind(actv_new_serv_clean,lst_pck)
+LST_PCK_PIVOT = final_data %>% group_by(PRI_STATE,PLAN_NAME,SERVICE_NAME,Broadcaster) %>% summarise(Active.count = n())
+write.csv(LST_PCK_PIVOT,"listactive_to_MSR_PLANWISE.CSV",row.names = F)
+LST_PCK_PIVOT_SERVICE = final_data %>% group_by(PRI_STATE,SERVICE_NAME,Broadcaster) %>% summarise(Active.count = n())
+write.csv(LST_PCK_PIVOT_SERVICE,"listactive_to_MSR.CSV",row.names = F)

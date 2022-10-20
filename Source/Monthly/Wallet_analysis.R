@@ -71,6 +71,14 @@ crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
 #crdr1 = crdr1 %>% filter(!(ENTITY_CODE %in% hdnd_nm))
 write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
+
+#######additional amount for odisha
+#ODISHA ELITE @ 175
+#ODISHA GOLD @ 230
+#ODISHA POWER @_200
+#5 rupees extra for MDOR09
+
+
 #######with broadcaster
 service = read.csv(file.choose(new = F)) ### service details file
 plna_type = read.csv(file.choose(new = F)) ### plan type
@@ -130,5 +138,7 @@ write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 
 
 wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
+wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
+df = wallet_filt %>% group_by(Plan.Details) %>% summarise(debit = sum(Amount.Debit))
 customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
-write.csv(customer_dt, "Customer_amount.csv",row.names = F)
+write.csv(df, "Planwise_amount.csv",row.names = F)
