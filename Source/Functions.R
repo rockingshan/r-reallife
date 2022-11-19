@@ -17,6 +17,7 @@ mq_active_report <- function(){
   list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
   list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
   list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
+  list_active$VC.length <- gsub("15","NAGRA",list_active$VC.length, fixed = TRUE)
   list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
   return(list_active)
 }

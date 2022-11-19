@@ -134,8 +134,9 @@ write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 #    wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
 #    write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
 # # }
-
-
+####Find Direct customers bills
+direct_cus = c('MD0440','MBDML','MD0479','MD0478')
+wallet = filter(wallet, (Entity.Code %in% direct_cus))
 
 wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
 wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)

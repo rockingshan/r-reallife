@@ -101,15 +101,15 @@ colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTIT
 list_active_1 = list_active %>% select(V1,V3,V5,V21,V22,V23,V24,V25,V26,V27,V28,V29,V30,V31,V32) %>% unique()
 write.csv(list_active_1, "total_active.csv", row.names = F)
 
-#######################  find discre;pencies in dpo plans
+#######################  find discre;pencies in dpo plans SERVICE WISE COUNTS FOR CUSTOMERS
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
-plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 plan_list = plan_names[['Plan.Name']]
 
 for (planname in plan_list) {
 active_flt = filter(list_active,PLAN_NAME==planname)
-actv_flt_pvot = active_flt %>% group_by(CUSTOMER_NBR,SERVICE_NAME) %>% summarise(Service_Count = n()) %>%
+actv_flt_pvot = active_flt %>% group_by(CUSTOMER_NBR,CONTRACT_NUMBER,SERVICE_NAME) %>% summarise(Service_Count = n()) %>%
   pivot_wider(names_from = SERVICE_NAME, values_from = Service_Count)
 actv_flt_pvot = adorn_totals(actv_flt_pvot, where = c("col"), fill = "-", na.rm = TRUE, name = "Grand Total")
 str_replace_all(planname, "[^[:alnum:]]", " ")
@@ -255,8 +255,8 @@ write.csv(DF_K,"odisha_plans.csv")
 
 ######################################################
 list_active = read.csv(file.choose(new = F))
-list_active$Stb <- gsub("'","",list_active$Stb)
-list_active$Sc <- gsub("'","",list_active$Sc)
+list_active$STB <- gsub("'","",list_active$STB)
+list_active$SC <- gsub("'","",list_active$SC)
 colnames(list_active)[10] <- "VC"
 colnames(list_active)[11] <- "STB"
 list_active <- list_active %>% mutate(VC.length = nchar(VC),  .after = 11) # get character length of vc
@@ -271,3 +271,8 @@ req_d = list_active %>% filter(Is.Auto.Renew == 'Y') %>% filter(VC.length == 'GO
 
 gos_emm = read.csv(file.choose(new = F))
 gos_1 = gos_emm %>% filter(Type == 'Entitlement') %>% select(CardID,StartTime) %>% unique()
+
+#############finding services
+odbq = list_active %>% filter(SERVICE_NAME == 'Odisha Tv Bouqet 1')
+write.csv(odbq,"odishatv.csv",row.names = F)
+DF = list_active %>% filter(SERVICE_NAME == 'Aaj Tak @ 0.75')

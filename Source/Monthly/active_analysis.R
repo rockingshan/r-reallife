@@ -38,7 +38,8 @@ write.csv(active_service,"Service_count_list_active.csv",row.names = F)
 
 active_cust = list_active_flt %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE) %>% summarise(Active_cust = n())
 write.csv(active_cust, "customer.csv",row.names = F)
-
+#####Broadcaster wise channel value in Alacarte Plan
+act_ala = list_active_bc %>% filter(PLAN_NAME == 'Alacarte Plan') %>% select(CUSTOMER_NBR,PRI_STATE,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
 
 ###compare with SMS # RUN LIST_ACT_FLT FROM ABOVE FIRST
 
