@@ -57,6 +57,7 @@ lco_active_new = lco_active_new[, c(1,3,2,4)]
 # dis_count = as.numeric(nrow(dis_lco))
 # ###update a single cell based on column and row 
 # lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"] <- lco_active_new[lco_active_new$Entity.Code=='MD0443',"Total_Active"]+dis_count
+lco_active_new[lco_active_new$Entity.Code=='MD0447',"Total_STB"] <- lco_active_new[lco_active_new$Entity.Code=='MD0447',"Total_STB"]-30
 lco_active_new <- na.omit(lco_active_new)
 lco_active_new <- lco_active_new %>% adorn_totals("row")
 lco_active_new <- lco_active_new %>% mutate(Percent_Active =paste0(round(Total_Active/Total_STB*100,2),"%") )

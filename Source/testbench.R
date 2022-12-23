@@ -101,14 +101,14 @@ colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTIT
 list_active_1 = list_active %>% select(V1,V3,V5,V21,V22,V23,V24,V25,V26,V27,V28,V29,V30,V31,V32) %>% unique()
 write.csv(list_active_1, "total_active.csv", row.names = F)
 
-#######################  find discre;pencies in dpo plans SERVICE WISE COUNTS FOR CUSTOMERS
+#######################  find discre;pencies in dpo plans SERVICE &&&&&&&&&&&&&&&&&&&&&&&&&&&& WISE COUNTS FOR CUSTOMERS  ??????????? This block for planwise servicewise
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 plan_list = plan_names[['Plan.Name']]
 
 for (planname in plan_list) {
-active_flt = filter(list_active,PLAN_NAME==planname)
+active_flt = filter(list_active,PLAN_NAME=="Meghbela Starter Pack @ 185")
 actv_flt_pvot = active_flt %>% group_by(CUSTOMER_NBR,CONTRACT_NUMBER,SERVICE_NAME) %>% summarise(Service_Count = n()) %>%
   pivot_wider(names_from = SERVICE_NAME, values_from = Service_Count)
 actv_flt_pvot = adorn_totals(actv_flt_pvot, where = c("col"), fill = "-", na.rm = TRUE, name = "Grand Total")
@@ -116,7 +116,7 @@ str_replace_all(planname, "[^[:alnum:]]", " ")
 write.csv(actv_flt_pvot,sprintf("Output/%s_.csv",planname),row.names = F)
 }
 
-########## find discrepencies of active cust with wallet
+########## find discrepencies of active cust with wallet  
 wallet_d =  read.csv(file.choose(new = F))
 wallet_d_base = filter(wallet_d, Plan.Details %in% plan_names$Plan.Name) %>% select(Customer.Nbr, Contract.Number, Plan.Details, Amount.Debit, Transaction.Date) %>% unique()
 wallet_d_max = wallet_d_base %>% group_by(Customer.Nbr,Plan.Details) %>% mutate(Max.Date = max(Transaction.Date)) ##find last date of occurenece
@@ -161,12 +161,12 @@ write.csv(active_area,"area-active.csv", row.names = F)
 discon_data = read.csv(file.choose(new = F))
 customer_ent = read.csv(file.choose(new = F))
 discon_data_flt = discon_data %>% filter(Smartcard.Number != "No SC")
-discon_data_flt = filter(discon_data_flt, Set.Top.Box.Number != "No SC")
+discon_data_flt = discon_data_flt %>% filter(discon_data_flt, Set.Top.Box.Number != "No STB")
 discon_data_flt <- discon_data_flt[-c(391023),]
-discon_data_flt <- discon_data_flt[!(discon_data_flt$Disconnected.Date==""),]
-discon_data_flt$Disconnected.Date = as.Date(discon_data_flt$Disconnected.Date, format('%d-%b-%y'))
-discon_dt_max = discon_data_flt %>% group_by(Customer.Number) %>% mutate(Disc.Date = max(Disconnected.Date))
-discon_dt_max <- discon_dt_max %>% select(Customer.Number,Disc.Date) %>% unique()
+discon_data_flt <- discon_data_flt[!(discon_data_flt$DISCONNECTED_DATE_7==""),]
+discon_data_flt$DISCONNECTED_DATE_7 = as.Date(discon_data_flt$DISCONNECTED_DATE_7, format('%d-%b-%y'))
+discon_dt_max = discon_data_flt %>% group_by(Customer.Number) %>% mutate(Disc.Date = max(DISCONNECTED_DATE_7))
+discon_dt_max <- discon_dt_max %>% select(Customer.Number,Smartcard.Number,Prov.Sys.Name,Disc.Date) %>% unique()
 discon_dt_max <- discon_dt_max %>% ungroup()
 discon_data_filter = discon_dt_max %>% mutate(Ageing = (lubridate::today() - Disc.Date), .after = NULL )
 discon_data_filter <- merge(discon_data_filter,customer_ent)

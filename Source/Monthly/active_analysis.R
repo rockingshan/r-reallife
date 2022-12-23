@@ -149,3 +149,12 @@ LST_PCK_PIVOT = final_data %>% group_by(PRI_STATE,PLAN_NAME,SERVICE_NAME,Broadca
 write.csv(LST_PCK_PIVOT,"listactive_to_MSR_PLANWISE.CSV",row.names = F)
 LST_PCK_PIVOT_SERVICE = final_data %>% group_by(PRI_STATE,SERVICE_NAME,Broadcaster) %>% summarise(Active.count = n())
 write.csv(LST_PCK_PIVOT_SERVICE,"listactive_to_MSR.CSV",row.names = F)
+
+
+######Package work
+sports18_ala = list_active %>% filter(PLAN_NAME == 'Alacarte Plan') %>% filter(SERVICE_CODE == 'CH547')
+plan_only = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name) %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR,CONTRACT_NUMBER,PLAN_CODE,PLAN_NAME) %>% unique()
+colnames(plan_only)[6] <- 'BASE_PLAN'
+sports18_ala_wbaseplan = merge(sports18_ala,plan_only,all.x = T,all.y = F,by.x = 'CONTRACT_NUMBER',by.y = 'CONTRACT_NUMBER')
+write.csv(sports18_ala_wbaseplan,'sports18.csv',row.names = F)
+write.csv(plan_only,"planOnly.csv")
