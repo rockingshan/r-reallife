@@ -12,3 +12,4 @@ Output/*.xlx
 Output/*.zip
 *.csv
 *.xlsx
+packrat/lib*/
