@@ -10,8 +10,8 @@ lco_det = read.csv(file.choose(new = F)) #lco master file
 lco_det$Lco.Code <- gsub("'","",lco_det$Lco.Code)
 lco_det <- lco_det %>% select(Lco.Code,Business.Name)
 colnames(lco_det)[1] <- "Entity.Code"  #change column name
-new_lco = read.csv("C:/Users/Administrator/Documents/r-reallife/Data/lcolist.txt")
-pragati_vc = read.csv("C:/Users/Administrator/Documents/r-reallife/Data/PRAGATI.csv",colClasses = c("character"))
+new_lco = read.csv("Data/lcolist.txt")
+pragati_vc = read.csv("Data/PRAGATI.csv",colClasses = c("character"))
 
 
 activ_cust = read.csv(file.choose(new = F)) #StateWiseActiveCust previous date
