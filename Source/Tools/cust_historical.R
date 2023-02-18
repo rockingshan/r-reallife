@@ -37,7 +37,9 @@ write.csv(cust_drop_piv,"CASL_DEACTIVATED_YEARONYEAR.csv",row.names = F)
 
 
 ###for schedule ix
-cust_historical <- read.csv(file.choose(new = F),colClasses = c("character","character","NULL","character","character","NULL","NULL","character","character","NULL","character","character","character","character","character","character","character","NULL"))
+cust_historical <- read.csv(file_name<-file.choose(new = F),colClasses = c("character","character","NULL","character","character","NULL","NULL","character","character","NULL","character","character","character","character","character","character","character","NULL"))
+file_name <- basename(file_name)
+date_part <- regmatches(file_name, regexpr("\\d{8}", file_name))
 cust_historical <- cust_historical %>% mutate(VC.length = nchar(Smartcard.Serialnumber),  .after = 4)
 cust_historical$VC.length <- gsub("8","GOSPELL",cust_historical$VC.length, fixed = TRUE)
 cust_historical$VC.length <- gsub("12","SAFEVIEW",cust_historical$VC.length, fixed = TRUE)
@@ -51,4 +53,5 @@ cust_hist_abv_code = merge(cust_historical_abv,cascode_abv,all.x = T,all.y = F)
 ##cust_hist_abv_code = na.omit(cust_hist_abv_code)
 cust_hist_abv_code1  = cust_hist_abv_code %>% filter(!(Package.Descr == "Ncf  Slab")) %>% select(Smartcard.Serialnumber,Set.Box.Number,Provsion.Code,Activation.date)
 colnames(cust_hist_abv_code1)[4] <- "Package.Start.Date"
-write.csv(cust_hist_abv_code1,"31102021.csv",row.names = F)
+output_file_name <- paste0("MEGB_PACKAGEWISEDATA_", date_part, ".csv")
+write.csv(cust_hist_abv_code1,output_file_name,row.names = F)
