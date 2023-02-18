@@ -43,3 +43,13 @@ inv_partial = inv_partial %>% filter(Hardware.Count == 1)
 inv_partial = inv_partial %>% ungroup()
 inv_partial_dtls = merge(inventory,inv_partial,all.x = F,all.y = T)
 write.csv(inv_partial_dtls,"Single_hardware.csv",row.names = F)
+
+##find one lco inactive data
+lcoinv = inventory_all %>% filter(ENTITY_CODE == "MDCH106")
+lcocust = merge(lcoinv,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.Number", all.x = T)
+lcocust[lcocust == ""] <- NA
+lcocust$Customer.Status <- as.character(lcocust$Customer.Status)
+lcocust$Customer.Status <- gsub("A","Active",lcocust$Customer.Status)
+lcocust$Customer.Status <- gsub("I","Inactive",lcocust$Customer.Status)
+lcocust$Customer.Status <- gsub("N","Inactive",lcocust$Customer.Status)
+lcocust$Customer.Status[is.na(lcocust$Customer.Status)] <- 'In LCO Store'
