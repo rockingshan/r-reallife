@@ -41,7 +41,7 @@ for (i in 1:nrow(custListSlct)) {
   cat(content(res, 'text'))
   
   # Pause for 5 seconds before making the next HTTP request
-  Sys.sleep(2)
+  ;Sys.sleep(2)
 }
 
 # End timing the execution of the for loop
