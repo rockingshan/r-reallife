@@ -276,3 +276,12 @@ gos_1 = gos_emm %>% filter(Type == 'Entitlement') %>% select(CardID,StartTime) %
 odbq = list_active %>% filter(SERVICE_NAME == 'Odisha Tv Bouqet 1')
 write.csv(odbq,"odishatv.csv",row.names = F)
 DF = list_active %>% filter(SERVICE_NAME == 'Aaj Tak @ 0.75')
+
+###autorenewal customers find 
+ls12 = read.csv(file.choose())
+lsac = ls12 %>% filter(Is.Auto.Renew == "Y") %>% select(Customer.Nbr,Contract.Number,Entity.Code,Entity.Name) %>% unique()
+duernw = read.csv(file.choose())
+duelist = duernw %>% select(Customer.Number,Contract.Number,Contract.End.Date)
+duelist$Contract.End.Date = as.Date(duelist$Contract.End.Date, "%d/%m/%Y")
+fnlist = merge(lsac,duelist,by.x = "Customer.Nbr",by.y = "Customer.Number",all.x = T) %>% filter(Contract.End.Date == today())
+write.csv(fnlist,sprintf("Output/autorenew_%s.csv",today()),row.names = F)

@@ -38,10 +38,12 @@ for (i in 1:nrow(custListSlct)) {
   res <- VERB("POST", url = url, body = body, add_headers(headers))
   
   # Print the response to the console
-  cat(content(res, 'text'))
+  #cat(content(res, 'text'))
   
   # Pause for 5 seconds before making the next HTTP request
-  ;Sys.sleep(2)
+  ;Sys.sleep(1.5)
+  cat(i)
+  cat("/")
 }
 
 # End timing the execution of the for loop

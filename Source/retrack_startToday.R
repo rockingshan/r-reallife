@@ -3,6 +3,7 @@ library(dplyr)
 library(lubridate)
 library(httr)
 
+
 custList = read.csv(file.choose())
 custList$Smart.Card.Number = gsub("'","",custList$Smart.Card.Number)
 custList <- custList %>% mutate(VC.length = nchar(Smart.Card.Number),  .after = 7) # get character length of vc
@@ -11,9 +12,8 @@ custList$VC.length <- gsub("12","SAFEVIEW",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("15","NAGRA",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("16","ABV",custList$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
 custList$Contract.End.Date = as.Date(custList$Contract.End.Date, "%d/%m/%Y")
-custListSlct = custList %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+30)
+custListSlct = custList %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+29)
 custListSlct = custListSlct %>% select(Customer.Number,Smart.Card.Number,VC.length)
-
 # Start timing the execution of the for loop
 start_time <- Sys.time()
 
@@ -38,10 +38,12 @@ for (i in 1:nrow(custListSlct)) {
   res <- VERB("POST", url = url, body = body, add_headers(headers))
   
   # Print the response to the console
-  cat(content(res, 'text'))
+  #cat(content(res, 'text'))
   
   # Pause for 5 seconds before making the next HTTP request
-  #Sys.sleep(3)
+  #;Sys.sleep(.3)
+  cat(i)
+  cat("/")
 }
 
 # End timing the execution of the for loop

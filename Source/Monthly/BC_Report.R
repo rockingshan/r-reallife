@@ -121,7 +121,7 @@ active_pivot_ala_wb = wb_new_ala_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Jan23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Jan23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
-write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_Jan23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
-write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_Jan23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Feb23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Feb23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_Feb23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_Feb23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
