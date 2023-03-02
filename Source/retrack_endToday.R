@@ -41,7 +41,7 @@ for (i in 1:nrow(custListSlct)) {
   #cat(content(res, 'text'))
   
   # Pause for 5 seconds before making the next HTTP request
-  ;Sys.sleep(1.5)
+  ;Sys.sleep(1.25)
   cat(i)
   cat("/")
 }
