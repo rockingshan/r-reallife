@@ -1,0 +1,1 @@
+"C:\Program Files\R\R-4.2.2\bin\Rscript.exe" C:\Users\Shantanu\Documents\GitHub\r-reallife\Source\retrack_startToday.R

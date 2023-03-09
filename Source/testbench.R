@@ -284,4 +284,34 @@ duernw = read.csv(file.choose())
 duelist = duernw %>% select(Customer.Number,Contract.Number,Contract.End.Date)
 duelist$Contract.End.Date = as.Date(duelist$Contract.End.Date, "%d/%m/%Y")
 fnlist = merge(lsac,duelist,by.x = "Customer.Nbr",by.y = "Customer.Number",all.x = T) %>% filter(Contract.End.Date == today())
-write.csv(fnlist,sprintf("Output/autorenew_%s.csv",today()),row.names = F)
+
+# Loop over each row of the data frame and make an HTTP request for each customer
+for (i in 1:nrow(fnlist)) {
+  # Create the request body for the HTTP request using the customer's account number, mobile number, and type
+  body <- paste0("<REQUESTINFO>\r\n<KEY_NAMEVALUE>\r\n<KEY_NAME>CONTRACTNO</KEY_NAME>\r\n<KEY_VALUE>", fnlist[i, "Contract.Number.x"], "</KEY_VALUE>\r\n</KEY_NAMEVALUE>\r\n</REQUESTINFO>")
+  
+  # Create the headers for the HTTP request
+  headers <- c(
+    'USERNAME' = 'MB102',
+    'PASSWORD' = 'Shan4935',
+    'EXTERNALPARTY' = 'MQS',
+    'Content-Type' = 'application/xml'
+  )
+  
+  # Generate a random reference number and replace the hardcoded value in the URL with it
+  ref_no <- paste0(format(runif(1, 510000, 100000000), scientific = FALSE), "a2swzzd3")
+  url <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/RenewContract?referenceno=", ref_no)
+  
+  # Make the HTTP request using the POST method, the request URL, the request body, and the headers
+  res <- VERB("POST", url = url, body = body, add_headers(headers))
+  
+  # Print the response to the console
+  cat(content(res, 'text'))
+  
+}
+
+#write.csv(fnlist,sprintf("Output/autorenew_%s.csv",today()),row.names = F)
+
+
+
+HCSA004 = ls12 %>% filter(Entity.Code == "HCSA004") %>% filter()

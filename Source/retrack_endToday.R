@@ -3,7 +3,27 @@ library(dplyr)
 library(lubridate)
 library(httr)
 
-custList = read.csv(file.choose())
+# Define directory path
+dir_path <- "C:/Users/Shantanu/Downloads"
+
+# List files in directory
+files <- list.files(dir_path)
+
+# Use regular expressions to match files ending in "_DUEFORRENEWAL.CSV"
+pattern <- "_DUEFORRENEWALS\\.CSV$"
+matching_files <- files[grep(pattern, files)]
+
+# Get modification times of filtered files
+file_info <- file.info(file.path(dir_path, matching_files))
+
+# Select most recent file
+most_recent_file <- matching_files[which.max(file_info$mtime)]
+
+# Read most recent file
+custList <- read.csv(file.path(dir_path, most_recent_file))
+
+
+#custList = read.csv(file.choose())
 custList$Smart.Card.Number = gsub("'","",custList$Smart.Card.Number)
 custList <- custList %>% mutate(VC.length = nchar(Smart.Card.Number),  .after = 7) # get character length of vc
 custList$VC.length <- gsub("8","GOSPELL",custList$VC.length, fixed = TRUE)
