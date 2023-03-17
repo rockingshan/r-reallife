@@ -315,3 +315,17 @@ for (i in 1:nrow(fnlist)) {
 
 
 HCSA004 = ls12 %>% filter(Entity.Code == "HCSA004") %>% filter()
+
+
+######
+w1 = read.csv(file.choose())
+w2 = read.csv(file.choose())
+w3 = read.csv(file.choose())
+w4 = read.csv(file.choose())
+wall = rbind(w1,w2,w3,w4)
+wall = wall %>% relocate(Channel.Name, .after = Broadcaster.Name)
+bqall = read.csv(file.choose())
+colnames(wall)[6] <- "Bouquet/Channel"
+colnames(bqall)[6] <- "Bouquet/Channel"
+all_d = rbind(bqall,wall)
+write.csv(all_d, "Bouquet_Alacaret_feb23.csv",row.names = F)
