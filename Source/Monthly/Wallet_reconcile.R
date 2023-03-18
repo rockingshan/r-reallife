@@ -1,9 +1,7 @@
 library(tidyverse)
 library(dplyr)
 library(readxl)
-library(stringr)
-library(lubridate)
-
+library(purrr)
 op_bal_open = read.csv(file.choose(new = F))
 op_bal_close = read.csv(file.choose(new = F))
 op_cr_dr_dtl = read.csv(file.choose(new = F))
@@ -42,3 +40,27 @@ op_wallet_calc1 = op_wallet_calc1 %>% select(Entity.Code,Entity.Name,City,Openin
                                              Wallet.Consumption,Calculated.Closing.Balance,Closing.MQ.Report) %>% mutate(Difference = Closing.MQ.Report - Calculated.Closing.Balance )
 #file_prefix <- readline("Enter a file name prefix: ")
 write.csv(op_wallet_calc1,"JAN23_WALLET_RECONCILE.CSV",row.names = F)
+
+#######################LCO Bills find Promotional customer
+filename <- file.choose()
+lco_bill = read.csv(filename)
+name <- basename(filename)
+dt = strsplit(name,"\\_")
+
+lco_bill_clear = lco_bill %>% filter(!(Customer.Nbr==""))
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+plan_names = plan_names %>% add_row(Plan.Name = "Bronze basic")
+plan_names = plan_names %>% add_row(Plan.Name = "DD Channels")
+plan_free = plan_names %>% filter(str_detect(Plan.Name,'\\(Promo'))
+plan_paid = plan_names %>% filter(!(str_detect(Plan.Name,'\\(Promo')))
+freeCustomer = lco_bill_clear %>% filter(Plan.Details %in% plan_free$Plan.Name) %>% select(Customer.Nbr,Entity.Code,Entity.Name) %>% unique()
+freeCustomerCount = freeCustomer %>% group_by(Entity.Code,Entity.Name) %>% summarise(FreeCustomers = n())
+paidCustomer = lco_bill_clear %>% filter(Plan.Details %in% plan_paid$Plan.Name) %>% select(Customer.Nbr,Entity.Code,Entity.Name) %>% unique()
+paidCustomerCount =  paidCustomer %>% group_by(Entity.Code,Entity.Name) %>% summarise(PaidCustomers = n())
+customersAll = merge(paidCustomerCount,freeCustomerCount,all.x = T,all.y = T)
+customersAll[is.na(customersAll)] <- 0
+customersAll[customersAll$Entity.Code=="MD0305","PaidCustomers"] <- customersAll[customersAll$Entity.Code=="MD0305","PaidCustomers"] + customersAll[customersAll$Entity.Code=="MD0305","FreeCustomers"]
+customersAll[customersAll$Entity.Code=="MD0305","FreeCustomers"] <- 0
+customersAll[customersAll$Entity.Code=="MD0454","FreeCustomers"] <- customersAll[customersAll$Entity.Code=="MD0454","FreeCustomers"] - 82
+customersAll <- customersAll %>% arrange(-FreeCustomers)
+write.csv(customersAll, sprintf("AllCustomers_%s",dt[[1]][3]),row.names = F)
