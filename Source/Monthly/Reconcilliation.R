@@ -36,6 +36,7 @@ sheets <-  excel_sheets(fil_path_abv)
 data_sheets <- sheets[grepl("CASEntitlement", sheets)]
 sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
 abv_cas_data = filter(sheet_df, STATUS == "Activated")
+#write.csv(abv_cas_data %>% select(SMARTCARDNO,PACKAGEID),"ABV.CSV",row.names = F)
 #abv_cas_data = read_xlsx(choose.files(default = "",caption = "Select ABV CAS File",multi = FALSE,))
 abv_cas_data_combn = abv_cas_data %>% unite(combined, c("SMARTCARDNO","PACKAGEID"))
 

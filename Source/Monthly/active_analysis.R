@@ -158,3 +158,13 @@ colnames(plan_only)[6] <- 'BASE_PLAN'
 sports18_ala_wbaseplan = merge(sports18_ala,plan_only,all.x = T,all.y = F,by.x = 'CONTRACT_NUMBER',by.y = 'CONTRACT_NUMBER')
 write.csv(sports18_ala_wbaseplan,'sports18.csv',row.names = F)
 write.csv(plan_only,"planOnly.csv")
+
+
+#####find new NT2 bouquets and remove
+list_active = read.csv(file.choose())
+nt2Bouquets = read.csv(file.choose())
+dueRenewal  = read.csv(file.choose()) %>% select(Contract.Number,Contract.End.Date)
+active_nt2 = merge(list_active,nt2Bouquets,all.x = F)
+activeNt2EndDate = merge(active_nt2,dueRenewal,by.x = "CONTRACT_NUMBER", by.y = "Contract.Number")
+
+
