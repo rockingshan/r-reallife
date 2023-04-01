@@ -35,7 +35,6 @@ custListSlct = custList %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter
 custListSlct = custListSlct %>% select(Customer.Number,Smart.Card.Number,VC.length)
 # Start timing the execution of the for loop
 start_time <- Sys.time()
-
 # Loop over each row of the data frame and make an HTTP request for each customer
 for (i in 1:nrow(custListSlct)) {
   # Create the request body for the HTTP request using the customer's account number, mobile number, and type
@@ -50,7 +49,8 @@ for (i in 1:nrow(custListSlct)) {
   )
   
   # Generate a random reference number and replace the hardcoded value in the URL with it
-  ref_no <- paste0(format(runif(1, 510000, 100000000), scientific = FALSE), "a2swzzd3")
+  date <- Sys.time()
+  ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
   url <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/Retrack?referenceno=", ref_no)
   
   # Make the HTTP request using the POST method, the request URL, the request body, and the headers

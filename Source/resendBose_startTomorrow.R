@@ -49,7 +49,8 @@ for (i in 1:nrow(custListSlct)) {
   )
   
   # Generate a random reference number and replace the hardcoded value in the URL with it
-  ref_no1 <- paste0(format(runif(1, 510000, 100000000), scientific = FALSE), "a2sbhzd3")
+  date <- Sys.time()
+  ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
   url1 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/DisconnectContract?referenceno=", ref_no1)
   
   # Make the HTTP request using the POST method, the request URL, the request body, and the headers
@@ -65,7 +66,8 @@ for (i in 1:nrow(custListSlct)) {
   
   
   # Generate a random reference number and replace the hardcoded value in the URL with it
-  ref_no2 <- paste0(format(runif(1, 510000, 100000000), scientific = FALSE), "a2sbhzd3")
+  date <- Sys.time()
+  ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
   url2 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/ReconnectContract?referenceno=", ref_no2)
   
   # Make the HTTP request using the POST method, the request URL, the request body, and the headers
