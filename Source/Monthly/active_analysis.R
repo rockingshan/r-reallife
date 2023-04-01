@@ -161,10 +161,93 @@ write.csv(plan_only,"planOnly.csv")
 
 
 #####find new NT2 bouquets and remove
-list_active = read.csv(file.choose())
-nt2Bouquets = read.csv(file.choose())
-dueRenewal  = read.csv(file.choose()) %>% select(Contract.Number,Contract.End.Date)
+list_active = read.csv("C:/Users/Shantanu/Downloads/9266350_LISTOFACTCUST.CSV")
+nt2Bouquets = read.csv("C:/Users/Shantanu/Downloads/NEW_BOUQUETS.CSV")
+dir_path <- "C:/Users/Shantanu/Downloads"
+files <- list.files(dir_path)
+pattern <- "_DUEFORRENEWALS\\.CSV$"
+matching_files <- files[grep(pattern, files)]
+file_info <- file.info(file.path(dir_path, matching_files))
+most_recent_file <- matching_files[which.max(file_info$mtime)]
+dueRenewal <- read.csv(file.path(dir_path, most_recent_file)) %>% select(Contract.Number,Contract.End.Date)
 active_nt2 = merge(list_active,nt2Bouquets,all.x = F)
-activeNt2EndDate = merge(active_nt2,dueRenewal,by.x = "CONTRACT_NUMBER", by.y = "Contract.Number")
+activeNt2EndDate = merge(active_nt2,dueRenewal,by.x = "CONTRACT_NUMBER", by.y = "Contract.Number") 
+activeNt2EndDate$Contract.End.Date = as.Date(activeNt2EndDate$Contract.End.Date, "%d/%m/%Y")
+custListSlct1 = activeNt2EndDate %>% filter(Contract.End.Date == today()) %>% select(CONTRACT_NUMBER,SERVICE_CODE) %>% unique()
+mqdate = format(today(), format="%d/%m/%Y")
+# Loop over each row of the data frame and make an HTTP request for each customer
+for (i in 1:nrow(custListSlct1)) {
+  # Create the request body for the HTTP request using the customer's account number, mobile number, and type
+  body1 <- paste0("<REQUESTINFO>\r\n<CONTRACTINFO>\r\n <CONTRACTNO>",custListSlct1[i, "CONTRACT_NUMBER"],"</CONTRACTNO>\r\n <ORDERDATE>",mqdate,"</ORDERDATE>\r\n <EFFECTIVEDATE>",mqdate,"</EFFECTIVEDATE>\r\n <BILLFREQUENCY></BILLFREQUENCY>\r\n <SALESMANCODE></SALESMANCODE>\r\n <OUTLETS></OUTLETS>\r\n <NOTES></NOTES>\r\n <STATUS></STATUS>\r\n<DELETEINFO>\r\n<PLANCODE>",custListSlct1[i, "SERVICE_CODE"],"</PLANCODE>\r\n<SERVICEGROUPCODE></SERVICEGROUPCODE>\r\n<SERVICECODE></SERVICECODE>\r\n<PACKAGEGROUPCODE></PACKAGEGROUPCODE>\r\n<PACKAGECODE></PACKAGECODE>\r\n</DELETEINFO>\r\n<FLEX-ATTRIBUTE-INFO>\r\n<ATTRIBUTE1></ATTRIBUTE1>\r\n<ATTRIBUTE2></ATTRIBUTE2>\r\n<ATTRIBUTE3></ATTRIBUTE3>\r\n<ATTRIBUTE4></ATTRIBUTE4>\r\n<ATTRIBUTE5></ATTRIBUTE5>\r\n<ATTRIBUTE6></ATTRIBUTE6>\r\n<ATTRIBUTE7></ATTRIBUTE7>\r\n<ATTRIBUTE8></ATTRIBUTE8>\r\n<ATTRIBUTE9></ATTRIBUTE9>\r\n<ATTRIBUTE10></ATTRIBUTE10>\r\n</FLEX-ATTRIBUTE-INFO>\r\n</CONTRACTINFO>\r\n</REQUESTINFO>")
+  # Create the headers for the HTTP request
+  headers <- c(
+    'USERNAME' = 'MB102',
+    'PASSWORD' = 'Shan4935',
+    'EXTERNALPARTY' = 'MQS',
+    'Content-Type' = 'application/xml'
+  )
+  
+  # Generate a random reference number and replace the hardcoded value in the URL with it
+  ref_no1 <- paste0(format(runif(1, 510000, 100000000), scientific = FALSE), "a2sbhzd3")
+  url1 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/ModifyContract?referenceno=", ref_no1)
+  
+  # Make the HTTP request using the POST method, the request URL, the request body, and the headers
+  res <- VERB("POST", url = url1, body = body1, add_headers(headers))
+  
+  # Print the response to the console
+  cat(content(res, 'text'))
 
+  #Sys.sleep(15)
+  
+}
 
+######Find promotional customers
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+list_active = read.csv(file.choose())
+lcolist = read.csv(file.choose())
+list_active_filtered = filter(list_active, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,LCO_CITY,PLAN_NAME) %>% unique()
+lst_active_promo = merge(list_active_filtered,lcolist)
+write.csv(lst_active_promo,'promotional_customers.csv')
+
+#########find DPO count
+list_active = read.csv(file.choose())
+oplan_dpo = filter(list_active, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,PLAN_NAME) %>% unique()
+colnames(oplan_dpo)[2] <- "Plan.Name" 
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Diamond_Dig_380 (Promotional)"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "DIAMOND DIGITAL @ 380 (Promotional)"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Gold_353 (Promotional)"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "GOLD DIGITAL @ 353 (Promotional)"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Hd_Dha_300(Promotional)"] <- "HD DHAMAKA @ 300"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "HD DHAMAKA @ 300(Promotional)"] <- "HD DHAMAKA @ 300"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Beng_455 (Promotional)"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Beng_550 (Promotional)"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "MB BANGLA HD 1 @ 455 (Promotional)"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "MB BANGLA HD 2 @ 550 (Promotional)"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Silver_Pow_276 (Promotional)"] <- "Silver Digital Power @ 276"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Silver Digital Power @ 276 (Promotional)"] <- "Silver Digital Power @ 276"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Silver Digital Special @ 276"] <- "Silver Digital Power @ 276"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela_Bon_330 (Promotional)"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela Bonanza @ 330 (Promotional)"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela Bonanza Special @ 330"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela_Pac_185(Promotional)"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela Starter Pack @ 185 (Promotional)"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela Basic Pack @ 155 (Promo)"] <- "Meghbela Basic Pack @ 155"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Platinum_Dig_450 (Promotional)"] <- "PLATINUM DIGITAL @ 450"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "PLATINUM DIGITAL @ 450 (Promotional)"] <- "PLATINUM DIGITAL @ 450"
+
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Diamond_Dig_380"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Gold_Dig_353"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Hd_Dha_300"] <- "HD DHAMAKA @ 300"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Beng_455"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Beng_550"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Silver_Pow_276"] <- "Silver Digital Power @ 276"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela_Bon_330"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela_Pac_185"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Platinum_Dig_450"] <- "PLATINUM DIGITAL @ 450"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Meghbela_Sta_165"] <- "Meghbela Bengali Starter @165"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Hin_455"] <- "MB HINDI HD 1 @ 455"
+oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 550"
+
+oplan_pivot = oplan_dpo %>% group_by(Plan.Name) %>% summarize(SubsCount = n())
+#####5 report
+write.csv(oplan_pivot,"Output/5_DPO_plan_count_Feb23.csv",row.names = F)

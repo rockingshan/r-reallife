@@ -279,7 +279,7 @@ DF = list_active %>% filter(SERVICE_NAME == 'Aaj Tak @ 0.75')
 
 ###autorenewal customers find 
 ls12 = read.csv(file.choose())
-lsac = ls12 %>% filter(Is.Auto.Renew == "Y") %>% select(Customer.Nbr,Contract.Number,Entity.Code,Entity.Name) %>% unique()
+lsac = ls12 %>% filter(Is.Auto.Renew == "Y") %>% select(Customer.Nbr,Contract.Number,Entity.Code,Entity.Name,First.Name,Stb,Sc,Mobile.Phone) %>% unique()
 duernw = read.csv(file.choose())
 duelist = duernw %>% select(Customer.Number,Contract.Number,Contract.End.Date)
 duelist$Contract.End.Date = as.Date(duelist$Contract.End.Date, "%d/%m/%Y")

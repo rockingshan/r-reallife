@@ -19,7 +19,7 @@ fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("Cumulati
 sheets <-  excel_sheets(fil_path_abv)
 data_sheets <- sheets[grepl("CumulativeActiveSMCReport", sheets)]
 sheet_df <- map_dfr(data_sheets, ~read_excel(fil_path_abv, sheet = .x, skip = 1), id = .x)
-abv_cas_data = filter(sheet_df, STATUS == "Activated") %>% select(SMARTCARDNO,PACKAGEID)
+abv_cas_data = filter(sheet_df, PPCSTATUS == "Activated") %>% select(SMARTCARDNO,PACKAGEID)
 dq1 <- abv_cas_data %>% pivot_wider(names_from = NULL,names_prefix = "CAS",values_from = PACKAGEID)
 abv_dq <- dq1 %>% unnest_wider(CAS)
-write.csv(abv_dq,"Output/ABV_final.csv",row.names = F)
+write.csv(abv_cas_data,"Output/ABV_final.csv",row.names = F)
