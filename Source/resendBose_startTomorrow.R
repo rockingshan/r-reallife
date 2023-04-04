@@ -30,13 +30,14 @@ custList$VC.length <- gsub("12","SAFEVIEW",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("15","NAGRA",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("16","ABV",custList$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
 custList$Contract.End.Date = as.Date(custList$Contract.End.Date, "%d/%m/%Y")
-custListSlct = custList %>% filter(Entity.Code %in% c("MD0450","MSW065","HCSD015","MD0045","MDCH066")) %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+30)
+custListSlct = custList %>% filter(Entity.Code %in% c("MD0450","MSW065","HCSD015","MD0045","MDCH066","MDCH047")) %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+29)
 custListSlct = custListSlct %>% select(Customer.Number,Contract.Number,Smart.Card.Number,VC.length)
 # Start timing the execution of the for loop
 start_time <- Sys.time()
-mqdate = format(today(), format="%d/%m/%Y")
+
 # Loop over each row of the data frame and make an HTTP request for each customer
 for (i in 1:nrow(custListSlct)) {
+  mqdate = format(today(), format="%d/%m/%Y")
   # Create the request body for the HTTP request using the customer's account number, mobile number, and type
   body1 <- paste0("<REQUESTINFO>\r\n<KEY_NAMEVALUE>\r\n<KEY_NAME>CONTRACTNO</KEY_NAME>\r\n<KEY_VALUE>",custListSlct[i, "Contract.Number"],"</KEY_VALUE>\r\n</KEY_NAMEVALUE>\r\n<DISCONNECTIONINFO>\r\n<DISCONNECTIONDATE>",mqdate,"</DISCONNECTIONDATE>\r\n<REASON>VACATION</REASON>\r\n<REMARKS>DISCONNECT</REMARKS>\r\n</DISCONNECTIONINFO>\r\n</REQUESTINFO>\r\n")
   
@@ -51,7 +52,7 @@ for (i in 1:nrow(custListSlct)) {
   # Generate a random reference number and replace the hardcoded value in the URL with it
   date <- Sys.time()
   ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
-  url1 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/DisconnectContract?referenceno=", ref_no1)
+  url1 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/DisconnectContract?referenceno=", ref_no)
   
   # Make the HTTP request using the POST method, the request URL, the request body, and the headers
   res <- VERB("POST", url = url1, body = body1, add_headers(headers))
@@ -60,14 +61,15 @@ for (i in 1:nrow(custListSlct)) {
   cat(content(res, 'text'))
   
   # Pause for 2 min before making the next HTTP request
-  Sys.sleep(120)
+  Sys.sleep(90)
   
+  mqdate = format(today(), format="%d/%m/%Y")
   body2 <- paste0("<REQUESTINFO>\r\n<KEY_NAMEVALUE>\r\n<KEY_NAME>CONTRACTNO</KEY_NAME>\r\n<KEY_VALUE>",custListSlct[i, "Contract.Number"],"</KEY_VALUE>\r\n</KEY_NAMEVALUE>\r\n<RECONNECTIONINFO>\r\n<RECONNECTIONDATE>",mqdate,"</RECONNECTIONDATE>\r\n<REMARKS></REMARKS>\r\n<REASONCODE></REASONCODE>\r\n</RECONNECTIONINFO>\r\n</REQUESTINFO>\r\n")
   
   
   # Generate a random reference number and replace the hardcoded value in the URL with it
   date <- Sys.time()
-  ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
+  ref_no2 <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
   url2 <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/ReconnectContract?referenceno=", ref_no2)
   
   # Make the HTTP request using the POST method, the request URL, the request body, and the headers
