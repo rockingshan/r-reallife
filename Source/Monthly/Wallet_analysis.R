@@ -53,7 +53,7 @@ lcowise_data_export <- function(wallet_in){
 hdnd_nm = c('MDKH','MDBKT','MDBQA','MDCNDP','MDDHH','MDHCNJV','MDOR','MDSKWJV','TESTENTITY','CORP')
 
 
-wallet = read.csv(file.choose(new = F))
+wallet = read.csv(file.choose(new = F),colClasses = c(Unique.Id="character"))
 wallet = filter(wallet, !(Entity.Code %in% hdnd_nm))
 
 area_wise_op(wallet)
@@ -138,8 +138,22 @@ write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 direct_cus = c('MD0440','MBDML','MD0479','MD0478')
 wallet = filter(wallet, (Entity.Code %in% direct_cus))
 
-wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
+wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
 wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
 df = wallet_filt %>% group_by(Plan.Details) %>% summarise(debit = sum(Amount.Debit))
 customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
 write.csv(df, "Planwise_amount.csv",row.names = F)
+
+###monthwise
+# Convert Transaction.Date column to a date-time object
+wallet_filt$Transaction.Date <- dmy_hms(wallet_filt$Transaction.Date)
+
+# Extract month and year from Transaction.Date column and combine into a new column
+wallet_filt$Month.Year <- format(wallet_filt$Transaction.Date, "%Y-%m")
+
+# Loop through each month and create separate data frames
+for (my in unique(wallet_filt$Month.Year)) {
+  month_data <- wallet_filt[wallet_filt$Month.Year == my, ]
+  filename <- paste0("Meghbela_Subs_Bill_", my, ".csv")
+  write.csv(month_data, filename, row.names = FALSE)
+}

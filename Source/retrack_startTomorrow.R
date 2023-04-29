@@ -43,7 +43,7 @@ for (i in 1:nrow(custListSlct)) {
   # Create the headers for the HTTP request
   headers <- c(
     'USERNAME' = 'MB102',
-    'PASSWORD' = 'Shan4935',
+    'PASSWORD' = 'Shan8648',
     'EXTERNALPARTY' = 'MQS',
     'Content-Type' = 'application/xml'
   )

@@ -206,13 +206,15 @@ totalGospell = merge(inventory_gs,list_active_gs,by.x = 'SERIAL_NUMBER', by.y = 
 inactiveGospell = totalGospell %>% filter(is.na(CUSTOMER_NBR))
 inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n())
 write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
-###########################
+###########################pacakge cratorr with channels
 
 df1 = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
 df2 = read.csv(file.choose(new = F)) ##
 SAFE_CSCODE = read.csv(file.choose(new = F),colClasses = c(SubscriptionID="character"))
 DF_K = merge(df1,df2,all.x = T)
 DF_K$Provsion.Code <- gsub("'","",DF_K$Provsion.Code)
+newplan = read.csv(file.choose(new = F))
+dpoabv = read.csv(file.choose(new = F)) ##import dpo name and cas codes
 DF_K = DF_K %>% mutate(Package = recode(Package,'CLASSIC HINDI @ 300'='CLASSIC_HIN_300','DIAMOND DIGITAL @ 380'='DIAMOND_DIG_380','GOLD DIGITAL @ 353'='GOLD_DIG_353',
                                         'HD DHAMAKA @ 300'='HD_DHA_300','MB BANGLA HD 1 @ 455'='MB_HD_BENG_455','MB BANGLA HD 2 @ 550'='MB_HD_BENG_550','MB HINDI HD 1 @ 455'='MB_HD_HIN_455',
                                         'MB HINDI HD 2 @ 550'='MB_HD_HIN_550','Meghbela Basic Pack @ 155'='Meghbela_Pac_155','Meghbela Bengali Starter @165'='Meghbela_Sta_165',
@@ -221,12 +223,15 @@ DF_K = DF_K %>% mutate(Package = recode(Package,'CLASSIC HINDI @ 300'='CLASSIC_H
                                         'RURAL PACK @ 263'='RURAL_PAC_263','SILVER DIGITAL PLUS- URBAN @ 270'='SILVER_URB_270','SILVER DIGITAL PLUS-RURAL @ 230'='SILVER_RUR_230',
                                         'Silver Digital Power @ 276'='Silver_Pow_276','ODISHA ELITE @170'='ODISHA_ELI_170','ODISHA POWER @ 200'='ODISHA_POW_200','ODISHA SILVER DIGITAL @ 150'='ODISHA_DIG_150'
                                         ))
+DF_K_new = merge(DF_K,newplan,all.x = F,all.y = T)
 plan_name = DF_K %>% select(Package) %>% unique()
 plan_list = plan_name[['Package']]
 pck_srv_safe = filter(DF_K,Prov.Sys.Name == 'SAFEVIEW')
 pck_srv_gosp = filter(DF_K,Prov.Sys.Name == 'GOSPELL')
 pck_srv_abv = filter(DF_K,Prov.Sys.Name == 'ABV')
-planSafeviewChannel = merge(pck_srv_safe,SAFE_CSCODE,all.x = T,by.x = 'Provsion.Code',by.y = 'SubscriptionID') %>% select(Package,CHANNEL.NAME) %>% unique()
+#special block
+plannew = read.csv(file.choose(new = F),colClasses = c(Provision.Code="character"))
+planSafeviewChannel = merge(plannew,SAFE_CSCODE,all.x = T,by.x = 'Provision.Code',by.y = 'SubscriptionID') %>% select(Plan.Name,CHANNEL.NAME) %>% unique()
 planSafeviewChannel = planSafeviewChannel %>% arrange(CHANNEL.NAME)
 planSafeviewChannel = planSafeviewChannel %>% arrange(Package) ### sort data
 for (planname in plan_list) {
@@ -235,23 +240,29 @@ for (planname in plan_list) {
 }
 
 abv_pack = read_excel(file.choose(new = F),skip = 1)
-planABVChannel = merge(pck_srv_abv,abv_pack,all.x = T,by.x = 'Provsion.Code',by.y = 'PACKAGEID') %>% select(Package,CHANNELID,CHANNELNAME) %>% unique()
+planABVChannel = merge(dpoabv,abv_pack,all.x = T,by.x = 'Provsion.Code',by.y = 'PACKAGEID') %>% select(Plan.Name,CHANNELID,CHANNELNAME) %>% unique()
 planABVChannel = planABVChannel %>% arrange(CHANNELID)
 planABVChannel = planABVChannel %>% arrange(Package) ### sort data
 for (planname in plan_list) {
   pq_flt = filter(planABVChannel,Package==planname)
   write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
 }
-
+pck_srv_gosp= read.csv(file.choose(new = F))
 GSPL_PACK  = read_excel(file.choose(new = F))
-planGSPLChannel = merge(pck_srv_gosp,GSPL_PACK,all.x = T,by.x = 'Provsion.Code',by.y = 'Product ID') %>% select('Package',ServiceID,'Service Name') %>% unique()
+planGSPLChannel = merge(pck_srv_gosp,GSPL_PACK,all.x = T,by.x = 'Provsion.Code',by.y = 'Product ID') %>% select('Package','Service ID','Service Name') %>% unique()
 planGSPLChannel = planGSPLChannel %>% arrange(ServiceID)
 planGSPLChannel = planGSPLChannel %>% arrange(Package) ### sort data
 for (planname in plan_list) {
   pq_flt = filter(planGSPLChannel,Package==planname)
   write.csv(pq_flt,sprintf("Output/%s.csv",planname),row.names = F)
 }
-write.csv(DF_K,"odisha_plans.csv")
+
+##nagra block
+dponagra = read.csv(file.choose(new = F))
+nagrasrvc = read.csv(file.choose(new = F))
+dpo_nagra_srv = merge(dponagra,nagrasrvc,all.x = T)
+
+write.csv(planGSPLChannel,"SingleCasCode fro DPO - Gospell.csv")
 
 ######################################################
 list_active = read.csv(file.choose(new = F))
@@ -345,3 +356,33 @@ newCustPlan = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name ) %>% s
 missingCustPlan = merge(missingCustomer,newCustPlan, by = "CUSTOMER_NBR", all.x = T,all.y = F)
 missingCustPlanPivot = missingCustPlan %>% group_by(PLAN_NAME.y) %>% summarise(PlanCount = n())
 
+######find new plans
+ls_new = subset(list_active, grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T))
+old_bq = read.csv(file.choose())
+ls_old_bq = list_active %>% filter(PLAN_CODE %in% old_bq$PLAN_CODE) 
+wallet = read.csv(file.choose())
+wallet$Bill.Charge.Start.Date <- parse_date_time(wallet$Bill.Charge.Start.Date, orders = "dmy HMS")
+wallet$Bill.Charge.Start.Date <- as.Date(wallet$Bill.Charge.Start.Date)
+wallet_ap = wallet %>% filter(Bill.Charge.Start.Date > "2023-03-31")
+ls_oldbq_wa = merge(ls_old_bq,wallet_ap,by.x = 'CONTRACT_NUMBER',by.y = 'Contract.Number')
+ls_new_serv = subset(ls_new, !(grepl('^MBIL',ls_new$SERVICE_CODE,ignore.case = T)))
+write.csv(ls_new_serv,"fj.csv")
+
+
+
+
+# create sample data frames
+df1 <- data.frame(customer.names = c("Alice", "Bob", "Charlie"),
+                  transaction.5th = c(100, 200, 0))
+
+df2 <- data.frame(customer.names = c("Alice", "Bob", "Charlie"),
+                  transaction.10th = c(300, 400, 500))
+
+# merge the two data frames
+df_combined <- merge(df1, df2, by = "customer.names", all = TRUE)
+
+# replace any NA values with 0
+df_combined[is.na(df_combined)] <- 0
+
+# print the combined data frame
+print(df_combined)
