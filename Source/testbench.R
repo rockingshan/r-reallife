@@ -371,18 +371,3 @@ write.csv(ls_new_serv,"fj.csv")
 
 
 
-# create sample data frames
-df1 <- data.frame(customer.names = c("Alice", "Bob", "Charlie"),
-                  transaction.5th = c(100, 200, 0))
-
-df2 <- data.frame(customer.names = c("Alice", "Bob", "Charlie"),
-                  transaction.10th = c(300, 400, 500))
-
-# merge the two data frames
-df_combined <- merge(df1, df2, by = "customer.names", all = TRUE)
-
-# replace any NA values with 0
-df_combined[is.na(df_combined)] <- 0
-
-# print the combined data frame
-print(df_combined)

@@ -8,7 +8,7 @@ library(stringr)
 #need to create package-service configuration files for 4 weeks
 ###Single cas code pack names from gdrive
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
-###WORK oDISHA BQ REPORT
+###WORK oDISHA BQ REPORT ####
 bc_odisha = read_xlsx(file.choose(), skip = 3)
 names(bc_odisha) = make.names(names(bc_odisha))
 bc_odisha = bc_odisha[!grepl("Plan Name", bc_odisha$Plan.Name),]
@@ -66,7 +66,7 @@ active_pivot = bc_odisha_bq_all %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_bq_rpt = merge(bc_name,active_pivot)
 
-##WORK ODISHA ALACARTE REPORT
+##WORK ODISHA ALACARTE REPORT ####
 al_od = read_xlsx(file.choose(), skip = 3)
 names(al_od) = make.names(names(al_od))
 al_od = al_od[!grepl("Plan Name", al_od$Plan.Name),]
@@ -74,30 +74,69 @@ al_od = al_od[!grepl("Broadcaster Name:*", al_od$Month),]
 al_od_filterred = al_od %>%
   select(Broadcaster.Name,Plan.Name,Channel,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel) %>% distinct() %>% na.omit()
-bc_name = al_od %>%
-  select(Broadcaster.Name,Channel) %>% distinct()%>% na.omit()
+
 al_od_filterred$No.of.Subs.On.7th.Day = as.numeric(al_od_filterred$No.of.Subs.On.7th.Day)
 al_od_filterred$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(al_od_filterred$No.of.Subs.On.14th.Day..14TH_DAY)
 al_od_filterred$No.of.Subs.On.21st.Day = as.numeric(al_od_filterred$No.of.Subs.On.21st.Day)
 al_od_filterred$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(al_od_filterred$No.of.Subs.On.28th.Day..28TH_DAY)
 al_od_filterred$Monthly.Subs.of.the.Channel = as.numeric(al_od_filterred$Monthly.Subs.of.the.Channel)
-active_pivot = al_od_filterred %>% 
+##add new alacarte from single cas code
+al_od_singlecas = bc_odisha_combo %>% filter(X == 'Alacarte') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+                                                                        No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+colnames(al_od_singlecas)[3]<-'Channel'
+##join alacarte
+al_od_final = rbind(al_od_filterred,al_od_singlecas)
+bc_name = al_od_final %>%
+  select(Broadcaster.Name,Channel) %>% distinct()%>% na.omit()
+
+active_pivot = al_od_final %>% 
   group_by(Channel) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_al_rpt = merge(bc_name,active_pivot)
 
 
-####WORK ON WB BOUQUWT
+####WORK ON WB BOUQUET ####
 bq_wb = read_xlsx(file.choose(), skip = 3)
 names(bq_wb) = make.names(names(bq_wb))
 bq_wb = bq_wb[!grepl("Plan Name", bq_wb$Plan.Name),]
 bq_wb = bq_wb[!grepl("Broadcaster Name:*", bq_wb$Broadcaster.Name),]
 bq_wb = bq_wb[!grepl("Plan Name", bq_wb$Plan.Name),]
 bq_wb = bq_wb[!grepl("Broadcaster Name:*", bq_wb$Broadcaster.Name),]
-bq_wb_old_pack = bq_wb[!grepl("_", bq_wb$Plan.Name),] %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+##different single cas code pack and calculate
+bq_wb_nw_sncd = bq_wb %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+                                                                                   No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+bq_wb_nw_sncd_7 = bq_wb_nw_sncd %>% select(Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+bq_wb_nw_sncd_14 = bq_wb_nw_sncd %>% select(Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY) %>% unique()
+bq_wb_nw_sncd_21 = bq_wb_nw_sncd %>% select(Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+bq_wb_nw_sncd_28 = bq_wb_nw_sncd %>% select(Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
+bq_wb_nw_sncd_avg = bq_wb_nw_sncd %>% select(Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
+#singlecode pak
+bq_wb_nw_sncd_7_pk = merge(bq_wb_nw_sncd_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bq_wb_nw_sncd_14_pk = merge(bq_wb_nw_sncd_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bq_wb_nw_sncd_21_pk = merge(bq_wb_nw_sncd_21,singlepack_21,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bq_wb_nw_sncd_28_pk = merge(bq_wb_nw_sncd_28,singlepack_28,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+
+bq_wb_nw_sncd_combo = merge(bq_wb_nw_sncd_7_pk,bq_wb_nw_sncd_14_pk, all = T)
+bq_wb_nw_sncd_combo = merge(bq_wb_nw_sncd_combo, bq_wb_nw_sncd_21_pk,all = T)
+bq_wb_nw_sncd_combo = merge(bq_wb_nw_sncd_combo, bq_wb_nw_sncd_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
+bq_wb_nw_sncd_combo[is.na(bq_wb_nw_sncd_combo)] <- 0
+
+bq_wb_nw_sncd_combo$No.of.Subs.On.7th.Day = as.numeric(bq_wb_nw_sncd_combo$No.of.Subs.On.7th.Day)
+bq_wb_nw_sncd_combo$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(bq_wb_nw_sncd_combo$No.of.Subs.On.14th.Day..14TH_DAY)
+bq_wb_nw_sncd_combo$No.of.Subs.On.21st.Day = as.numeric(bq_wb_nw_sncd_combo$No.of.Subs.On.21st.Day)
+bq_wb_nw_sncd_combo$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(bq_wb_nw_sncd_combo$No.of.Subs.On.28th.Day..28TH_DAY)
+bq_wb_nw_sncd_combo = bq_wb_nw_sncd_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(bq_wb_nw_sncd_combo, starts_with("No.of"))))
+
+bq_wb_nw_sncd_combo_bouq = bq_wb_nw_sncd_combo %>% filter(X == 'Bouquet') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+                                                                             No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+
+####old pacakges working
+bc_wb_old = bq_wb %>% filter(!(Bouquet %in% bouquet_names$Bouquet))
+
+bq_wb_old_pack = bc_wb_old[!grepl("_", bc_wb_old$Plan.Name),] %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                  No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
-bq_wb_new_pack = bq_wb[grepl("_", bq_wb$Plan.Name),]
+bq_wb_new_pack = bc_wb_old[grepl("_", bc_wb_old$Plan.Name),]
 bqwbnew_7 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
 bqwbnew_14 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY) %>% unique()
 bqwbnew_21 = bq_wb_new_pack %>% select(Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
@@ -123,7 +162,7 @@ bqwbnew_combo = bqwbnew_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(
 #bqwbnew_combo = read.csv(file.choose())
 bqwbnew_combo_bouq = bqwbnew_combo %>% filter(X == 'Bouquet') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
-wb_bouquet_final = rbind(bq_wb_old_pack,bqwbnew_combo_bouq)
+wb_bouquet_final = rbind(bq_wb_old_pack,bqwbnew_combo_bouq,bq_wb_nw_sncd_combo_bouq)
 wb_bouquet_final$No.of.Subs.On.7th.Day = as.numeric(wb_bouquet_final$No.of.Subs.On.7th.Day)
 wb_bouquet_final$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(wb_bouquet_final$No.of.Subs.On.14th.Day..14TH_DAY)
 wb_bouquet_final$No.of.Subs.On.21st.Day = as.numeric(wb_bouquet_final$No.of.Subs.On.21st.Day)
@@ -134,7 +173,7 @@ wbbqt_active_pivot = wb_bouquet_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-########WORK ON WB ALACARTE
+######## WORK ON WB ALACARTE #####
 al_wb = read_xlsx(file.choose(), skip = 3)
 names(al_wb) = make.names(names(al_wb))
 al_wb = al_wb[!grepl("Plan Name", al_wb$Plan.Name),]
@@ -150,50 +189,58 @@ al_wb_filterred$Monthly.Subs.of.the.Channel = as.numeric(al_wb_filterred$Monthly
 wb_new_ala = bqwbnew_combo %>% filter(X == 'Alacarte') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
 colnames(wb_new_ala)[3]<-'Channel'
-wb_new_ala_final = rbind(al_wb_filterred,wb_new_ala)
+##add from single cascode
+al_wb_singlecas = bq_wb_nw_sncd_combo %>% filter(X == 'Alacarte') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+                                                                         No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+colnames(al_wb_singlecas)[3]<-'Channel'
+
+wb_new_ala_final = rbind(al_wb_filterred,wb_new_ala,al_wb_singlecas)
+
+
 
 active_pivot_ala_wb = wb_new_ala_final %>% 
   group_by(Channel,Broadcaster.Name) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+#### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Mar23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Mar23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
-write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_Mar23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
-write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_Mar23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Apr23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Apr23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_Apr23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_Apr23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 
-###Required by STar
-active_pivot = bc_odisha_filterred %>% 
+###Required by STar ####
+od_bq_rpt = bc_odisha_bq_all %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.") %>%
   group_by(Bouquet,Plan.Name) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
-od_bq_rpt = merge(bc_name,active_pivot) %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.")
 
-active_pivot = al_od_filterred %>% 
+
+od_al_rpt = al_od_final %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.") %>%
   group_by(Channel,Plan.Name) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
-od_al_rpt = merge(bc_name,active_pivot) %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.")
 
-wbbqt_active_pivot = wb_bouquet_final %>% 
-  group_by(Bouquet,Plan.Name,Broadcaster.Name) %>%
+
+wbbqt_active_pivot = wb_bouquet_final %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.") %>%
+  group_by(Bouquet,Plan.Name) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
-            'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel)) %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.")
+            'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-active_pivot_ala_wb = wb_new_ala_final %>% 
-  group_by(Channel,Plan.Name,Broadcaster.Name) %>%
+active_pivot_ala_wb = wb_new_ala_final %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.") %>%
+  group_by(Channel,Plan.Name) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
-            'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel)) %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.")
+            'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 
 
 
-##Data Required by Zee
+##Data Required by Zee ####
 list_bouquet_dated = read.csv(file.choose(new = F)) #import MQ data bouquet
 list_alacarte = read.csv(file.choose(new = F)) #import MQ alacarte details
 inv = read.csv(file.choose(new = F))
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 discon = read.csv(file.choose(new = F))
-################
+###
 discon_fl = discon %>% filter(CONTRACT_NUMBER_6 > 11070860) %>% select(Customer.Number,Set.Top.Box.Number) %>% filter(!(Set.Top.Box.Number == "No STB")) %>% unique()
 discon_fl$Set.Top.Box.Number = gsub("'","",discon_fl$Set.Top.Box.Number)
 ###merges with inventory file and return set top box type
@@ -205,7 +252,7 @@ discon_type_sd = discon_type %>% filter(!(str_detect(ITEM_DESCR, "HD")))
 bq_acc = list_bouquet_dated %>% select(Customer.Number,Broadcaster.Name) %>% unique()
 al_acc = list_alacarte %>% select(Customer.Number,Broadcaster.Name) %>% unique()
 al_bc_acc = rbind(bq_acc,al_acc) %>% unique()
-pay_bvc = c("Star India Pvt. Ltd.","Zee Entertainment  Enterprises Limited","Discovery Communications India","Sony Pictures Networks India Pvt. Ltd.","IndiaCast Media Distribution Pvt. Ltd.","New Delhi Television Ltd","WarnerMedia India Pvt. Ltd","TV Today Network Ltd.","SUN Distribution Services Pvt. Ltd.","Zee Media Corporation Ltd","Raj Tv","Bennet Coleman & Company Ltd","IN 10 MEDIA PVT LTD","Eenadu Television Pvt Ltd","Celebrities Management Pvt Ltd","Odisha Television  Ltd","SIDHARTH BROADCASTING PRIVATE LIMITED","BBC Global News India Pvt. Ltd","FOOD FOOD","Lex Sportel Vision Pvt. Ltd.")
+pay_bvc = c("Star India Pvt. Ltd.","Zee Entertainment  Enterprises Limited","Discovery Communications India","Sony Pictures Networks India Pvt. Ltd.","IndiaCast Media Distribution Pvt. Ltd.","New Delhi Television Ltd","WarnerMedia India Pvt. Ltd","TV Today Network Ltd.","SUN Distribution Services Pvt. Ltd.","Zee Media Corporation Ltd","Raj Tv","Bennet Coleman & Company Ltd","IN 10 MEDIA PVT LTD","Eenadu Television Pvt Ltd","Celebrities Management Pvt Ltd","Odisha Television  Ltd","SIDHARTH BROADCASTING PRIVATE LIMITED","BBC Global News India Pvt. Ltd","FOOD FOOD","Lex Sportel Vision Pvt. Ltd.","Tarang Broadcasting Company Limited")
 fta_list = al_bc_acc %>% filter(!(Broadcaster.Name %in% pay_bvc)) %>% select(Customer.Number) %>% unique()
 pay_list = al_bc_acc %>% filter(Broadcaster.Name %in% pay_bvc)
 ###number 3 - Only FTA  subscriber
@@ -260,6 +307,6 @@ oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 
 
 oplan_pivot = oplan_dpo %>% group_by(Plan.Name) %>% summarize(SubsCount = n())
 #####5 report
-write.csv(oplan_pivot,"Output/5_DPO_plan_count_Mar23.csv",row.names = F)
+write.csv(oplan_pivot,"Output/5_DPO_plan_count_Apr23.csv",row.names = F)
 
 
