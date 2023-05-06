@@ -55,3 +55,28 @@ cust_hist_abv_code1  = cust_hist_abv_code %>% filter(!(Package.Descr == "Ncf  Sl
 colnames(cust_hist_abv_code1)[4] <- "Package.Start.Date"
 output_file_name <- paste0("MEGB_PACKAGEWISEDATA_", date_part, ".csv")
 write.csv(cust_hist_abv_code1,output_file_name,row.names = F)
+
+
+###with stock
+inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
+lco_mas = read.csv(file.choose(new = F)) #lco master
+lco_mas$Lco.Code <- gsub("'","",lco_mas$Lco.Code)
+lco_mas <- lco_mas %>% select(Lco.Code,Business.Name,City)
+
+act_cust = cust_historical_start %>% select(Customer.Nbr) %>% unique()
+act_cust = act_cust %>% mutate(Status = "Active")
+inv_cus = inventory %>% filter(TYPE == "Customer")
+inv_cus_stat = merge(inv_cus,act_cust,by.x = "CUSTOMER_NBR",by.y = "Customer.Nbr", all.x = T)
+inv_cus_stat$Status[is.na(inv_cus_stat$Status)] <- 'Inactive'
+inv_ent = inventory %>% filter(TYPE == "Entity")
+inv_ent = inv_ent %>% mutate(Status = "In LCO Store")
+inv_all = rbind(inv_cus_stat,inv_ent)
+##check
+cardtype = c('Smart Card','ABV Smart Card','Sumavision SC','Gospell SC','Safeview SC','Nagra Cardless STB')
+inv_ts = inv_all %>% filter(Status == "Active") %>% filter(ITEM_DESCR %in% cardtype)
+
+# inv_cust_pivot = inv_all %>% group_by(ENTITY_CODE,Status) %>% summarise(STB.Count = n()) %>%
+#   pivot_wider(names_from = Status,values_from = STB.Count)
+# inv_cust_pivot[is.na(inv_cust_pivot)] <- 0
+inv_cust__d = merge(inv_all,lco_mas, by.x = 'ENTITY_CODE',by.y = 'Lco.Code')
+write.csv(inv_cust__d,"Output/Inventory_customer_31032023.csv",row.names = F)
