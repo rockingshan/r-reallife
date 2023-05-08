@@ -378,8 +378,19 @@ write.csv(chnl_act,"channel_details.csv",row.names = F)
 ###finding old pack and calculate amount based on remaining date ####
 duernw = read.csv(file.choose())
 duernw_fl = duernw %>% select(Contract.Number,Contract.End.Date)
+planOld = read.csv(file.choose())
+price = read.csv(file.choose()) %>% unite(combined, c("Entity.Code","Plan.Code")) %>% filter(Lco.Price.Status == "A") %>% select(combined,Price) %>% unique()
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 list_act_old_bq = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name)
 list_act_old_bq = subset(list_act_old_bq, !(grepl('^MBIL',list_act_old_bq$PLAN_CODE,ignore.case = T))) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,
                                                                                                                   FIRST_NAME,MOBILE_PHONE,VC,PLAN_CODE,PLAN_NAME,BILLING_FREQUENCY) %>% unique()
-list_act_old_bq = merge(list_act_old_bq,duernw_fl,all.x = T,by.x = "CONTRACT_NUMBER",by.y = "Contract.Number")
+list_act_old_bq = merge(list_act_old_bq,duernw_fl,all.x = T,by.x = "CONTRACT_NUMBER",by.y = "Contract.Number") %>% unite(combined,c("ENTITY_CODE","PLAN_CODE"),remove = F) %>% mutate(Type = "DPO")
+
+list_act_bc_bq = list_active %>% filter(PLAN_CODE %in% planOld$PLAN_CODE) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,
+                                                                                     FIRST_NAME,MOBILE_PHONE,VC,PLAN_CODE,PLAN_NAME,BILLING_FREQUENCY) %>% unique()
+list_act_bc_bq = merge(list_act_bc_bq,duernw_fl,all.x = T,by.x = "CONTRACT_NUMBER",by.y = "Contract.Number") %>% unite(combined,c("ENTITY_CODE","PLAN_CODE"),remove = F) %>% mutate(Type = "Bouquet")
+list_act_old = rbind(list_act_old_bq,list_act_bc_bq)
+list_act_old_price = merge(list_act_old,price,all.x = T)
+list_act_old_price$Contract.End.Date = as.Date(list_act_old_price$Contract.End.Date,  "%d/%m/%Y")
+list_act_old_price_cal = list_act_old_price %>% mutate(RefundAmount = ((Price/30)*as.numeric((Contract.End.Date - today()))))
+write.csv(list_act_old_price_cal,"old_pack_price_calc.csv",row.names = F)
