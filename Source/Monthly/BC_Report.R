@@ -240,14 +240,26 @@ list_alacarte = read.csv(file.choose(new = F)) #import MQ alacarte details
 inv = read.csv(file.choose(new = F))
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 discon = read.csv(file.choose(new = F))
+lco_mas = read.csv(file.choose(new = F)) #lco master
+lco_mas$Lco.Code <- gsub("'","",lco_mas$Lco.Code)
+lco_mas <- lco_mas %>% select(Lco.Code,Business.Name,City)
 ###
 discon_fl = discon %>% filter(CONTRACT_NUMBER_6 > 11070860) %>% select(Customer.Number,Set.Top.Box.Number) %>% filter(!(Set.Top.Box.Number == "No STB")) %>% unique()
 discon_fl$Set.Top.Box.Number = gsub("'","",discon_fl$Set.Top.Box.Number)
 ###merges with inventory file and return set top box type
-discon_type = merge(discon_fl,(inv %>% select(SERIAL_NUMBER,ITEM_DESCR) %>% unique()),by.x = "Set.Top.Box.Number",by.y = "SERIAL_NUMBER",all.x = T)
+discon_type = merge(discon_fl,(inv %>% select(SERIAL_NUMBER,ITEM_DESCR,ENTITY_CODE) %>% unique()),by.x = "Set.Top.Box.Number",by.y = "SERIAL_NUMBER",all.x = T)
+discon_lco = merge(discon_type,lco_mas, by.x = "ENTITY_CODE", by.y = "Lco.Code",all.x = T)
+####make new column based on the data of another column
+discon_lco = discon_lco %>% mutate(Box_type = case_when(
+  str_detect(ITEM_DESCR, "HD") ~ "HD",
+  !(str_detect(ITEM_DESCR, "HD")) ~ "SD"
+))
 ### 1 - disconnected by box type
-discon_type_hd = discon_type %>% filter(str_detect(ITEM_DESCR, "HD"))
-discon_type_sd = discon_type %>% filter(!(str_detect(ITEM_DESCR, "HD")))
+# discon_type_hd = discon_type %>% filter(str_detect(ITEM_DESCR, "HD"))
+# discon_type_sd = discon_type %>% filter(!(str_detect(ITEM_DESCR, "HD")))
+discon_pivot = discon_lco %>% group_by(City,Box_type) %>% summarise(Dis_count = n())
+write.csv(discon_pivot,"Output/1_Areawise_disconnected.csv",row.names = F)
+
 ####
 bq_acc = list_bouquet_dated %>% select(Customer.Number,Broadcaster.Name) %>% unique()
 al_acc = list_alacarte %>% select(Customer.Number,Broadcaster.Name) %>% unique()

@@ -341,7 +341,7 @@ colnames(bqall)[6] <- "Bouquet/Channel"
 all_d = rbind(bqall,wall)
 write.csv(all_d, "Bouquet_Alacaret_feb23.csv",row.names = F)
 
-#### find services as alacarte with pack
+#### find services as alacarte with pack ####
 list_active = read.csv(file.choose(new = F))
 
 list_service = list_active %>% filter(PLAN_CODE == "ALACARTEPL") %>% filter(SERVICE_CODE %in% c("CH82","CH25")) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,SERVICE_NAME) %>% unique()
@@ -353,11 +353,11 @@ oldList_185 = oldList_active %>% filter(PLAN_CODE == "SLVBUDGDGL") %>% select(CU
 missingCustomer = merge(oldList_185,plan_customer,all.x = T) %>% filter(is.na(PLAN_NAME))
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 plan_names = plan_names %>% add_row(Plan.Name = "Bronze basic")
-newCustPlan = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name ) %>% select(CUSTOMER_NBR,PLAN_NAME) %>% unique()
+newCustPlan = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name ) %>% select(CUSTOMER_NBR,PLAN_CODE,PLAN_NAME) %>% unique()
 missingCustPlan = merge(missingCustomer,newCustPlan, by = "CUSTOMER_NBR", all.x = T,all.y = F)
 missingCustPlanPivot = missingCustPlan %>% group_by(PLAN_NAME.y) %>% summarise(PlanCount = n())
 
-######find new plans
+######find new plans ####
 ls_new = subset(list_active, grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T))
 old_bq = read.csv(file.choose())
 ls_old_bq = list_active %>% filter(PLAN_CODE %in% old_bq$PLAN_CODE) 
