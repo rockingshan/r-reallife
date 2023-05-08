@@ -310,3 +310,105 @@ oplan_pivot = oplan_dpo %>% group_by(Plan.Name) %>% summarize(SubsCount = n())
 write.csv(oplan_pivot,"Output/5_DPO_plan_count_Apr23.csv",row.names = F)
 
 
+#####RTu customer ####
+bc_all = read_xlsx(file.choose(), skip = 1)
+names(bc_all) = make.names(names(bc_all))
+bc_all = bc_all[!grepl("Plan Name", bc_all$Plan.Name),]
+bc_all = bc_all[!grepl("Broadcaster Name:*", bc_all$Month),]
+colnames(bc_all)[9]<-'No.of.Subs.On.14th.Day.14TH_DAY'
+colnames(bc_all)[11]<-'No.of.Subs.On.28th.Day.28TH_DAY'
+
+al_all = read_xlsx(file.choose(), skip = 1)
+names(al_all) = make.names(names(al_all))
+al_all = al_all[!grepl("Plan Name", al_all$Plan.Name),]
+al_all = al_all[!grepl("Broadcaster Name:*", al_all$Month),]
+
+rtu_cus = c('MBDML','MD0440','MD0478','MD0479','MD0493','MD0495')
+del_bc = c('Zee Media Corporation Ltd','WarnerMedia India Pvt. Ltd','ABP News Network Pvt Limited','Free to AIR','Republic TV')
+bc_rtu = bc_all %>% filter(Entity.Code %in% rtu_cus) %>% filter(!(Plan.Name == "DPO Promotional Bundle")) %>% filter(!(Broadcaster.Name %in% del_bc))
+bc_rtu$No.of.Subs.On.7th.Day = as.numeric(bc_rtu$No.of.Subs.On.7th.Day)
+bc_rtu$No.of.Subs.On.14th.Day.14TH_DAY = as.numeric(bc_rtu$No.of.Subs.On.14th.Day.14TH_DAY)
+bc_rtu$No.of.Subs.On.21st.Day = as.numeric(bc_rtu$No.of.Subs.On.21st.Day)
+bc_rtu$No.of.Subs.On.28th.Day.28TH_DAY = as.numeric(bc_rtu$No.of.Subs.On.28th.Day.28TH_DAY)
+bc_rtu$Monthly.Subs.of.the.Channel = as.numeric(bc_rtu$Monthly.Subs.of.the.Channel)
+# active_pivot_bc_rtu = bc_rtu %>%
+#   group_by(Entity.Name,Bouquet) %>%
+#   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+#             'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+
+
+# active_pivot_al_rtu = al_rtu %>%
+#   group_by(Entity.Name,Channel) %>%
+#   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+#             'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+
+
+bc_rtu_nw = bc_rtu %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(Entity.Name,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                                                                                   No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+bc_rtu_nw_7 = bc_rtu_nw %>% select(Entity.Name,Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+bc_rtu_nw_14 = bc_rtu_nw %>% select(Entity.Name,Plan.Name,No.of.Subs.On.14th.Day.14TH_DAY) %>% unique()
+bc_rtu_nw_21 = bc_rtu_nw %>% select(Entity.Name,Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+bc_rtu_nw_28 = bc_rtu_nw %>% select(Entity.Name,Plan.Name,No.of.Subs.On.28th.Day.28TH_DAY) %>% unique()
+bc_rtu_nw_avg = bc_rtu_nw %>% select(Entity.Name,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
+#singlecode pak
+singlepack_7 = read.csv(file.choose())
+singlepack_14 = read.csv(file.choose())
+singlepack_21 = read.csv(file.choose())
+singlepack_28 = read.csv(file.choose())
+bc_rtu_nw_7_pk = merge(bc_rtu_nw_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bc_rtu_nw_14_pk = merge(bc_rtu_nw_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bc_rtu_nw_21_pk = merge(bc_rtu_nw_21,singlepack_21,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bc_rtu_nw_28_pk = merge(bc_rtu_nw_28,singlepack_28,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+bc_rtu_combo = merge(bc_rtu_nw_7_pk,bc_rtu_nw_14_pk, all = T)
+bc_rtu_combo = merge(bc_rtu_combo, bc_rtu_nw_21_pk,all = T)
+bc_rtu_combo = merge(bc_rtu_combo, bc_rtu_nw_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
+bc_rtu_combo[is.na(bc_rtu_combo)] <- 0
+
+bc_rtu_combo = bc_rtu_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(bc_rtu_combo, starts_with("No.of"))))
+
+bc_rtu_combo_bouq = bc_rtu_combo %>% filter(X == 'Bouquet') %>% select(Entity.Name,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                                                                             No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+
+##calculate old process
+bc_rtu_old = bc_rtu %>% filter(!(Bouquet %in% bouquet_names$Bouquet))
+bc_rtu_old_fl = bc_rtu_old %>%
+  select(Entity.Name,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+         No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel) %>% distinct() %>% na.omit()
+##add single cas code pack
+bc_rtu_bq_all = rbind(bc_rtu_old_fl,bc_rtu_combo_bouq)
+
+bc_name = bc_odisha_bq_all %>%
+  select(Broadcaster.Name,Bouquet) %>% distinct()%>% na.omit()
+
+
+active_pivot_bc_rtu = bc_rtu_bq_all %>% 
+  group_by(Entity.Name,Bouquet) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+
+
+##WORK rtu ALACARTE REPORT
+al_rtu = al_all %>% filter(Entity.Code %in% rtu_cus) %>% filter(!(Plan.Name == "DPO Promotional Bundle")) %>% filter(!(Broadcaster.Name %in% del_bc))
+al_rtu$No.of.Subs.On.7th.Day = as.numeric(al_rtu$No.of.Subs.On.7th.Day)
+al_rtu$No.of.Subs.On.14th.Day.14TH_DAY = as.numeric(al_rtu$No.of.Subs.On.14th.Day.14TH_DAY)
+al_rtu$No.of.Subs.On.21st.Day = as.numeric(al_rtu$No.of.Subs.On.21st.Day)
+al_rtu$No.of.Subs.On.28th.Day.28TH_DAY = as.numeric(al_rtu$No.of.Subs.On.28th.Day.28TH_DAY)
+al_rtu$Monthly.Subs.of.the.Channel = as.numeric(al_rtu$Monthly.Subs.of.the.Channel)
+al_rtu_fil = al_rtu %>% select(Entity.Name,Broadcaster.Name,Plan.Name,Channel,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                               No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+
+##add new alacarte from single cas code
+al_rtu_singlecas = bc_rtu_combo %>% filter(X == 'Alacarte') %>% select(Entity.Name,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                                                                         No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+colnames(al_rtu_singlecas)[4]<-'Channel'
+##join alacarte
+al_od_final = rbind(al_rtu_fil,al_rtu_singlecas)
+
+active_pivot_al_rtu = al_od_final %>% 
+  group_by(Channel) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+
+
+write.xlsx(as.data.frame(active_pivot_bc_rtu), file="Output/RTU_Apr_23.xlsx", sheetName="Bouquet_report", row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_al_rtu), file="Output/RTU_apr_23.xlsx", sheetName="Alacarte_report", append=TRUE, row.names=FALSE)

@@ -343,6 +343,7 @@ write.csv(all_d, "Bouquet_Alacaret_feb23.csv",row.names = F)
 
 #### find services as alacarte with pack
 list_active = read.csv(file.choose(new = F))
+
 list_service = list_active %>% filter(PLAN_CODE == "ALACARTEPL") %>% filter(SERVICE_CODE %in% c("CH82","CH25")) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,SERVICE_NAME) %>% unique()
 plan_customer = list_active %>% filter(PLAN_CODE == "SLVBUDGDGL") %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% unique()
 custServiceInPlan = merge(plan_customer,list_service,all = F)
@@ -369,5 +370,16 @@ ls_new_serv = subset(ls_new, !(grepl('^MBIL',ls_new$SERVICE_CODE,ignore.case = T
 write.csv(ls_new_serv,"fj.csv")
 
 
+###FIND CHANNEL DETAILS ####
+channel = read.csv(file.choose())
+chnl_act = merge(list_active,channel)
+write.csv(chnl_act,"channel_details.csv",row.names = F)
 
-
+###finding old pack and calculate amount based on remaining date ####
+duernw = read.csv(file.choose())
+duernw_fl = duernw %>% select(Contract.Number,Contract.End.Date)
+plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+list_act_old_bq = list_active %>% filter(PLAN_NAME %in% plan_names$Plan.Name)
+list_act_old_bq = subset(list_act_old_bq, !(grepl('^MBIL',list_act_old_bq$PLAN_CODE,ignore.case = T))) %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,
+                                                                                                                  FIRST_NAME,MOBILE_PHONE,VC,PLAN_CODE,PLAN_NAME,BILLING_FREQUENCY) %>% unique()
+list_act_old_bq = merge(list_act_old_bq,duernw_fl,all.x = T,by.x = "CONTRACT_NUMBER",by.y = "Contract.Number")
