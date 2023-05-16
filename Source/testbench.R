@@ -4,6 +4,7 @@ library(lubridate)
 library(janitor)
 library(httr)
 library(xlsx)
+library(RDCOMClient)
 
 source('Source/Functions.r')
 
@@ -374,6 +375,11 @@ write.csv(ls_new_serv,"fj.csv")
 channel = read.csv(file.choose())
 chnl_act = merge(list_active,channel)
 write.csv(chnl_act,"channel_details.csv",row.names = F)
+####FIND NEW BC BOUQUETS####
+new_pack = read.csv(file.choose())
+new_bq = list_active %>% filter(PLAN_CODE %in% new_pack$PLAN_CODE)
+write.csv(new_bq,"new_bc_bouquets.csv",row.names = F)
+
 
 ###finding old pack and calculate amount based on remaining date ####
 duernw = read.csv(file.choose())
@@ -392,5 +398,61 @@ list_act_bc_bq = merge(list_act_bc_bq,duernw_fl,all.x = T,by.x = "CONTRACT_NUMBE
 list_act_old = rbind(list_act_old_bq,list_act_bc_bq)
 list_act_old_price = merge(list_act_old,price,all.x = T)
 list_act_old_price$Contract.End.Date = as.Date(list_act_old_price$Contract.End.Date,  "%d/%m/%Y")
-list_act_old_price_cal = list_act_old_price %>% mutate(RefundAmount = ((Price/30)*as.numeric((Contract.End.Date - today()))))
+list_act_old_price_cal = list_act_old_price %>% mutate(RefundAmount = ((Price/30)*as.numeric((Contract.End.Date - today())+1)))
 write.csv(list_act_old_price_cal,"old_pack_price_calc.csv",row.names = F)
+
+####old bouq all find and refund
+old_pk_rem = read.csv(file.choose())
+old_pk_act = merge(list_active,old_pk_rem)
+write.csv(old_pk_act,"old_pk_act.csv")
+
+
+####REMOVE OLD BOUQUETS VIA MQ API####
+
+custListSlct = read.csv(file.choose())
+# Start timing the execution of the for loop
+start_time <- Sys.time()
+# Loop over each row of the data frame and make an HTTP request for each customer
+for (i in 1:nrow(custListSlct)) {
+  # Create the request body for the HTTP request using the customer's account number, mobile number, and type
+  body <- paste0("<REQUESTINFO>\r\n<CONTRACTINFO>\r\n <CONTRACTNO>", custListSlct[i, "CONTRACT_NUMBER"], "</CONTRACTNO>\r\n <ORDERDATE>09/05/2023</ORDERDATE>\r\n <EFFECTIVEDATE>09/05/2023</EFFECTIVEDATE>\r\n <BILLFREQUENCY>30D</BILLFREQUENCY>\r\n <SALESMANCODE></SALESMANCODE>\r\n <OUTLETS></OUTLETS>\r\n <NOTES>REMOVE</NOTES>\r\n <STATUS></STATUS>\r\n<DELETEINFO>\r\n<PLANCODE>", custListSlct[i, "PLAN_CODE"], "</PLANCODE>\r\n<SERVICEGROUPCODE></SERVICEGROUPCODE>\r\n<SERVICECODE></SERVICECODE>\r\n<PACKAGEGROUPCODE></PACKAGEGROUPCODE>\r\n<PACKAGECODE></PACKAGECODE>\r\n</DELETEINFO>\r\n<FLEX-ATTRIBUTE-INFO>\r\n<ATTRIBUTE1></ATTRIBUTE1>\r\n<ATTRIBUTE2></ATTRIBUTE2>\r\n<ATTRIBUTE3></ATTRIBUTE3>\r\n<ATTRIBUTE4></ATTRIBUTE4>\r\n<ATTRIBUTE5></ATTRIBUTE5>\r\n<ATTRIBUTE6></ATTRIBUTE6>\r\n<ATTRIBUTE7></ATTRIBUTE7>\r\n<ATTRIBUTE8></ATTRIBUTE8>\r\n<ATTRIBUTE9></ATTRIBUTE9>\r\n<ATTRIBUTE10></ATTRIBUTE10>\r\n</FLEX-ATTRIBUTE-INFO>\r\n</CONTRACTINFO>\r\n</REQUESTINFO>")
+  
+  # Create the headers for the HTTP request
+  headers <- c(
+    'USERNAME' = 'MB102',
+    'PASSWORD' = 'Shan8648',
+    'EXTERNALPARTY' = 'MQS',
+    'Content-Type' = 'application/xml'
+  )
+  
+  # Generate a random reference number and replace the hardcoded value in the URL with it
+  date <- Sys.time()
+  ref_no <- paste0(format(date, format = "%d%m%Y%H%M%S"), "ABRTEY")
+  url <- paste0("https://meghbela-bcrm.magnaquest.com/RestService/RestService.svc/ModifyContract?referenceno=", ref_no)
+  
+  # Make the HTTP request using the POST method, the request URL, the request body, and the headers
+  res <- VERB("POST", url = url, body = body, add_headers(headers))
+  
+  # Print the response to the console
+  cat(content(res, 'text'))
+  
+  # Pause for 5 seconds before making the next HTTP request
+  Sys.sleep(1)
+  cat("/")
+}
+
+# End timing the execution of the for loop
+end_time <- Sys.time()
+
+# Print the elapsed time taken to execute the for loop
+cat("Elapsed time:", end_time - start_time, "\n")
+
+#####Send mail to LCOs####
+# Read in the data
+data <- read.csv(file.choose())
+
+reseller_email_map <- read.csv(file.choose())
+
+# loop through each unique reseller code and send an email to the corresponding email address
+  
+
