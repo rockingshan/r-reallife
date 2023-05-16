@@ -359,6 +359,8 @@ missingCustPlanPivot = missingCustPlan %>% group_by(PLAN_NAME.y) %>% summarise(P
 
 ######find new plans ####
 ls_new = subset(list_active, grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T))
+plan_count = ls_new %>% group_by(ENTITY_CODE) %>% summarise(DPOCOUNT = n())
+write.csv(plan_count,"dpo_count.csv")
 old_bq = read.csv(file.choose())
 ls_old_bq = list_active %>% filter(PLAN_CODE %in% old_bq$PLAN_CODE) 
 wallet = read.csv(file.choose())

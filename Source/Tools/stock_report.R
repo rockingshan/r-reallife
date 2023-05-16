@@ -16,7 +16,7 @@ inventory_all = inventory %>% filter(!(ITEM_DESCR %in% cardtype)) %>%
 cust_sel = customer_data %>% select(Customer.Number,Created.Date,Customer.Status) %>% unique()
 lco_mas = read.csv(file.choose(new = F)) #lco master
 lco_mas$Lco.Code <- gsub("'","",lco_mas$Lco.Code)
-lco_mas <- lco_mas %>% select(Lco.Code,Business.Name,City)
+lco_mas <- lco_mas %>% select(Lco.Code,Business.Name,City,Mobile.Phone,Email)
 inv_cust_data = merge(inventory_all,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.Number", all.x = T)  
 inv_cust_data[inv_cust_data == ""] <- NA
 inv_cust_data$Customer.Status <- as.character(inv_cust_data$Customer.Status)
