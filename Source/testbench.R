@@ -209,10 +209,10 @@ inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n
 write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
 ###########################pacakge cratorr with channels
 
-df1 = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
-df2 = read.csv(file.choose(new = F)) ##
+inventory_BOX = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
+inventory_CARD = read.csv(file.choose(new = F)) ##
 SAFE_CSCODE = read.csv(file.choose(new = F),colClasses = c(SubscriptionID="character"))
-DF_K = merge(df1,df2,all.x = T)
+DF_K = merge(inventory_BOX,inventory_CARD,all.x = T)
 DF_K$Provsion.Code <- gsub("'","",DF_K$Provsion.Code)
 newplan = read.csv(file.choose(new = F))
 dpoabv = read.csv(file.choose(new = F)) ##import dpo name and cas codes
@@ -417,7 +417,7 @@ start_time <- Sys.time()
 # Loop over each row of the data frame and make an HTTP request for each customer
 for (i in 1:nrow(custListSlct)) {
   # Create the request body for the HTTP request using the customer's account number, mobile number, and type
-  body <- paste0("<REQUESTINFO>\r\n<CONTRACTINFO>\r\n <CONTRACTNO>", custListSlct[i, "CONTRACT_NUMBER"], "</CONTRACTNO>\r\n <ORDERDATE>09/05/2023</ORDERDATE>\r\n <EFFECTIVEDATE>09/05/2023</EFFECTIVEDATE>\r\n <BILLFREQUENCY>30D</BILLFREQUENCY>\r\n <SALESMANCODE></SALESMANCODE>\r\n <OUTLETS></OUTLETS>\r\n <NOTES>REMOVE</NOTES>\r\n <STATUS></STATUS>\r\n<DELETEINFO>\r\n<PLANCODE>", custListSlct[i, "PLAN_CODE"], "</PLANCODE>\r\n<SERVICEGROUPCODE></SERVICEGROUPCODE>\r\n<SERVICECODE></SERVICECODE>\r\n<PACKAGEGROUPCODE></PACKAGEGROUPCODE>\r\n<PACKAGECODE></PACKAGECODE>\r\n</DELETEINFO>\r\n<FLEX-ATTRIBUTE-INFO>\r\n<ATTRIBUTE1></ATTRIBUTE1>\r\n<ATTRIBUTE2></ATTRIBUTE2>\r\n<ATTRIBUTE3></ATTRIBUTE3>\r\n<ATTRIBUTE4></ATTRIBUTE4>\r\n<ATTRIBUTE5></ATTRIBUTE5>\r\n<ATTRIBUTE6></ATTRIBUTE6>\r\n<ATTRIBUTE7></ATTRIBUTE7>\r\n<ATTRIBUTE8></ATTRIBUTE8>\r\n<ATTRIBUTE9></ATTRIBUTE9>\r\n<ATTRIBUTE10></ATTRIBUTE10>\r\n</FLEX-ATTRIBUTE-INFO>\r\n</CONTRACTINFO>\r\n</REQUESTINFO>")
+  body <- paste0("<REQUESTINFO>\r\n<CONTRACTINFO>\r\n <CONTRACTNO>", custListSlct[i, "CONTRACT_NUMBER"], "</CONTRACTNO>\r\n <ORDERDATE>29/05/2023</ORDERDATE>\r\n <EFFECTIVEDATE>29/05/2023</EFFECTIVEDATE>\r\n <BILLFREQUENCY>30D</BILLFREQUENCY>\r\n <SALESMANCODE></SALESMANCODE>\r\n <OUTLETS></OUTLETS>\r\n <NOTES>REMOVE</NOTES>\r\n <STATUS></STATUS>\r\n<DELETEINFO>\r\n<PLANCODE>", custListSlct[i, "PLAN_CODE"], "</PLANCODE>\r\n<SERVICEGROUPCODE></SERVICEGROUPCODE>\r\n<SERVICECODE></SERVICECODE>\r\n<PACKAGEGROUPCODE></PACKAGEGROUPCODE>\r\n<PACKAGECODE></PACKAGECODE>\r\n</DELETEINFO>\r\n<FLEX-ATTRIBUTE-INFO>\r\n<ATTRIBUTE1></ATTRIBUTE1>\r\n<ATTRIBUTE2></ATTRIBUTE2>\r\n<ATTRIBUTE3></ATTRIBUTE3>\r\n<ATTRIBUTE4></ATTRIBUTE4>\r\n<ATTRIBUTE5></ATTRIBUTE5>\r\n<ATTRIBUTE6></ATTRIBUTE6>\r\n<ATTRIBUTE7></ATTRIBUTE7>\r\n<ATTRIBUTE8></ATTRIBUTE8>\r\n<ATTRIBUTE9></ATTRIBUTE9>\r\n<ATTRIBUTE10></ATTRIBUTE10>\r\n</FLEX-ATTRIBUTE-INFO>\r\n</CONTRACTINFO>\r\n</REQUESTINFO>")
   
   # Create the headers for the HTTP request
   headers <- c(
@@ -457,4 +457,88 @@ reseller_email_map <- read.csv(file.choose())
 
 # loop through each unique reseller code and send an email to the corresponding email address
   
+####find alacarte customers of broadcasters####
+pack = read.csv(file.choose())
+pack_bc = pack %>% select(Service.Code,Broadcaster) %>% unique()
+list_alacarte = list_active %>% filter(PLAN_CODE == "ALACARTEPL") %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_CODE,ENTITY_NAME,LCO_CITY,SERVICE_CODE,SERVICE_NAME,PLAN_NAME)
+alacarte_bc = merge(list_alacarte,pack_bc, by.x = 'SERVICE_CODE',by.y = 'Service.Code',all.x = T)
+##msm
+alacarte_bc_msm = alacarte_bc %>% filter(Broadcaster == "Sony Pictures Networks India Pvt. Ltd.")
+write.csv(alacarte_bc_msm,"msm_ala_.csv")
 
+####FIND BLANK INVENTORY ####
+inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
+cardtype = c('Gospell SC')
+boxtype = c('GOSPELL HD 7601U','GOSPELL HD L316','GOSPELL K925','Gospell STB','GOSPELL SK9501')
+inventory_CARD = inventory %>% filter(ITEM_DESCR %in% cardtype) %>% 
+  select(SERIAL_NUMBER,TYPE,ITEM_CODE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% filter(TYPE == "Entity") %>% select(ENTITY_CODE,ITEM_CODE,ITEM_DESCR,SERIAL_NUMBER) %>% unique()
+colnames(inventory_CARD)[4] <- "CARD_NO"
+inventory_BOX = inventory %>% filter(ITEM_DESCR %in% boxtype) %>% 
+  select(SERIAL_NUMBER,TYPE,ITEM_CODE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% filter(TYPE == "Entity") %>% select(ENTITY_CODE,ITEM_CODE,ITEM_DESCR,SERIAL_NUMBER) %>% unique()
+colnames(inventory_BOX)[4] <- "BOX_NO"
+inv_final = merge(inventory_BOX,inventory_CARD,by = "ENTITY_CODE",all.x = T)
+blank_cus = read.csv(file.choose())
+
+# Create an empty final table data.frame
+final_table <- data.frame(ENTITY_CODE = character(),
+                          BOX_NO = character(),
+                          CARD_NO = character(),
+                          CUSTOMER_NBR = character(),
+                          stringsAsFactors = FALSE)
+
+# Iterate over unique LCO_CODE values in df1
+unique_lco_codes <- unique(inventory_BOX$ENTITY_CODE)
+
+# Iterate over unique ENTITY_CODE values
+for (ENTITY_CODE in unique_lco_codes) {
+  # Subset data based on the current ENTITY_CODE
+  inventory_BOX_subset <- inventory_BOX[inventory_BOX$ENTITY_CODE == ENTITY_CODE, , drop = FALSE]
+  inventory_CARD_subset <- inventory_CARD[inventory_CARD$ENTITY_CODE == ENTITY_CODE, , drop = FALSE]
+  blank_cus_subset <- blank_cus[blank_cus$ENTITY_CODE == ENTITY_CODE, , drop = FALSE]
+  
+  # Check if there are any card numbers available for the current LCO_CODE
+  if (nrow(inventory_CARD_subset) == 0) {
+    # Skip the current LCO_CODE if there are no card numbers
+    next
+  }
+  if (nrow(inventory_BOX_subset) == 0) {
+    # Skip the current LCO_CODE if there are no box numbers
+    next
+  }
+  if (nrow(blank_cus_subset) == 0) {
+    # Skip the current LCO_CODE if there are no box numbers
+    next
+  }
+  
+  # Get the number of rows for each subset
+  n_rows1 <- nrow(inventory_BOX_subset)
+  n_rows2 <- nrow(inventory_CARD_subset)
+  n_rows3 <- nrow(blank_cus_subset)
+  
+  # Determine the number of iterations
+  n_iter <- max(n_rows1, n_rows2, n_rows3)
+  
+  # Create a new data.frame for the current ENTITY_CODE
+  new_rows <- data.frame(ENTITY_CODE = rep(ENTITY_CODE, n_iter),
+                         BOX_NO = inventory_BOX_subset$BOX_NO[1:n_iter],
+                         CARD_NO = NA,
+                         CUSTOMER_NBR = NA,
+                         stringsAsFactors = FALSE)
+  
+  # Fill in the CARD_NO values from inventory_CARD_subset
+  new_rows$CARD_NO[1:n_rows2] <- inventory_CARD_subset$CARD_NO
+  
+  # Fill in the CUSTOMER_NBR values from blank_cus_subset into new_rows
+  new_rows$CUSTOMER_NBR[1:n_rows3] <- blank_cus_subset$CUSTOMER_NBR
+  
+  # Append the new rows to the final table
+  final_table <- rbind(final_table, new_rows)
+}
+
+# Replace NA with blank
+final_table$CARD_NO[is.na(final_table$CARD_NO)] <- ""
+final_table$CUSTOMER_NBR[is.na(final_table$CUSTOMER_NBR)] <- ""
+final_table_full = merge(final_table,select(inventory_BOX,ITEM_CODE,BOX_NO),all.x = T) 
+
+# Print the final table
+write.csv(final_table_full,"BLANK_STB_VC.csv",row.names = F)

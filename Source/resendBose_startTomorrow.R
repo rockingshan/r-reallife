@@ -30,7 +30,7 @@ custList$VC.length <- gsub("12","SAFEVIEW",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("15","NAGRA",custList$VC.length, fixed = TRUE)
 custList$VC.length <- gsub("16","ABV",custList$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
 custList$Contract.End.Date = as.Date(custList$Contract.End.Date, "%d/%m/%Y")
-custListSlct = custList %>% filter(Entity.Code %in% c("MD0450")) %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+30)
+custListSlct = custList %>% filter(Entity.Code %in% c("MDCH063")) %>% filter(VC.length %in% c("ABV","GOSPELL")) %>% filter(Contract.End.Date == today()+30)
 custListSlct = custListSlct %>% select(Customer.Number,Contract.Number,Smart.Card.Number,VC.length)
 # Start timing the execution of the for loop
 start_time <- Sys.time()

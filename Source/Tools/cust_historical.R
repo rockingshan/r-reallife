@@ -36,7 +36,7 @@ write.csv(cust_drop_piv,"CASL_DEACTIVATED_YEARONYEAR.csv",row.names = F)
 
 
 
-###for schedule ix
+###for schedule ix give data to abv####
 cust_historical <- read.csv(file_name<-file.choose(new = F),colClasses = c("character","character","NULL","character","character","NULL","NULL","character","character","NULL","character","character","character","character","character","character","character","NULL"))
 file_name <- basename(file_name)
 date_part <- regmatches(file_name, regexpr("\\d{8}", file_name))
@@ -57,7 +57,7 @@ output_file_name <- paste0("MEGB_PACKAGEWISEDATA_", date_part, ".csv")
 write.csv(cust_hist_abv_code1,output_file_name,row.names = F)
 
 
-###with stock
+###with stock####
 inventory = read.csv(file.choose(new = F),colClasses = c(SERIAL_NUMBER="character")) ##inventory file
 lco_mas = read.csv(file.choose(new = F)) #lco master
 lco_mas$Lco.Code <- gsub("'","",lco_mas$Lco.Code)
@@ -80,3 +80,7 @@ inv_ts = inv_all %>% filter(Status == "Active") %>% filter(ITEM_DESCR %in% cardt
 # inv_cust_pivot[is.na(inv_cust_pivot)] <- 0
 inv_cust__d = merge(inv_all,lco_mas, by.x = 'ENTITY_CODE',by.y = 'Lco.Code')
 write.csv(inv_cust__d,"Output/Inventory_customer_31032023.csv",row.names = F)
+
+
+####abv_data####
+#card_data = 

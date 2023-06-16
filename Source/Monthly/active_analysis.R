@@ -251,3 +251,70 @@ oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 
 oplan_pivot = oplan_dpo %>% group_by(Plan.Name) %>% summarize(SubsCount = n())
 #####5 report
 write.csv(oplan_pivot,"Output/5_DPO_plan_count_Feb23.csv",row.names = F)
+
+
+####FIND PENETRATION FOR STAR_wb####
+bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
+list_active_wb = list_active %>% filter(LCO_STATE == "WEST BENGAL")
+act_cust_count = count(list_active_wb %>% select(CUSTOMER_NBR) %>% unique())
+dpo_count = subset(list_active_wb, grepl('^MBIL',list_active_wb$PLAN_CODE,ignore.case = T))
+dpo_count = dpo_count %>% group_by(PLAN_NAME) %>% summarise(Active = n())
+dpo_count = dpo_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%"))
+bc_count = list_active_wb %>% filter(PLAN_NAME %in% bouquet_names$Bouquet)
+bc_count = bc_count %>% group_by(PLAN_NAME) %>% summarise(Active = n())
+bc_count = bc_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%"))
+write.csv(dpo_count,"dpo_count.csv")
+write.csv(bc_count,"bc_count.csv")
+
+####lco dpo pack and customer count####
+ls_new_plan = subset(list_active, (grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T)))
+plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarise(DPO_Count = n())
+all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
+all_lco = merge(all_pivot,plan_pivot,all = T)
+all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
+write.csv(all_lco,"LCO_count_march23.csv")
+
+
+###old plans
+plan = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% unique()
+oplan_dpo = filter(plan, PLAN_NAME %in% plan_names$Plan.Name)
+
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Diamond_Dig_380 (Promotional)"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "DIAMOND DIGITAL @ 380 (Promotional)"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Gold_353 (Promotional)"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "GOLD DIGITAL @ 353 (Promotional)"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Hd_Dha_300(Promotional)"] <- "HD DHAMAKA @ 300"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "HD DHAMAKA @ 300(Promotional)"] <- "HD DHAMAKA @ 300"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Beng_455 (Promotional)"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Beng_550 (Promotional)"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "MB BANGLA HD 1 @ 455 (Promotional)"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "MB BANGLA HD 2 @ 550 (Promotional)"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Silver_Pow_276 (Promotional)"] <- "Silver Digital Power @ 276"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Silver Digital Power @ 276 (Promotional)"] <- "Silver Digital Power @ 276"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Silver Digital Special @ 276"] <- "Silver Digital Power @ 276"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela_Bon_330 (Promotional)"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela Bonanza @ 330 (Promotional)"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela Bonanza Special @ 330"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela_Pac_185(Promotional)"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela Starter Pack @ 185 (Promotional)"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela Basic Pack @ 155 (Promo)"] <- "Meghbela Basic Pack @ 155"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Platinum_Dig_450 (Promotional)"] <- "PLATINUM DIGITAL @ 450"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "PLATINUM DIGITAL @ 450 (Promotional)"] <- "PLATINUM DIGITAL @ 450"
+
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Diamond_Dig_380"] <- "DIAMOND DIGITAL @ 380"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Gold_Dig_353"] <- "GOLD DIGITAL @ 353"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Hd_Dha_300"] <- "HD DHAMAKA @ 300"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Beng_455"] <- "MB BANGLA HD 1 @ 455"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Beng_550"] <- "MB BANGLA HD 2 @ 550"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Silver_Pow_276"] <- "Silver Digital Power @ 276"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela_Bon_330"] <- "Meghbela Bonanza @ 330"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela_Pac_185"] <- "Meghbela Starter Pack @ 185"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Platinum_Dig_450"] <- "PLATINUM DIGITAL @ 450"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Meghbela_Sta_165"] <- "Meghbela Bengali Starter @165"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Hin_455"] <- "MB HINDI HD 1 @ 455"
+oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 550"
+
+plan_pivot = oplan_dpo %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarize(DPO_count = n())
+
+
+

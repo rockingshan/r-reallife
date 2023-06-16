@@ -14,7 +14,13 @@ DF = DF %>% select(Service.Name,Channel) %>% unique()
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
 trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1I8UNHSbOoPBvQQ37QgVbMqBqEos10mtL&export=download"),encoding = "UTF-8")
-
+###old_bouquetname
+bouquet_names_old = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1LVeOVPbCpPpPoUDHFRNnH4gSmyVfwvRL&export=download"))
+plan_names_old = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1i7EBGH1mzd8Xmy2ZAOLGJAVbXCYuRByz&export=download"))
+old_bq = filter(list_bouquet_dated, Bouquet %in% bouquet_names_old$Bouquet)
+old_plan = filter(list_bouquet_dated, Plan.Name %in% plan_names_old$Plan.Name) %>% filter(!(Bouquet %in% c("Meghbela Bonanza @ 330","Meghbela Basic Pack @ 155","ODISHA POWER @ 200")))
+old_customer = rbind(old_plan,old_bq) %>% unique()
+write.csv(old_customer,"old_customer.csv",row.names = F)
 #For Bronze Basic Channels
 basic_bouquet = list_bouquet_dated %>% filter(Bouquet=="Bronze Basic") %>% select(Customer.Number,Bouquet,Plan.Name) %>% unique()
 Bronze_pivot = basic_bouquet %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())

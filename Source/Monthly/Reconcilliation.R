@@ -29,6 +29,7 @@ sfw_cas_data = list_sfw %>% unite(combined, c("SMCs","SubscriptionID"))
 list_gospell = read.csv(file.choose(new = F), header = FALSE)
 colnames(list_gospell) <- c("vc", "cascode")
 GSPL_cas_data = list_gospell %>% unite(combined, c("vc", "cascode"))
+#GSPL_cas_data = GSPL_cas_data %>% mutate(cas = "GOSPELL")
 
 ##import ABV boxes
 fil_path_abv = paste(normalizePath(dirname(list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")))),fsep= .Platform$file.sep,list.files(,pattern = paste("CASEntitlementDumpReport","*",sep = "")),sep="")
@@ -60,8 +61,8 @@ write.csv(recon_sfw_NA_out_full, "Output/Safeview_active_service_not_in_MQ.csv",
 
 #GOSPELL operation GOSPELL
 list_ac_GSPL = list_ac_GSPL %>% unite(combined, c("VC","CASCODE"))
-mq_GSPL_data = list_ac_GSPL %>% select(combined,CUSTOMER_NBR,STB,SERVICE_NAME) %>% distinct()
-reconcile_data_GSPL = merge(x = GSPL_cas_data, y = mq_GSPL_data, by = "combined", all.x = TRUE) # vlookup cas data with mq data, cas data on left side
+mq_GSPL_data = list_ac_GSPL %>% select(combined,CUSTOMER_NBR,CONTRACT_NUMBER,STB,SERVICE_NAME) %>% distinct()
+reconcile_data_GSPL = merge(x = GSPL_cas_data, y = mq_GSPL_data, by = "combined", all.y = TRUE) # vlookup cas data with mq data, cas data on left side
 recon_GSPL_NA_output = reconcile_data_GSPL %>% filter(is.na(CUSTOMER_NBR))
 recon_GSPL_NA_output = separate(recon_GSPL_NA_output, combined, c("vc","cascode"))
 recon_GSPL_NA_output = select(recon_GSPL_NA_output, vc,cascode)

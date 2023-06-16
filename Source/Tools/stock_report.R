@@ -11,7 +11,7 @@ boxtype = c('MYBOX S427 SFVW','AGGRRESSIVE 5197','AGGRESSIVE 7C02 HD','SMT 3715 
             'GOSPELL HD L316','GOSPELL K925','Gospell STB','GOSPELL SK9501','MYBOX H424 HD','MYBOX S427','Aggressive 3711 HD ABV','OVT HD 7C02','D LINK M4','JIUZHOU DTM 7C02 HD',
             'Aggressive 7611 HD','Aggressive 7649 HD ABV','Aggressive 7613 HD ABV','Aggressive 7629','OVT MPEG4 5C35','Nagra Cardless STB')
 inventory_all = inventory %>% filter(!(ITEM_DESCR %in% cardtype)) %>% 
-  select(SERIAL_NUMBER,TYPE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
+  select(SERIAL_NUMBER,TYPE,ITEM_CODE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
 
 cust_sel = customer_data %>% select(Customer.Number,Created.Date,Customer.Status) %>% unique()
 lco_mas = read.csv(file.choose(new = F)) #lco master
