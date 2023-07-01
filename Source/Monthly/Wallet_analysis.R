@@ -134,7 +134,7 @@ write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 #    wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
 #    write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
 # # }
-####Find Direct customers bills
+####Find Direct customers bills####
 direct_cus = c('MD0440','MBDML','MD0479','MD0478')
 wallet = filter(wallet, (Entity.Code %in% direct_cus))
 
@@ -156,4 +156,18 @@ for (my in unique(wallet_filt$Month.Year)) {
   month_data <- wallet_filt[wallet_filt$Month.Year == my, ]
   filename <- paste0("Meghbela_Subs_Bill_", my, ".csv")
   write.csv(month_data, filename, row.names = FALSE)
+  
 }
+
+####broadcaster wise wallet####
+service_bc = read.csv(file.choose())
+wallet_service = wallet_filt %>% filter(!(Service.Name == '')) %>% select(Service.Name,Amount.Debit) %>%
+  group_by(Service.Name) %>% summarise(Total_ded_W_TAX = sum(Amount.Debit))
+wallet_serv_bc = merge(wallet_service,service_bc,all.x = T)
+wallet_serv_bc = wallet_serv_bc %>% mutate(Broadcaster.part_WO_TAX = ((Total_ded_W_TAX/1.18)*0.889))
+wallet_serv_bc$Broadcaster.part_WO_TAX = round(wallet_serv_bc$Broadcaster.part_WO_TAX,digits = 2)
+write.csv(wallet_serv_bc,"SERVICEwise_amount_may23.csv")
+
+wallet_plan = wallet_filt %>% filter((Service.Name == '')) %>% select(Plan.Details,Amount.Debit) %>%
+  group_by(Plan.Details) %>% summarise(Total_ded_W_TAX = sum(Amount.Debit))
+write.csv(wallet_plan,"PLANwise_amount_may23.csv")
