@@ -136,32 +136,32 @@ bc_wb_old = bq_wb %>% filter(!(Bouquet %in% bouquet_names$Bouquet))
 bq_wb_old_pack = bc_wb_old[!grepl("_", bc_wb_old$Plan.Name),] %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
 bq_wb_new_pack = bc_wb_old[grepl("_", bc_wb_old$Plan.Name),]
-bqwbnew_7 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
-bqwbnew_14 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY) %>% unique()
-bqwbnew_21 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
-bqwbnew_28 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
-bqwbnew_avg = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
-pack_7 = read.csv(file.choose())
-pack_14 = read.csv(file.choose())
-pack_21 = read.csv(file.choose())
-pack_28 = read.csv(file.choose())
-bqwbnew_7_pk = merge(bqwbnew_7,pack_7,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_14_pk = merge(bqwbnew_14,pack_14,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_21_pk = merge(bqwbnew_21,pack_21,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_28_pk = merge(bqwbnew_28,pack_28,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
-bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk, all = T)
-bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_21_pk, all = T)
-bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
-bqwbnew_combo[is.na(bqwbnew_combo)] <- 0
-bqwbnew_combo$No.of.Subs.On.7th.Day = as.numeric(bqwbnew_combo$No.of.Subs.On.7th.Day)
-bqwbnew_combo$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(bqwbnew_combo$No.of.Subs.On.14th.Day..14TH_DAY)
-bqwbnew_combo$No.of.Subs.On.21st.Day = as.numeric(bqwbnew_combo$No.of.Subs.On.21st.Day)
-bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY)
-bqwbnew_combo = bqwbnew_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(bqwbnew_combo, starts_with("No.of"))))
-#bqwbnew_combo = read.csv(file.choose())
-bqwbnew_combo_bouq = bqwbnew_combo %>% filter(X == 'Bouquet') %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
-                                                                         No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
-wb_bouquet_final = rbind(bq_wb_old_pack,bqwbnew_combo_bouq,bq_wb_nw_sncd_combo_bouq)
+# bqwbnew_7 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+# bqwbnew_14 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.14th.Day..14TH_DAY) %>% unique()
+# bqwbnew_21 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+# bqwbnew_28 = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
+# bqwbnew_avg = bq_wb_new_pack %>% select(Entity.Code,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
+# pack_7 = read.csv(file.choose())
+# pack_14 = read.csv(file.choose())
+# pack_21 = read.csv(file.choose())
+# pack_28 = read.csv(file.choose())
+# bqwbnew_7_pk = merge(bqwbnew_7,pack_7,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+# bqwbnew_14_pk = merge(bqwbnew_14,pack_14,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+# bqwbnew_21_pk = merge(bqwbnew_21,pack_21,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+# bqwbnew_28_pk = merge(bqwbnew_28,pack_28,all = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+# bqwbnew_combo = merge(bqwbnew_7_pk,bqwbnew_14_pk, all = T)
+# bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_21_pk, all = T)
+# bqwbnew_combo = merge(bqwbnew_combo, bqwbnew_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
+# bqwbnew_combo[is.na(bqwbnew_combo)] <- 0
+# bqwbnew_combo$No.of.Subs.On.7th.Day = as.numeric(bqwbnew_combo$No.of.Subs.On.7th.Day)
+# bqwbnew_combo$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(bqwbnew_combo$No.of.Subs.On.14th.Day..14TH_DAY)
+# bqwbnew_combo$No.of.Subs.On.21st.Day = as.numeric(bqwbnew_combo$No.of.Subs.On.21st.Day)
+# bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(bqwbnew_combo$No.of.Subs.On.28th.Day..28TH_DAY)
+# bqwbnew_combo = bqwbnew_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(bqwbnew_combo, starts_with("No.of"))))
+# #bqwbnew_combo = read.csv(file.choose())
+# bqwbnew_combo_bouq = bqwbnew_combo %>% filter(X == 'Bouquet') %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+#                                                                          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+wb_bouquet_final = rbind(bq_wb_old_pack,bq_wb_nw_sncd_combo_bouq)
 wb_bouquet_final$No.of.Subs.On.7th.Day = as.numeric(wb_bouquet_final$No.of.Subs.On.7th.Day)
 wb_bouquet_final$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(wb_bouquet_final$No.of.Subs.On.14th.Day..14TH_DAY)
 wb_bouquet_final$No.of.Subs.On.21st.Day = as.numeric(wb_bouquet_final$No.of.Subs.On.21st.Day)
@@ -186,16 +186,16 @@ al_wb_filterred$No.of.Subs.On.14th.Day..14TH_DAY = as.numeric(al_wb_filterred$No
 al_wb_filterred$No.of.Subs.On.21st.Day = as.numeric(al_wb_filterred$No.of.Subs.On.21st.Day)
 al_wb_filterred$No.of.Subs.On.28th.Day..28TH_DAY = as.numeric(al_wb_filterred$No.of.Subs.On.28th.Day..28TH_DAY)
 al_wb_filterred$Monthly.Subs.of.the.Channel = as.numeric(al_wb_filterred$Monthly.Subs.of.the.Channel)
-wb_new_ala = bqwbnew_combo %>% filter(X == 'Alacarte') %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
-                                                                  No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
-colnames(wb_new_ala)[4]<-'Channel'
+#wb_new_ala = bqwbnew_combo %>% filter(X == 'Alacarte') %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
+#                                                                  No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
+#colnames(wb_new_ala)[4]<-'Channel'
 ##add from single cascode
 al_wb_singlecas = bq_wb_nw_sncd_combo %>% filter(X == 'Alacarte') %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                             No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
 colnames(al_wb_singlecas)[4]<-'Channel'
 #al_wb_singlecas = read.csv(file.choose())
 
-wb_new_ala_final = rbind(al_wb_filterred,wb_new_ala,al_wb_singlecas)
+wb_new_ala_final = rbind(al_wb_filterred,al_wb_singlecas)
 wb_new_ala_final = merge(wb_new_ala_final,lco_city)
 
 
