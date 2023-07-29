@@ -161,13 +161,26 @@ for (my in unique(wallet_filt$Month.Year)) {
 
 ####broadcaster wise wallet####
 service_bc = read.csv(file.choose())
-wallet_service = wallet_filt %>% filter(!(Service.Name == '')) %>% select(Service.Name,Amount.Debit) %>%
-  group_by(Service.Name) %>% summarise(Total_ded_W_TAX = sum(Amount.Debit))
-wallet_serv_bc = merge(wallet_service,service_bc,all.x = T)
-wallet_serv_bc = wallet_serv_bc %>% mutate(Broadcaster.part_WO_TAX = ((Total_ded_W_TAX/1.18)*0.889))
+direct_cus = c('MD0440','MBDML','MD0479','MD0478','MD0448','MD0453','MD0493','MD0495')
+wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
+wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
+wallet_filt = wallet_filt %>% filter(!(Service.Name == ''))
+wallet_bc = merge(wallet_filt,service_bc,all.x = T)
+
+wallet_dir = filter(wallet_bc, (Entity.Code %in% direct_cus))
+wallet_oth = filter(wallet_bc, !(Entity.Code %in% direct_cus))
+
+wallet_serv_bc = wallet_oth %>% mutate(Broadcaster.part_WO_TAX = ((Amount.Debit/1.18)*0.889))
 wallet_serv_bc$Broadcaster.part_WO_TAX = round(wallet_serv_bc$Broadcaster.part_WO_TAX,digits = 2)
-write.csv(wallet_serv_bc,"SERVICEwise_amount_may23.csv")
+
+wallet_servc_bc_dr = wallet_dir %>% mutate(Broadcaster.part_WO_TAX = ((Amount.Debit/1.18)*0.8))
+wallet_servc_bc_dr$Broadcaster.part_WO_TAX = round(wallet_servc_bc_dr$Broadcaster.part_WO_TAX,digits = 2)
+wallet_final = rbind(wallet_serv_bc,wallet_servc_bc_dr)
+
+wallet_final_calc = wallet_final %>% select(Service.Name,Amount.Debit,Broadcaster,Broadcaster.part_WO_TAX) %>%
+  group_by(Service.Name,Broadcaster) %>% summarise(Total_ded_With_TAX = sum(Amount.Debit),Broadcaster_deduct_w_o_tax = sum(Broadcaster.part_WO_TAX)) 
+write.csv(wallet_final_calc,"SERVICEwise_amount_June23.csv")
 
 wallet_plan = wallet_filt %>% filter((Service.Name == '')) %>% select(Plan.Details,Amount.Debit) %>%
   group_by(Plan.Details) %>% summarise(Total_ded_W_TAX = sum(Amount.Debit))
-write.csv(wallet_plan,"PLANwise_amount_may23.csv")
+write.csv(wallet_plan,"PLANwise_amount_June23.csv")
