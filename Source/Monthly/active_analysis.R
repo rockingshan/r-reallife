@@ -272,7 +272,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all = T)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_count_march23.csv")
+write.csv(all_lco,"LCO_count_july23.csv")
 
 
 ###old plans

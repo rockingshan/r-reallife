@@ -15,10 +15,15 @@ plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
 trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1I8UNHSbOoPBvQQ37QgVbMqBqEos10mtL&export=download"),encoding = "UTF-8")
 
+###OLD FIND
+# OLD_PLAN = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1i7EBGH1mzd8Xmy2ZAOLGJAVbXCYuRByz&export=download"))
+# bc_bouquet_filtered = filter(list_bouquet_dated, Plan.Name %in% OLD_PLAN$Plan.Name) %>% filter(!(CHANNEL_NAME_5 %in% c("Meghbela Bonanza @ 330","Meghbela Basic Pack @ 155")))
+# write.csv(bc_bouquet_filtered,"OldCustomer.csv")
+
 #For Bronze Basic Channels
-basic_bouquet = list_bouquet_dated %>% filter(Bouquet=="Bronze Basic") %>% select(Customer.Number,Bouquet,Plan.Name) %>% unique()
-Bronze_pivot = basic_bouquet %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())
-Bronze_merged = merge(Bronze_pivot,DF,by.x = "Bouquet", by.y = "Service.Name" ) %>% select(Plan.Name,Bouquet,Channel,Active_count)
+basic_bouquet = list_bouquet_dated %>% filter(CHANNEL_NAME_5=="Bronze Basic") %>% select(Cust.Id,CHANNEL_NAME_5,Plan.Name) %>% unique()
+Bronze_pivot = basic_bouquet %>% group_by(Plan.Name,CHANNEL_NAME_5) %>% summarize(Active_count = n())
+Bronze_merged = merge(Bronze_pivot,DF,by.x = "CHANNEL_NAME_5", by.y = "Service.Name" ) %>% select(Plan.Name,CHANNEL_NAME_5,Channel,Active_count)
 colnames(Bronze_merged)[4] <- "Monthly.Subs.of.the.Channel"
 Bronze_pivot = Bronze_merged %>% group_by(Channel) %>% summarize(Active_count = sum(Monthly.Subs.of.the.Channel))
 Bronze_pivot = merge(Bronze_pivot,trai_names) %>% relocate(TRAI.name, .after = Channel)
@@ -27,8 +32,8 @@ write.csv(Bronze_pivot,"Output/FTA_Channels.csv",row.names = F)
 
 
 #without bronze
-bq_try = list_bouquet_dated %>% group_by(Plan.Name,Bouquet) %>% select(Customer.Number,Bouquet,Plan.Name,) %>% unique() %>% summarize(Active_count = n()) %>% filter(!(Bouquet == "Bronze Basic"))
-Bouquet_merged = merge(bq_try,DF,by.x = "Bouquet", by.y = "Service.Name" ) %>% select(Plan.Name,Bouquet,Channel,Active_count)
+bq_try = list_bouquet_dated %>% group_by(Plan.Name,CHANNEL_NAME_5) %>% select(Cust.Id,CHANNEL_NAME_5,Plan.Name,) %>% unique() %>% summarize(Active_count = n()) %>% filter(!(CHANNEL_NAME_5 == "Bronze Basic"))
+Bouquet_merged = merge(bq_try,DF,by.x = "CHANNEL_NAME_5", by.y = "Service.Name" ) %>% select(Plan.Name,CHANNEL_NAME_5,Channel,Active_count)
 colnames(Bouquet_merged)[4] <- "Monthly.Subs.of.the.Channel"
 
 
@@ -46,12 +51,13 @@ bc_dpo_bouq_merged = add_column(bc_dpo_bouq_merged, PackType ='DPO Pack with bro
 bc_bouquet_filtered_al = bc_dpo_spread %>% filter(X == "Alacarte") %>% select(Plan.Name,Bouquet,Active_count)
 bc_bouquet_filtered_al = add_column(bc_bouquet_filtered_al, PackType ='DPO Pack with Alacarte',.after = 2)
 bc_bouquet_filtered_al = bc_bouquet_filtered_al %>% mutate(Channel = Bouquet,.after = 3)
-colnames(bc_bouquet_filtered_al)[2] <- "Channel"
-colnames(bc_bouquet_filtered_al)[4] <- "Monthly.Subs.of.the.Channel"
+#colnames(bc_bouquet_filtered_al)[2] <- "Channel"
+colnames(bc_bouquet_filtered_al)[5] <- "Monthly.Subs.of.the.Channel"
 
 bc_bouquet_filtered_noDPO = filter(Bouquet_merged, !(Plan.Name %in% plan_names$Plan.Name))
 bc_bouquet_filtered_noDPO = filter(bc_bouquet_filtered_noDPO, !(Plan.Name %in% c('DD Channels','Platinum Digital Postpaid')))
 bc_bouquet_filtered_noDPO = add_column(bc_bouquet_filtered_noDPO, PackType ='Broadcaster Bouquets',.after = 2)
+colnames(bc_bouquet_filtered_noDPO)[2] <- "Bouquet"
 
 bC_bouqet_final = rbind(bc_dpo_bouq_merged,bc_bouquet_filtered_al,bc_bouquet_filtered_noDPO)
 bC_bouqet_final$Monthly.Subs.of.the.Channel = as.numeric(bC_bouqet_final$Monthly.Subs.of.the.Channel)

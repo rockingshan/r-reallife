@@ -542,3 +542,12 @@ final_table_full = merge(final_table,select(inventory_BOX,ITEM_CODE,BOX_NO),all.
 
 # Print the final table
 write.csv(final_table_full,"BLANK_STB_VC.csv",row.names = F)
+
+####Sushanta das data####
+cust_data = read.csv(file.choose(new = F),colClasses = c(Stb="character",Vc="character"))
+cust_data_flt = cust_data %>% filter(Is.Auto.Renewal == 'Y') %>% filter(Customer.Status == 'A') %>%
+  select(Customer.Number,First.Name,Last.Name,Stb,Vc,Mobile,Address)
+duernw = read.csv(file.choose())
+duernw_fl = duernw %>% select(Customer.Number,Contract.End.Date,Plan.Name)
+fnl_data = merge(cust_data_flt,duernw_fl,all.x = T)
+write.csv(fnl_data,"MD0022_2.CSV",row.names = F)
