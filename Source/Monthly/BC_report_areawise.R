@@ -9,6 +9,11 @@ library(stringr)
 ###Single cas code pack names from gdrive
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
 lco_city = read.csv(file.choose())
+
+singlepack_7 = read.csv(file.choose())
+singlepack_14 = read.csv(file.choose())
+singlepack_21 = read.csv(file.choose())
+singlepack_28 = read.csv(file.choose())
 ###WORK  BQ REPORT ####
 bc_odisha = read_xlsx(file.choose(), skip = 1)
 names(bc_odisha) = make.names(names(bc_odisha))
@@ -22,10 +27,7 @@ bc_odisha_nw_21 = bc_odisha_nw %>% select(Entity.Code,Plan.Name,No.of.Subs.On.21
 bc_odisha_nw_28 = bc_odisha_nw %>% select(Entity.Code,Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
 bc_odisha_nw_avg = bc_odisha_nw %>% select(Entity.Code,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
 #singlecode pak
-singlepack_7 = read.csv(file.choose())
-singlepack_14 = read.csv(file.choose())
-singlepack_21 = read.csv(file.choose())
-singlepack_28 = read.csv(file.choose())
+
 bc_odisha_nw_7_pk = merge(bc_odisha_nw_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bc_odisha_nw_14_pk = merge(bc_odisha_nw_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bc_odisha_nw_21_pk = merge(bc_odisha_nw_21,singlepack_21,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
@@ -101,8 +103,8 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_May23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_May23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Aug23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Aug23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 ###lco code wise
 write.csv(bc_odisha_bq_all,"LCOWISE_BOUQUET.csv",row.names = F)
