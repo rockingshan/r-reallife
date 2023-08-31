@@ -8,6 +8,12 @@ library(stringr)
 #need to create package-service configuration files for 4 weeks
 ###Single cas code pack names from gdrive
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
+
+#singlecode pak
+singlepack_7 = read.csv(file.choose())
+singlepack_14 = read.csv(file.choose())
+singlepack_21 = read.csv(file.choose())
+singlepack_28 = read.csv(file.choose())
 ###WORK oDISHA BQ REPORT ####
 bc_odisha = read_xlsx(file.choose(), skip = 3)
 names(bc_odisha) = make.names(names(bc_odisha))
@@ -21,11 +27,7 @@ bc_odisha_nw_14 = bc_odisha_nw %>% select(Plan.Name,No.of.Subs.On.14th.Day..14TH
 bc_odisha_nw_21 = bc_odisha_nw %>% select(Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
 bc_odisha_nw_28 = bc_odisha_nw %>% select(Plan.Name,No.of.Subs.On.28th.Day..28TH_DAY) %>% unique()
 bc_odisha_nw_avg = bc_odisha_nw %>% select(Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
-#singlecode pak
-singlepack_7 = read.csv(file.choose())
-singlepack_14 = read.csv(file.choose())
-singlepack_21 = read.csv(file.choose())
-singlepack_28 = read.csv(file.choose())
+
 bc_odisha_nw_7_pk = merge(bc_odisha_nw_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bc_odisha_nw_14_pk = merge(bc_odisha_nw_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 bc_odisha_nw_21_pk = merge(bc_odisha_nw_21,singlepack_21,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
@@ -224,16 +226,16 @@ active_pivot_ala_wb_plan = wb_new_ala_final %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_July23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_July23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
-write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_July23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
-write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_July23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_August23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_August23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_Planwise_all_July23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_Planwise_all_July23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
-write.xlsx(as.data.frame(wbbqt_active_pivot_plan), file="Output/MSR_Report_Planwise_all_July23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
-write.xlsx(as.data.frame(active_pivot_ala_wb_plan), file="Output/MSR_Report_Planwise_all_July23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="Odisha_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="Odisha_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(wbbqt_active_pivot_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_ala_wb_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 
 ###Required by STar ####
 od_bq_rpt = bc_odisha_bq_all %>% filter(Broadcaster.Name == "Star India Pvt. Ltd.") %>%
