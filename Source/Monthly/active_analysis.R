@@ -270,9 +270,9 @@ write.csv(bc_count,"bc_count.csv")
 ls_new_plan = subset(list_active, (grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T)))
 plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarise(DPO_Count = n())
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
-all_lco = merge(all_pivot,plan_pivot,all = T)
+all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_count_july23.csv")
+write.csv(all_lco,"LCO_count_August23.csv")
 
 
 ###old plans
