@@ -551,3 +551,9 @@ duernw = read.csv(file.choose())
 duernw_fl = duernw %>% select(Customer.Number,Contract.End.Date,Plan.Name)
 fnl_data = merge(cust_data_flt,duernw_fl,all.x = T)
 write.csv(fnl_data,"MD0022_2.CSV",row.names = F)
+
+
+
+####mq log work####
+log = read.csv(file.choose())
+

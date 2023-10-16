@@ -8,7 +8,11 @@ library(stringr)
 #need to create package-service configuration files for 4 weeks
 ###Single cas code pack names from gdrive
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
+
 lco_city = read.csv(file.choose())
+lco_city = lco_city %>% select(Lco.Code,City) %>% unique()
+lco_city$Lco.Code <- gsub("'","",lco_city$Lco.Code)
+colnames(lco_city)[1] <- "Entity.Code"
 
 singlepack_7 = read.csv(file.choose())
 singlepack_14 = read.csv(file.choose())
@@ -103,8 +107,8 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Aug23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Aug23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Sep23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Sep23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 ###lco code wise
 write.csv(bc_odisha_bq_all,"LCOWISE_BOUQUET.csv",row.names = F)

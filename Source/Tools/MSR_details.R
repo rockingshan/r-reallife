@@ -24,4 +24,4 @@ list_bouq_al_1 = list_bouq_al[list_bouq_al$Broadcaster.Name != "Zee Media Corpor
 # Define a vector of values to check against
 channels_to_remove <- c("Pogo", "Turner Kids Pack", "Cartoon Network","CNN International","Turner Family Pack")
 list_bouq_al_2 = list_bouq_al_1[!(list_bouq_al_1$Broadcaster.Name == "Discovery Communications India" & list_bouq_al_1$Bouquet_Channel %in% channels_to_remove), ]
-write.csv(list_bouq_al_2,"MSR_detailed_report_07042022.csv",row.names = F)
+write.csv(list_bouq_al_2,"MSR_detailed_report_07122022.csv",row.names = F)

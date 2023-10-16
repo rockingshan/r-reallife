@@ -85,15 +85,15 @@ write.csv(all_dpopack,"Output/DPO_count.csv")
 
 ###for mcbs old company
 ##############
-custom_num = list_bouquet_dated %>% select(Customer.Number) %>% unique()
+custom_num = list_bouquet_dated %>% select(Cust.Id) %>% unique()
 set.seed(123)
 total_rows <- nrow(custom_num)
 random_indices <- sample(total_rows, 1000)
 subset_dataset <- custom_num[random_indices, ]
 subset_dataframe <- data.frame(subset_dataset)
-colnames(subset_dataframe)[1] <- "Customer.Number"
+colnames(subset_dataframe)[1] <- "Cust.Id"
 bq_try_mcbs = merge(list_bouquet_dated,subset_dataframe)
-bq_try_mcbs = bq_try_mcbs %>% group_by(Plan.Name,Bouquet) %>% select(Customer.Number,Bouquet,Plan.Name,) %>% unique() %>% summarize(Active_count = n()) %>% filter(!(Bouquet == "Bronze Basic"))
+bq_try_mcbs = bq_try_mcbs %>% group_by(Plan.Name,CHANNEL_NAME_5) %>% select(Cust.Id,CHANNEL_NAME_5,Plan.Name,) %>% unique() %>% summarize(Active_count = n()) %>% filter(!(CHANNEL_NAME_5 == "Bronze Basic"))
 
 all_bouquet = filter(bq_try_mcbs, !(Plan.Name %in% plan_names$Plan.Name))
 all_bouquet_pivot = all_bouquet %>% group_by(Plan.Name) %>% summarize(Total = sum(Active_count))
