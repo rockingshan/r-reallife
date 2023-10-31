@@ -22,6 +22,8 @@ singlepack_28 = read.csv(file.choose())
 bc_odisha = read_xlsx(file.choose(), skip = 1)
 names(bc_odisha) = make.names(names(bc_odisha))
 bc_odisha = bc_odisha[!grepl("DPO Promotional Bundle", bc_odisha$Plan.Name),]
+bc_odisha = bc_odisha %>% filter(!(Broadcaster.Name %in% c("ABP News Network Pvt Limited","Free to AIR","Republic TV")))
+
 ##calculate new count
 bc_odisha_nw = bc_odisha %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(Entity.Code,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                                    No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
@@ -78,6 +80,8 @@ od_bq_rpt = merge(bc_name,active_pivot)
 al_od = read_xlsx(file.choose(), skip = 1)
 names(al_od) = make.names(names(al_od))
 al_od = al_od[!grepl("DPO Promotional Bundle", al_od$Plan.Name),]
+al_od = al_od %>% filter(!(Broadcaster.Name %in% c("ABP News Network Pvt Limited","Free to AIR","Republic TV")))
+
 al_od_filterred = al_od %>%
   select(Entity.Code,Broadcaster.Name,Plan.Name,Channel,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel) %>% distinct() %>% na.omit()
@@ -107,8 +111,8 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Sep23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Sep23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Oct23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Oct23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 ###lco code wise
 write.csv(bc_odisha_bq_all,"LCOWISE_BOUQUET.csv",row.names = F)

@@ -19,6 +19,7 @@ bc_odisha = read_xlsx(file.choose(), skip = 3)
 names(bc_odisha) = make.names(names(bc_odisha))
 bc_odisha = bc_odisha[!grepl("Plan Name", bc_odisha$Plan.Name),]
 bc_odisha = bc_odisha[!grepl("Broadcaster Name:*", bc_odisha$Broadcaster.Name),]
+bc_odisha = bc_odisha %>% filter(!(Broadcaster.Name %in% c("ABP News Network Pvt Limited","Free to AIR","Republic TV")))
 ##calculate new count
 bc_odisha_nw = bc_odisha %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
                                                                                    No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel)
@@ -79,6 +80,7 @@ al_od = read_xlsx(file.choose(), skip = 3)
 names(al_od) = make.names(names(al_od))
 al_od = al_od[!grepl("Plan Name", al_od$Plan.Name),]
 al_od = al_od[!grepl("Broadcaster Name:*", al_od$Month),]
+al_od = al_od %>% filter(!(Broadcaster.Name %in% c("ABP News Network Pvt Limited","Free to AIR","Republic TV")))
 al_od_filterred = al_od %>%
   select(Broadcaster.Name,Plan.Name,Channel,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day..14TH_DAY,
          No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day..28TH_DAY,Monthly.Subs.of.the.Channel) %>% distinct() %>% na.omit()
@@ -226,14 +228,14 @@ active_pivot_ala_wb_plan = wb_new_ala_final %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Sep23.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Sep23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Oct23.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Oct23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 #write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
 #write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_Planwise_all_Sep23.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_Planwise_all_Sep23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_Planwise_all_Oct23.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_Planwise_all_Oct23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 #write.xlsx(as.data.frame(wbbqt_active_pivot_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
 #write.xlsx(as.data.frame(active_pivot_ala_wb_plan), file="Output/MSR_Report_Planwise_all_August23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 

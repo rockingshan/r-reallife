@@ -316,5 +316,19 @@ oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 
 
 plan_pivot = oplan_dpo %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarize(DPO_count = n())
 
+####295 pack dompare count ####
+ls_act_1st_month = read.csv(file.choose())
+ls_act_2nd_month = read.csv(file.choose())
+base_plan = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
+base_plan = base_plan %>% add_row(Plan.Name = c('DD Channels','Bronze basic','Odia FTA'))
 
-
+royal_act_2nd = ls_act_2nd_month %>% filter(PLAN_CODE == "MBILROYAL" ) %>% select(CUSTOMER_NBR,STB,SC,PLAN_CODE,PLAN_NAME,ENTITY_CODE,ENTITY_NAME,LCO_CITY)
+base_plan_1st = ls_act_1st_month %>% filter(PLAN_NAME %in% base_plan$Plan.Name) %>% select(SC,PLAN_CODE,PLAN_NAME)
+royal_merge = merge(royal_act_2nd,base_plan_1st,by.x = "SC",by.y = "SC",all.x = T,all.y = F)
+royal_merge$PLAN_NAME.y[royal_merge$PLAN_NAME.y == "Bronze basic"] <- "Bronze basic @ 155"
+royal_merge$aggregator <- as.numeric(gsub(".* @ (\\d+)$", "\\1", royal_merge$PLAN_NAME.y))
+royal_merge$aggregator[is.na(royal_merge$aggregator)] <- 0
+royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 295, 'Downgraded','Upgraded/Same'), .after = NULL)
+royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
+royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
+write.csv(royal_pivot, "295_pack_status_September23.csv",row.names = F)
