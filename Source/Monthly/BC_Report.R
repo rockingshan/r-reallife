@@ -228,8 +228,8 @@ active_pivot_ala_wb_plan = wb_new_ala_final %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Oct23.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Oct23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_all_Nov23.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_all_Nov23.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 #write.xlsx(as.data.frame(wbbqt_active_pivot), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Bouquet", append=TRUE,row.names=FALSE)
 #write.xlsx(as.data.frame(active_pivot_ala_wb), file="Output/MSR_Report_all_August23.xlsx", sheetName="WB_Alacarte", append=TRUE, row.names=FALSE)
 
