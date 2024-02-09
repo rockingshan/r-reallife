@@ -4,7 +4,10 @@ library(lubridate)
 library(janitor)
 library(httr)
 library(xlsx)
+library(jsonlite)
 library(RDCOMClient)
+library(XML)
+library(plyr)
 
 source('Source/Functions.r')
 
@@ -557,3 +560,148 @@ write.csv(fnl_data,"MD0022_2.CSV",row.names = F)
 ####mq log work####
 log = read.csv(file.choose())
 
+####check customer activation history####
+active = read.csv(file.choose())
+actv_sl = active %>% select(CUSTOMER_NBR,STB,SC,ENTITY_CODE,ENTITY_NAME,LCO_CITY) %>% unique()
+wallet = read.csv(file.choose(),colClasses = c(Unique.Id="character"))
+wallet_card = wallet %>% group_by(Unique.Id) %>% summarise(Amount = sum(Amount.Debit))
+write.csv(wallet_card,"wallet_card.csv")
+write.csv(actv_sl,"actv.csv")
+
+####csv to excel####
+# install necessary packages
+install.packages(c("readr", "writexl", "readxl"))
+
+# load necessary libraries
+library(readr)
+library(writexl)
+library(readxl)
+
+# specify the directory you want to use
+directory <- 'C:/2'
+
+# specify the column you want to format
+column_to_format <- 'Smartcard.Serialnumber'
+
+# get a list of all csv files in the directory
+files <- list.files(path = directory, pattern = "*.csv")
+
+# loop over the files in the directory
+for (file in files) {
+  # read the csv file into a dataframe
+  df <- read.csv(paste0(directory, "/", file), colClasses = c("character","character","character","character"))
+  
+  # add a leading single quote to each value in the column
+  df[[column_to_format]] <- paste0("'", df[[column_to_format]])
+  
+  # write the dataframe to an excel file
+  excel_filename <- sub(".csv", ".xlsx", file)
+  write_xlsx(df, path = paste0(directory, "/", excel_filename))
+}
+
+print("All CSV files have been processed.")
+
+####historical to listactive####
+active = read.csv(file.choose())
+actv_sl = active %>% select(CUSTOMER_NBR,STB,SC,ENTITY_CODE,ENTITY_NAME,LCO_CITY,SERVICE_CODE,SERVICE_CODE,PLAN_NAME) %>% unique()
+actv_sl$STB <- gsub("'","",actv_sl$STB)
+actv_sl$SC <- gsub("'","",actv_sl$SC)
+colnames(actv_sl)[2] <- "VC"
+colnames(actv_sl)[3] <- "STB"
+actv_sl = actv_sl %>% unite(combined, c("VC","SERVICE_CODE"))
+cust_historical_start <- read.csv(file.choose(new = F),colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character"))
+CUST_HST = cust_historical_start %>% select(Customer.Nbr,Smartcard.Serialnumber,Package.Code,Package.Descr) %>% unique() %>% filter(!(Package.Code == "NCFSLAB"))
+CUST_HST = CUST_HST %>% unite(combined,c("Smartcard.Serialnumber","Package.Code"))
+histToActive = merge(actv_sl,CUST_HST,all = T)
+write.csv(histToActive, "Historical_to_Active.csv",row.names = F)
+
+####FInd deactive from gospell active files####
+
+# Load necessary libraries
+library(dplyr)
+library(stringr)
+
+# Set the path to the directory containing the txt files
+txt_files_directory <- "C:/Users/Shantanu/Desktop/Closing/"
+
+# Set the path to the total serial numbers dataframe CSV file
+total_serial_numbers <- read.csv(file.choose())
+
+# List all txt files in the directory
+txt_files <- list.files(txt_files_directory, pattern = "*.txt", full.names = TRUE)
+
+# Process each txt file
+for (txt_file in txt_files) {
+  # Extract the date from the txt file name
+  date_str <- str_extract(txt_file, "\\d{4}_\\d{2}_\\d{2}")
+
+  
+  # Read the active serial numbers from the txt file
+  active_data <- read.table(txt_file, sep = ",", col.names = c("SerialNumber", "RandomNumber"))
+  unique_active_serial_numbers <- unique(active_data$SerialNumber)
+  
+  # Identify the serial numbers that were not active on that day
+  inactive_serial_numbers <- setdiff(as.character(total_serial_numbers$VC), as.character(unique_active_serial_numbers))
+  
+  # Create the output file name with 'Deactive_' and the date
+  output_file <- paste0("Output/Deactive_", date_str, ".txt")
+  
+  # Write the inactive serial numbers to the output file
+  writeLines(as.character(inactive_serial_numbers), output_file)
+  
+  # Print a message indicating the process is complete
+  cat("Deactive serial numbers for", date_str, "written to:", output_file, "\n")
+}
+
+####GET data from API####
+# Make a GET request to the API
+response <- GET('https://www.themeghbela.com/api/generate-feed-zee5/1/100/9')
+
+# Parse the response to JSON
+data <- fromJSON(content(response, "text"))
+
+# Initialize empty vectors for 'title' and 'web_url'
+title <- vector()
+web_url <- vector()
+
+# Loop through each item in data
+for (item in data) {
+  # Check if 'title' and 'web_url' exist in the item
+  if ('title' %in% names(item) && 'web_url' %in% names(item)) {
+    # If they exist, append them to the respective vectors
+    title <- c(title, item$title)
+    web_url <- c(web_url, item$web_url)
+  }
+}
+
+# Combine the vectors into a data frame
+extracted_data <- data.frame(title = title, web_url = web_url)
+
+##write
+write.csv(extracted_data,"channel_data.csv",row.names = F)
+
+
+####get xml file contains of all files####
+# Get the list of XML files in the folder
+files <- list.files(path = "C:/Users/Shantanu/Documents/EPG/", pattern = "\\.XML$", full.names = TRUE)
+
+# Initialize an empty data frame
+df <- data.frame()
+
+# Loop through each file
+for (file in files) {
+  # Parse the XML file
+  doc <- xmlParse(file)
+  
+  # Extract the 'channel id' value
+  channel_id <- xpathSApply(doc, "//channel", xmlGetAttr, "id")
+  
+  # Create a data frame with the file name and channel id
+  file_df <- data.frame(file_name = basename(file), channel_id = channel_id)
+  
+  # Append the data frame to df
+  df <- rbind(df, file_df)
+}
+
+# Print the data frame
+write.csv(df,"EPG_data.csv",row.names = F)

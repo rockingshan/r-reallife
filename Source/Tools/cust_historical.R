@@ -2,7 +2,7 @@ library(readr)
 library(tidyverse)
 library(dplyr)
 
-cust_historical_start <- read.csv(file.choose(new = F),colClasses = c("character","character","NULL","character","character","NULL","NULL","character","character","NULL","character","character","character","character","character","character","character","NULL"))
+cust_historical_start <- read.csv(file.choose(new = F),colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character"))
 cust_historical_start <- cust_historical_start %>% mutate(VC.length = nchar(Smartcard.Serialnumber),  .after = 4)
 cust_historical_start$VC.length <- gsub("8","GOSPELL",cust_historical_start$VC.length, fixed = TRUE)
 cust_historical_start$VC.length <- gsub("12","SAFEVIEW",cust_historical_start$VC.length, fixed = TRUE)
@@ -84,3 +84,16 @@ write.csv(inv_cust__d,"Output/Inventory_customer_31032023.csv",row.names = F)
 
 ####abv_data####
 #card_data = 
+####cas data cehck####
+dz = read.csv(file.choose())  #service code import
+cust_historical_start <- read.csv(file.choose(new = F),colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character"))
+cust_historical_start <- cust_historical_start %>% mutate(VC.length = nchar(Smartcard.Serialnumber),  .after = 4)
+cust_historical_start$VC.length <- gsub("8","GOSPELL",cust_historical_start$VC.length, fixed = TRUE)
+cust_historical_start$VC.length <- gsub("12","SAFEVIEW",cust_historical_start$VC.length, fixed = TRUE)
+cust_historical_start$VC.length <- gsub("16","ABV",cust_historical_start$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+df = cust_historical_start %>% filter(VC.length == "ABV")
+
+da = merge(df,dz)
+df1 = da %>% select(Customer.Nbr,Smartcard.Serialnumber,Provsion.Code,Activation.date)
+#df1 = da %>% group_by(Provsion.Code) %>% summarise(Count = n())
+write.csv(df1,"Packagewsie_Details_31122021.csv",row.names = F)

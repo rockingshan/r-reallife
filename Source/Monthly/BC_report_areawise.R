@@ -111,8 +111,8 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 #### print in excel ####
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Oct23.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Oct23.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/Areawise_MSR_Report_all_Jan24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/Areawise_MSR_Report_all_Jan24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 ###lco code wise
 write.csv(bc_odisha_bq_all,"LCOWISE_BOUQUET.csv",row.names = F)

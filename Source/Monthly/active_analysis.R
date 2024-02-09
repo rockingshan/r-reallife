@@ -161,7 +161,7 @@ write.csv(plan_only,"planOnly.csv")
 
 
 #####find new NT2 bouquets and remove
-list_active = read.csv("C:/Users/Shantanu/Downloads/9266350_LISTOFACTCUST.CSV")
+list_active = read.csv(file.choose())
 nt2Bouquets = read.csv("C:/Users/Shantanu/Downloads/NEW_BOUQUETS.CSV")
 dir_path <- "C:/Users/Shantanu/Downloads"
 files <- list.files(dir_path)
@@ -201,7 +201,7 @@ for (i in 1:nrow(custListSlct1)) {
   
 }
 
-######Find promotional customers
+######Find promotional customers####
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 list_active = read.csv(file.choose())
 lcolist = read.csv(file.choose())
@@ -209,7 +209,7 @@ list_active_filtered = filter(list_active, PLAN_NAME %in% plan_names$Plan.Name) 
 lst_active_promo = merge(list_active_filtered,lcolist)
 write.csv(lst_active_promo,'promotional_customers.csv')
 
-#########find DPO count
+#########find DPO count####
 list_active = read.csv(file.choose())
 oplan_dpo = filter(list_active, PLAN_NAME %in% plan_names$Plan.Name) %>% select(CUSTOMER_NBR,PLAN_NAME) %>% unique()
 colnames(oplan_dpo)[2] <- "Plan.Name" 
@@ -272,7 +272,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_count_September23.csv")
+write.csv(all_lco,"LCO_DPO_count_december23.csv")
 
 
 ###old plans
@@ -316,9 +316,9 @@ oplan_dpo$PLAN_NAME[oplan_dpo$PLAN_NAME == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 
 
 plan_pivot = oplan_dpo %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% summarize(DPO_count = n())
 
-####295 pack dompare count ####
-ls_act_1st_month = read.csv(file.choose())
-ls_act_2nd_month = read.csv(file.choose())
+####295 pack Compare count ####
+ls_act_1st_month = read.csv(file.choose()) #OLD MONTH
+ls_act_2nd_month = read.csv(file.choose()) #NEW MONTH
 base_plan = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
 base_plan = base_plan %>% add_row(Plan.Name = c('DD Channels','Bronze basic','Odia FTA'))
 
@@ -331,4 +331,23 @@ royal_merge$aggregator[is.na(royal_merge$aggregator)] <- 0
 royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 295, 'Downgraded','Upgraded/Same'), .after = NULL)
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
-write.csv(royal_pivot, "295_pack_status_September23.csv",row.names = F)
+write.csv(royal_pivot, "295_pack_status_December23.csv",row.names = F)
+
+
+####Find channelwise package count areawise ####
+lsactv = read.csv(file.choose())
+packchn = read.csv(file.choose()) ## create a planwise channel file from channelwsie count report
+
+actvAla = lsactv %>% filter(PLAN_NAME == "Alacarte Plan") %>% filter(SERVICE_CODE %in% c("CH1")) %>%
+  select(CUSTOMER_NBR,ENTITY_CODE,LCO_CITY,PLAN_NAME,SERVICE_NAME) %>% unique()
+actvOther = lsactv %>% filter(!(PLAN_NAME == "Alacarte Plan")) %>% select(CUSTOMER_NBR,ENTITY_CODE,LCO_CITY,PLAN_NAME) %>% unique()
+actvOthChnl = merge(actvOther,packchn)
+
+actvAla$SERVICE_NAME[actvAla$SERVICE_NAME == "Zee Tv @ 19"] <- "Zee TV"
+#actvAla$SERVICE_NAME[actvAla$SERVICE_NAME == "Zee Bangla @ 19"] <- "Zee Bangla"
+#actvAla$SERVICE_NAME[actvAla$SERVICE_NAME == "Zee Bangla Cinema @ 10"] <- "Zee Bangla Cinema"
+actvAla = actvAla %>% mutate(Type = "AlcartePlan")
+colnames(actvAla)[5] <- "Channel.Name"
+actvAla = actvAla %>% relocate(PLAN_NAME)
+actvAll = rbind(actvOthChnl,actvAla)
+write.csv(actvAll,"ChannelWise_.csv",row.names = F)
