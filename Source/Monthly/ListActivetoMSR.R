@@ -18,6 +18,7 @@ active_to_msr_format <- function(){
 }
 ###Single cas code pack names from gdrive
 bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
+bouquet_names = bouquet_names %>% add_row(Bouquet = "Bronze Basic")
 
 #singlecode pak
 singlepack_7 = read.csv(file.choose())
@@ -39,6 +40,8 @@ msrAllCombo = merge(msrAllCombo,msrAll721th, all = T)
 msrAllCombo = merge(msrAllCombo,msrAll28th, all = T)
 msrAllCombo[is.na(msrAllCombo)] <- 0
 msrAllCombo = msrAllCombo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(msrAllCombo, starts_with("No.of"))))
+##
+#msrAllCombo = read.csv(file.choose())
 
 msrAlacarte = msrAllCombo %>% filter((Plan.Name %in% c("Alacarte Plan","Punjabi Channel Group","Telegu Channels Group","Odia Channel Group")))
 msrAlacarteSub = msrAlacarte %>% filter((SERVICE_NAME %in% c("Sidharth Odia Pack-1","Odisha Tv Bouqet 1")))
@@ -126,30 +129,30 @@ colnames(msrAlacarte_singlecas)[4]<-'Channel'
 msrAlacarte_final = rbind(msrAlacarte_filterred,msrAlacarte_singlecas)
 
 msrAlaRpt = msrAlacarte_final %>% 
-  group_by(Channel) %>%
+  group_by(Broadcaster.Name,Channel) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 ###planwise
 msrAlaRptPlan = msrAlacarte_final %>% 
-  group_by(Plan.Name,Channel) %>%
+  group_by(Broadcaster.Name,Plan.Name,Channel) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 ##areawise
 msrAlaAreaRpt = msrAlacarte_final %>% 
-  group_by(LCO_CITY,Channel) %>%
+  group_by(Broadcaster.Name,LCO_CITY,Channel) %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Feb24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Feb24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Mar24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Mar24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Feb24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Feb24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Mar24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Mar24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Feb24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Feb24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Mar24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Mar24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 

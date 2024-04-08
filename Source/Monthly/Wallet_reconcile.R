@@ -4,9 +4,9 @@ library(readxl)
 library(purrr)
 op_bal_open = read.csv(file.choose(new = F))
 op_bal_close = read.csv(file.choose(new = F))
-op_cr_dr_dtl = read.csv(file.choose(new = F))
+op_cr_dr_dtl = read.csv(file.choose(new = F)) ##Take credit note cleared file from wallet script
 op_payments_dtl = read.csv(file.choose(new = F))
-op_wallet_c = read.csv(file.choose(new = F))
+op_wallet_c = read.csv(file.choose(new = F)) ##Take LCo wallet summary file from wallet scriopt
 
 
 op_payments_dtl <- op_payments_dtl[!(op_payments_dtl$Entity.Code == ''),]  ###remove blank rows for particular column
@@ -39,7 +39,7 @@ op_wallet_calc1 = op_wallet_calc1 %>% mutate(Opening.MQ.Balance = (ifelse(Balanc
 op_wallet_calc1 = op_wallet_calc1 %>% select(Entity.Code,Entity.Name,City,Opening.MQ.Balance,Total.Payments,Credit.Note,Debit.Note,
                                              Wallet.Consumption,Calculated.Closing.Balance,Closing.MQ.Report) %>% mutate(Difference = Closing.MQ.Report - Calculated.Closing.Balance )
 #file_prefix <- readline("Enter a file name prefix: ")
-write.csv(op_wallet_calc1,"JAN23_WALLET_RECONCILE.CSV",row.names = F)
+write.csv(op_wallet_calc1,"Mar24_WALLET_RECONCILE.CSV",row.names = F)
 
 #######################LCO Bills find Promotional customer
 filename <- file.choose()
