@@ -705,3 +705,13 @@ for (file in files) {
 
 # Print the data frame
 write.csv(df,"EPG_data.csv",row.names = F)
+
+
+#####test lof work####
+df = read.csv(file.choose())
+df1 = df %>% select(Customer.Nbr,Sent.Date) %>% unique()
+my_df <- df1 %>%
+  mutate(Transactions.DateTime = as.POSIXct(Sent.Date, format = "%d/%m/%Y %I:%M:%S %p")) %>%
+  mutate(Hour_AMPM = format(Transactions.DateTime, format = "%I %p")) %>%
+  group_by(Hour_AMPM) %>%
+  summarise(TransactionCount = n())
