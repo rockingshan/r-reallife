@@ -112,12 +112,12 @@ active_pivot = al_od_final %>%
 od_al_rpt_plan = merge(bc_name,active_pivot)
 
 
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_NTO_all_Apr24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_NTO_all_Apr24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_NTO_all_June24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_NTO_all_June24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Apr24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Apr24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_June24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_June24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 
 ###Required by STar ####
@@ -230,7 +230,7 @@ oplan_dpo$Plan.Name[oplan_dpo$Plan.Name == "Mb_Hd_Hin_550"] <- "MB HINDI HD 2 @ 
 
 oplan_pivot = oplan_dpo %>% group_by(Plan.Name) %>% summarize(SubsCount = n())
 #####5 report
-write.csv(oplan_pivot,"Output/5_DPO_plan_count_Apr23.csv",row.names = F)
+write.csv(oplan_pivot,"Output/5_DPO_plan_count_June23.csv",row.names = F)
 
 
 #####RTu customer ####
@@ -333,5 +333,5 @@ active_pivot_al_rtu = al_od_final %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 
 
-write.xlsx(as.data.frame(active_pivot_bc_rtu), file="Output/RTU_Apr_23.xlsx", sheetName="Bouquet_report", row.names=FALSE)
-write.xlsx(as.data.frame(active_pivot_al_rtu), file="Output/RTU_apr_23.xlsx", sheetName="Alacarte_report", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_bc_rtu), file="Output/RTU_June_23.xlsx", sheetName="Bouquet_report", row.names=FALSE)
+write.xlsx(as.data.frame(active_pivot_al_rtu), file="Output/RTU_June_23.xlsx", sheetName="Alacarte_report", append=TRUE, row.names=FALSE)

@@ -32,7 +32,7 @@ listActvToMSR = merge(listActive,msrDetails, all.x = T)
 notInListActive = listActvToMSR %>% filter(is.na(listActvToMSR$Month))
 notInListActive = notInListActive %>% filter(!(notInListActive$CASCODE == ''))
 
-write.csv(notInListActive,"Customer_Service_notin_MSRDetails.csv",row.names = F)
+write.csv(notInListActive,"Output/Customer_Service_notin_MSRDetails.csv",row.names = F)
 
 actCount = list_active %>% filter(!(list_active$CASCODE == '')) %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE) %>% summarise(Count = n())
 write.csv(actCount,"Customer_count.csv",row.names = F)
