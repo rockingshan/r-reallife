@@ -110,8 +110,7 @@ active_pivot = al_od_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day..14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_al_rpt_plan = merge(bc_name,active_pivot)
-
-
+##NTO report all
 write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_NTO_all_June24.xlsx", sheetName="Bouquet", row.names=FALSE)
 write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_NTO_all_June24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 

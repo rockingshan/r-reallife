@@ -275,6 +275,7 @@ all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
 write.csv(all_lco,"LCO_DPO_count_May24.csv")
 
 
+
 ###old plans
 plan = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% unique()
 oplan_dpo = filter(plan, PLAN_NAME %in% plan_names$Plan.Name)
@@ -331,7 +332,9 @@ royal_merge$aggregator[is.na(royal_merge$aggregator)] <- 0
 royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 295, 'Downgraded','Upgraded/Same'), .after = NULL)
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
+
 write.csv(royal_pivot, "295_pack_status_May24.csv",row.names = F)
+
 
 
 ####Find channelwise package count areawise ####
