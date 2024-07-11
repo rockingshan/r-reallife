@@ -143,16 +143,16 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_June24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_June24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_July24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_July24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_June24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_June24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_July24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_July24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_June24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_June24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_July24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_July24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 
