@@ -34,6 +34,13 @@ notInListActive = notInListActive %>% filter(!(notInListActive$CASCODE == ''))
 
 write.csv(notInListActive,"Output/Customer_Service_notin_MSRDetails.csv",row.names = F)
 
+####find deleted service coming in MSR####
+MSRtoListActive = merge(msrDetails,listActive,all.x = T)
+notInListActiveData = MSRtoListActive %>% filter(is.na(MSRtoListActive$SERVICE_NAME))
+write.csv(notInListActiveData,"Output/Extra_Services_Coming_In_MSR.csv",row.names = F)
+
+
+
 actCount = list_active %>% filter(!(list_active$CASCODE == '')) %>% select(ENTITY_CODE,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE) %>% summarise(Count = n())
 write.csv(actCount,"Customer_count.csv",row.names = F)
 

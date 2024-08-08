@@ -5,9 +5,9 @@ library(dplyr)
 hdfc = read.csv(file.choose())
 hdfc_fl = hdfc %>% select(`Order.No`,`CCAvenue.Ref.`,`Gross.Amount`,`Merchant.Param1`,`Merchant.Param2`,`Payment.Mode`)
 
-#include Razorpay
-#razorPay = read.csv(file.choose())
-#razorPay_fl = razorPay %>% filter(status == 'captured') %>% select(id,amount,order_id,email,contact,notes)
+# include Razorpay
+# razorPay = read.csv(file.choose())
+# razorPay_fl = razorPay %>% filter(status == 'captured') %>% select(id,amount,order_id,email,contact,notes)
 
 ##Get CCavenue missed payments####
 mqAllOnline = read.csv(file.choose()) ##enter Mq All Online Payment Report
@@ -16,20 +16,20 @@ mqHdfcPending = mqHdfc %>% filter (GATEWAY_NAME == "CCAvenue PG") %>% filter(!(i
 write.csv(mqHdfcPending,"Output/SuccesfulinCCAvenuePendingMQ.csv")
 
 ##compare Both gateway with payments entered in system
-mqAllPayments = read.csv(file.choose())  ##Enter MQ payments report
-# Create a new column 'Reference_ID' to store the found reference IDs
-#mqAllPayments$Reference_ID <- apply(mqAllPayments, 1, function(row) {
-  ref_id <- NA
-  for (col in c("Receipt.", "Transaction.Number", "NOTES_18")) {
-    if (startsWith(row[[col]], "pay_")) {
-      ref_id <- row[[col]]
-      break
-    }
-  }
-  return(ref_id)
-})
-# Filter the dataframe for Razorpay payments'
-#razorPay_mqAllPayments <- mqAllPayments[!is.na(mqAllPayments$Reference_ID), ]
+mqAllPayments = read.csv(file.choose(),colClasses = c(Receipt.="character"))  ##Enter MQ payments report
+#Create a new column 'Reference_ID' to store the found reference IDs
+# mqAllPayments$Reference_ID <- apply(mqAllPayments, 1, function(row) {
+#   ref_id <- NA
+#   for (col in c("Receipt.", "Transaction.Number", "NOTES_18")) {
+#     if (startsWith(row[[col]], "pay_")) {
+#       ref_id <- row[[col]]
+#       break
+#     }
+#   }
+#   return(ref_id)
+# })
+# # Filter the dataframe for Razorpay payments'
+# razorPay_mqAllPayments <- mqAllPayments[!is.na(mqAllPayments$Reference_ID), ]
 #Filter the df based on HDFC payments
 hdfc_mqAllPayments <- mqAllPayments[startsWith(mqAllPayments$Receipt., "1133"), ]
 
