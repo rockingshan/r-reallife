@@ -31,7 +31,7 @@ mqAllPayments = read.csv(file.choose(),colClasses = c(Receipt.="character"))  ##
 # # Filter the dataframe for Razorpay payments'
 # razorPay_mqAllPayments <- mqAllPayments[!is.na(mqAllPayments$Reference_ID), ]
 #Filter the df based on HDFC payments
-hdfc_mqAllPayments <- mqAllPayments[startsWith(mqAllPayments$Receipt., "1133"), ]
+hdfc_mqAllPayments <- mqAllPayments[startsWith(mqAllPayments$Receipt., "1134"), ]
 
 # razorpayMQTally = merge(razorPay_fl,razorPay_mqAllPayments,by.x = 'id',by.y = 'Reference_ID',all.x = T)
 # razorpaynotinMQ = razorpayMQTally %>% filter(is.na(Entity.Code))
