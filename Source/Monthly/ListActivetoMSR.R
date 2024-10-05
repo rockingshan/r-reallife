@@ -28,15 +28,15 @@ singlepack_28 = read.csv(file.choose())
 
 msrAll7th = active_to_msr_format()
 colnames(msrAll7th)[5] <- 'No.of.Subs.On.7th.Day'
-msrAll714th = active_to_msr_format()
+msrAll14th = active_to_msr_format()
 colnames(msrAll714th)[5] <- 'No.of.Subs.On.14th.Day'
-msrAll721th = active_to_msr_format()
-colnames(msrAll721th)[5] <- 'No.of.Subs.On.21st.Day'
+msrAll21th = active_to_msr_format()
+colnames(msrAll21th)[5] <- 'No.of.Subs.On.21st.Day'
 msrAll28th = active_to_msr_format()
 colnames(msrAll28th)[5] <- 'No.of.Subs.On.28th.Day'
 
-msrAllCombo = merge(msrAll7th,msrAll714th, all = T)
-msrAllCombo = merge(msrAllCombo,msrAll721th, all = T)
+msrAllCombo = merge(msrAll7th,msrAll14th, all = T)
+msrAllCombo = merge(msrAllCombo,msrAll21th, all = T)
 msrAllCombo = merge(msrAllCombo,msrAll28th, all = T)
 msrAllCombo[is.na(msrAllCombo)] <- 0
 msrAllCombo = msrAllCombo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(msrAllCombo, starts_with("No.of"))))
@@ -143,16 +143,82 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_July24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_July24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_July24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_July24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_July24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_July24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Sep24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Sep24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
+
+
+
+
+####For IPTV Reporting####
+iptvreport = read.csv(file.choose())
+singlepack_7 = read.csv(file.choose())
+singlepack_14 = read.csv(file.choose())
+singlepack_21 = read.csv(file.choose())
+singlepack_28 = read.csv(file.choose())
+
+iptv_nw_7 = iptvreport %>% select(Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+iptv_nw_14 = iptvreport %>% select(Plan.Name,No.of.Subs.On.14th.Day.14TH_DAY) %>% unique()
+iptv_nw_21 = iptvreport %>% select(Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+iptv_nw_28 = iptvreport %>% select(Plan.Name,No.of.Subs.On.28th.Day.28TH_DAY) %>% unique()
+
+iptv_nw_7_pk = merge(iptv_nw_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+iptv_nw_14_pk = merge(iptv_nw_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+iptv_nw_21_pk = merge(iptv_nw_21,singlepack_21,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+iptv_nw_28_pk = merge(iptv_nw_28,singlepack_28,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
+iptv_combo = merge(iptv_nw_7_pk,iptv_nw_14_pk, all = T)
+iptv_combo = merge(iptv_combo, iptv_nw_21_pk,all = T)
+iptv_combo = merge(iptv_combo, iptv_nw_28_pk, all = T) %>% separate(combined, into = c("Plan.Name","Bouquet"),sep = "\\|")
+iptv_combo[is.na(iptv_combo)] <- 0
+iptv_combo$No.of.Subs.On.7th.Day = as.numeric(iptv_combo$No.of.Subs.On.7th.Day)
+iptv_combo$No.of.Subs.On.14th.Day.14TH_DAY = as.numeric(iptv_combo$No.of.Subs.On.14th.Day.14TH_DAY)
+iptv_combo$No.of.Subs.On.21st.Day = as.numeric(iptv_combo$No.of.Subs.On.21st.Day)
+iptv_combo$No.of.Subs.On.28th.Day.28TH_DAY = as.numeric(iptv_combo$No.of.Subs.On.28th.Day.28TH_DAY)
+iptv_combo = iptv_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(iptv_combo, starts_with("No.of"))))
+
+iptv_combo_bouq = iptv_combo %>% filter(X == 'Bouquet') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                                                                             No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+
+bc_name = iptv_combo_bouq %>%
+  select(Broadcaster.Name,Bouquet) %>% distinct()%>% na.omit()
+
+iptv_combo_bouq$No.of.Subs.On.7th.Day = as.numeric(iptv_combo_bouq$No.of.Subs.On.7th.Day)
+iptv_combo_bouq$No.of.Subs.On.14th.Day.14TH_DAY = as.numeric(iptv_combo_bouq$No.of.Subs.On.14th.Day.14TH_DAY)
+iptv_combo_bouq$No.of.Subs.On.21st.Day = as.numeric(iptv_combo_bouq$No.of.Subs.On.21st.Day)
+iptv_combo_bouq$No.of.Subs.On.28th.Day.28TH_DAY = as.numeric(iptv_combo_bouq$No.of.Subs.On.28th.Day.28TH_DAY)
+iptv_combo_bouq$Monthly.Subs.of.the.Channel = as.numeric(iptv_combo_bouq$Monthly.Subs.of.the.Channel)
+
+active_pivot = iptv_combo_bouq %>% 
+  group_by(Bouquet) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+od_bq_rpt = merge(bc_name,active_pivot)
+
+
+
+iptv_combo_ala = iptv_combo %>% filter(X == 'Alacarte') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
+                                                                         No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day.28TH_DAY,Monthly.Subs.of.the.Channel)
+colnames(iptv_combo_ala)[3]<-'Channel'
+
+bc_name = iptv_combo_ala %>%
+  select(Broadcaster.Name,Channel) %>% distinct()%>% na.omit()
+
+active_pivot = iptv_combo_ala %>% 
+  group_by(Channel) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+od_al_rpt = merge(bc_name,active_pivot)
+
+##NTO report all
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 

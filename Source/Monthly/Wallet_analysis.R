@@ -64,6 +64,16 @@ lcowise_data_export(wallet)
 
 lco_pivot_table(wallet)
 
+####Find Direct customers bills####
+direct_cus = c('MD0440','MBDML','MD0479','MD0478',"MD0493","MD0495")
+wallet = filter(wallet, (Entity.Code %in% direct_cus))
+
+wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
+wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
+
+df = wallet_filt %>% group_by(Entity.Name) %>% summarise(debit = sum(Amount.Debit))
+customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
+write.csv(df, sprintf("Output/RTU_customers_bill_amount__%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())),row.names = F)
 
 
 crdr = read.csv(file.choose(new = F))
@@ -134,15 +144,7 @@ write.csv(wallet_ordered,"July_2022_LCO_packagewise_bill.csv",row.names = F)
 #    wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Mobile,Plan.Details,Service.Name,Amount.Debit,Transaction.Date,Contract.Number,Billing.Frequency)
 #    write.csv(wallet_filt,"4317930_WALLETSUMMLCONEW.CSV",row.names = F)
 # # }
-####Find Direct customers bills####
-direct_cus = c('MD0440','MBDML','MD0479','MD0478')
-wallet = filter(wallet, (Entity.Code %in% direct_cus))
 
-wallet_filt = filter(wallet, Credit.Document.Type=="INVOICE") %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
-wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
-df = wallet_filt %>% group_by(Plan.Details) %>% summarise(debit = sum(Amount.Debit))
-customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
-write.csv(df, "Planwise_amount.csv",row.names = F)
 
 ###monthwise
 # Convert Transaction.Date column to a date-time object

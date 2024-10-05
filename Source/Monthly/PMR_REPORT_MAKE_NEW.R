@@ -12,7 +12,7 @@ DF = merge(DF2,DF1)
 DF = DF %>% select(Service.Name,Channel) %>% unique()
 
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
-bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
+bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1INvieYzh6sc2O9XsMHVLI2d2LEOeuYT_&export=download"))
 trai_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1I8UNHSbOoPBvQQ37QgVbMqBqEos10mtL&export=download"),encoding = "UTF-8")
 
 ###OLD FIND
@@ -103,3 +103,8 @@ all_dpopack = filter(bq_try_mcbs, (Plan.Name %in% plan_names$Plan.Name)) %>%
   group_by(Plan.Name) %>% summarize(Total = sum(Active_count))
 
 write.csv(all_dpopack,"Output/mcbs_DPO_count.csv")
+
+
+
+
+

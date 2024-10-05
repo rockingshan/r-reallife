@@ -12,6 +12,19 @@ colnames(list_bouquet_dated)[6] <- "Broadcaster.Name"
 colnames(list_alacarte)[5] <- "Bouquet_Channel"
 list_bouq_al = rbind(list_bouquet_dated,list_alacarte)
 list_bouq_al$Smart.Card.Number <- gsub("'","",list_bouq_al$Smart.Card.Number)
+list_bouq_al$Provisioning.Attribute <- gsub("'","",list_bouq_al$Provisioning.Attribute)
+
+#getmultiple hardware
+mulhw = list_bouq_al %>% select(Cust.Id,Provisioning.Attribute) %>% unique() 
+mulhw$Cust.Id <- trimws(mulhw$Cust.Id)
+mulhw$Provisioning.Attribute <- trimws(mulhw$Provisioning.Attribute)
+mulwid = mulhw %>% group_by(Cust.Id) %>%
+  filter(n() > 1) %>%
+  ungroup() %>% select(Cust.Id) %>% unique()
+bq_mul = merge(list_bouquet_dated,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code)
+al_mul = merge(list_alacarte,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code)
+write.csv(bq_mul,"Bouquet_report_multiple_hardware_28092024.csv",row.names = F)
+write.csv(al_mul,"Alacarte_report_multiple_hardware_28092024.csv",row.names = F)
 
 list_active = read.csv(file.choose(new = F),colClasses = c(CASCODE="character")) # MQ active report
 list_active$STB <- gsub("'","",list_active$STB)
@@ -37,6 +50,7 @@ write.csv(notInListActive,"Output/Customer_Service_notin_MSRDetails.csv",row.nam
 ####find deleted service coming in MSR####
 MSRtoListActive = merge(msrDetails,listActive,all.x = T)
 notInListActiveData = MSRtoListActive %>% filter(is.na(MSRtoListActive$SERVICE_NAME))
+notInListActiveDataDel = merge(notInListActiveData,mulwid,all = T)
 write.csv(notInListActiveData,"Output/Extra_Services_Coming_In_MSR.csv",row.names = F)
 
 
