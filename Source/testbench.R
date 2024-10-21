@@ -15,7 +15,7 @@ send_daily_sms()
 
 
 
-#work on chandipur inventory file
+#work on chandipur inventory file####
 inv_cndp = inventory %>% filter(str_detect(ENTITY_CODE, "HCS")) %>% filter(!(str_detect(ITEM_CODE, "SC"))) %>%
   select(SERIAL_NUMBER,TYPE,ITEM_DESCR,LOCATION_DESCR,ENTITY_CODE,CUSTOMER_NBR) %>% unique()
 
@@ -26,7 +26,7 @@ inv_cust_data = merge(inv_cndp,cust_sel, by.x = "CUSTOMER_NBR",by.y = "Customer.
 write.csv(inv_cust_data,"Output/Inventory_customer.csv",row.names = F)
 
 
-######Daily disconnection and active customer data
+######Daily disconnection and active customer data####
 daily_discon = read.csv(file.choose(new = F))  ##Daily disconnection file
 daily_discon_cn = daily_discon %>% filter(str_detect(Entity.Code, "MDCH")) 
 daily_dis_pv_cn = daily_discon_cn %>% group_by(Entity.Code) %>% summarize(Discon.Count = n()) %>% adorn_totals("row")
@@ -43,9 +43,8 @@ active_pivot = active_pivot[, c(1,3,2)] %>% adorn_totals("row")
 write.xlsx(as.data.frame(active_pivot), file="Output/Daily_disconnect_active.xlsx", sheetName="Active", row.names=FALSE)
 write.xlsx(as.data.frame(daily_dis_pv_cn), file="Output/Daily_disconnect_active.xlsx", sheetName="DailyDiscon", append=TRUE, row.names=FALSE)
 
-#############################
-################################
-#Find customers without basic pack in recharge
+#||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+#Find customers without basic pack in recharge####
 wallet_list = read.csv(file.choose(new = F)) #import last few days wallet report
 plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
 colnames(wallet_list)[8]<-"Plan.Name" #change column name to match online file name
@@ -58,7 +57,7 @@ write.xlsx(as.data.frame(wallet_na_basic), file="Output/Wallet_basic_check.xlsx"
 write.xlsx(as.data.frame(wallet_pivot), file="Output/Wallet_basic_check.xlsx", sheetName="TotalDebit", append=TRUE, row.names=FALSE)
 
 
-#######################
+#|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 #find hd sd box count
 alacarte = read.csv(file.choose(new = F))
 bouquet = read.csv(file.choose(new = F))
@@ -73,8 +72,8 @@ bronze_basic = bouquet %>% filter(Week == 4) %>% select(Customer.Number,Bouquet,
 basic_pivot = bronze_basic %>% group_by(Plan.Name,Bouquet) %>% summarize(Active_count = n())
 write.csv(basic_pivot,"4.csv",row.names = F)
 
-#########################
-#Make active report for LCO in single row
+####||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+#Make active report for LCO in single row ####
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 list_active$STB <- gsub("'","",list_active$STB)
@@ -88,7 +87,7 @@ list_act_filter = list_active %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,FIRST_NAME
 total_active = merge(list_act_combine,list_act_filter)
 write.csv(total_active, "LCO_active_data.csv", row.names = F)
 
-###########make all customer data for checking city mapping
+##make all customer data for checking city mapping####
 list_active_1 = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,LCO_CITY,LCO_STATE,PRI_STATE,PRI_CITY) %>% unique()
 write.csv(list_active_1, "total_active.csv", row.names = F)
 
@@ -99,13 +98,13 @@ write.csv(list_active_pivot,"lcowise_active.csv",row.names = F)
 
 
 
-#########################
+#|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 list_active_1 = list_active %>% select(V1,V3,V5,V21,V22,V23,V24,V25,V26,V27,V28,V29,V30,V31,V32) %>% unique()
 write.csv(list_active_1, "total_active.csv", row.names = F)
 
-#######################  find discre;pencies in dpo plans SERVICE &&&&&&&&&&&&&&&&&&&&&&&&&&&& WISE COUNTS FOR CUSTOMERS  ??????????? This block for planwise servicewise
+#|||||||||||||||||||||||||||  find discre;pencies in dpo plans SERVICE &&&&&&&&&&&&&&&&&&&&&&&&&&&& WISE COUNTS FOR CUSTOMERS  ??????????? This block for planwise servicewise
 list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
 colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
 plan_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=17GoiwT4nWCn0J_7HJF0ZyL5Y0-JPNwOJ&export=download"))
@@ -122,7 +121,7 @@ write.csv(actv_flt_pvot,sprintf("Output/%s_.csv",planname),row.names = F)
 
 
 
- ##########entitlement
+ ##########entitlement####
 list_bouquet_dated = read.csv(file.choose(new = F)) #import MQ data bouquet
 
 plan_names = read.csv(sprintf("https://spreadsheets.google.com/feeds/download/spreadsheets/Export?key=17fLf3_5nMKuOZxMvKY_baJjD3G8l-KKHxw3WSTNKh6o&exportFormat=csv"))
@@ -137,13 +136,13 @@ for (planname in plan_list) {
 }
 
 
-###################customer manu
+###################customer manu####
 
 customer_data = read.csv(file.choose(new = F)) ##customer master data
 customer_select = customer_data %>% select(Customer.Number,Entity.Code,Customer.Status,City,District,Billing.City,Billing.District)
 write.csv(customer_select,"customer_fiiltered.csv",row.names = F)
 
-#########################areawise plan details
+#########################areawise plan details####
 active_flt = filter(list_active,PLAN_NAME %in% plan_names$Plan.Name)
 active_flt = active_flt %>% select(CUSTOMER_NBR,ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% unique()
 lco_master = read.csv(file.choose(new = F))
@@ -151,7 +150,7 @@ active_area = merge(active_flt,lco_master,all.x = T)
 write.csv(active_area,"area-active.csv", row.names = F)
 
 
-#########disconnected summary
+#########disconnected summary####
 discon_data = read.csv(file.choose(new = F))
 customer_ent = read.csv(file.choose(new = F))
 discon_data_flt = discon_data %>% filter(Smartcard.Number != "No SC")
@@ -176,14 +175,14 @@ write.csv(discon_data_age, "ageing.csv",row.names = F)
 
 
 
-##############################msr to actice tally
+##############################msr to actice tally####
 list_bouquet_dated = read.csv(file.choose(new = F))
 list_bq_cst = list_bouquet_dated %>% select(Customer.Number,Month,Week) %>% unique()
 act_cust = list_active %>% select(CUSTOMER_NBR,ENTITY_CODE) %>% unique()
 CUST_FILTER = merge(list_bq_cst,act_cust,by.x = 'Customer.Number',by.y = 'CUSTOMER_NBR', all.y = T)
 write.csv(CUST_FILTER,"adrfd.csv")
 
-#########################find gospell inactive cardss
+#########################find gospell inactive cardss####
 
 list_active = read.csv(file.choose(new = F))
 list_active$STB <- gsub("'","",list_active$STB)
@@ -200,7 +199,7 @@ totalGospell = merge(inventory_gs,list_active_gs,by.x = 'SERIAL_NUMBER', by.y = 
 inactiveGospell = totalGospell %>% filter(is.na(CUSTOMER_NBR))
 inactiveCount = inactiveGospell %>% group_by(ITEM_DESCR) %>% summarise(count = n())
 write.csv(inactiveGospell,"INACTIVE_GOSPELL.CSV",row.names = F)
-###########################pacakge cratorr with channels
+###########################pacakge cratorr with channels####
 
 inventory_BOX = read.csv(file.choose(new = F)) ##PACK WITH SERVICE
 inventory_CARD = read.csv(file.choose(new = F)) ##
@@ -258,7 +257,7 @@ dpo_nagra_srv = merge(dponagra,nagrasrvc,all.x = T)
 
 write.csv(planGSPLChannel,"SingleCasCode fro DPO - Gospell.csv")
 
-######################################################
+##|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 list_active = read.csv(file.choose(new = F))
 list_active$STB <- gsub("'","",list_active$STB)
 list_active$SC <- gsub("'","",list_active$SC)
@@ -272,17 +271,17 @@ list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #R
 req_d = list_active %>% filter(Is.Auto.Renew == 'Y') %>% filter(VC.length == 'GOSPELL') %>% select(Customer.Nbr,VC) %>% unique()
 
 
-################GOSPELL EMMM CORRECTION
+################GOSPELL EMMM CORRECTION####
 
 gos_emm = read.csv(file.choose(new = F))
 gos_1 = gos_emm %>% filter(Type == 'Entitlement') %>% select(CardID,StartTime) %>% unique()
 
-#############finding services
+#############finding services####
 odbq = list_active %>% filter(SERVICE_NAME == 'Odisha Tv Bouqet 1')
 write.csv(odbq,"odishatv.csv",row.names = F)
 DF = list_active %>% filter(SERVICE_NAME == 'Aaj Tak @ 0.75')
 
-###autorenewal customers find 
+###autorenewal customers find ####
 ls12 = read.csv(file.choose())
 lsac = ls12 %>% filter(Is.Auto.Renew == "Y") %>% select(Customer.Nbr,Contract.Number,Entity.Code,Entity.Name,First.Name,Stb,Sc,Mobile.Phone) %>% unique()
 duernw = read.csv(file.choose())
