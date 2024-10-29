@@ -17,7 +17,7 @@ active_to_msr_format <- function(){
   return(listActiveCount)
 }
 ###Single cas code pack names from gdrive
-bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download"))
+bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1yk7CDbZghpUUZzWmGbmQyz44baVr688s&export=download")) ###pre 2024 package update link
 bouquet_names = bouquet_names %>% add_row(Bouquet = "Bronze Basic")
 
 #singlecode pak
@@ -29,7 +29,7 @@ singlepack_28 = read.csv(file.choose())
 msrAll7th = active_to_msr_format()
 colnames(msrAll7th)[5] <- 'No.of.Subs.On.7th.Day'
 msrAll14th = active_to_msr_format()
-colnames(msrAll714th)[5] <- 'No.of.Subs.On.14th.Day'
+colnames(msrAll14th)[5] <- 'No.of.Subs.On.14th.Day'
 msrAll21th = active_to_msr_format()
 colnames(msrAll21th)[5] <- 'No.of.Subs.On.21st.Day'
 msrAll28th = active_to_msr_format()
@@ -143,16 +143,16 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Oct24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Oct24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Oct24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Oct24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Sep24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Sep24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Oct24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Oct24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 
@@ -218,7 +218,7 @@ active_pivot = iptv_combo_ala %>%
 od_al_rpt = merge(bc_name,active_pivot)
 
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Sep24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Sep24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Oct24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Oct24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 
