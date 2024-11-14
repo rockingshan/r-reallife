@@ -14,6 +14,11 @@ list_bouq_al = rbind(list_bouquet_dated,list_alacarte)
 list_bouq_al$Smart.Card.Number <- gsub("'","",list_bouq_al$Smart.Card.Number)
 list_bouq_al$Provisioning.Attribute <- gsub("'","",list_bouq_al$Provisioning.Attribute)
 
+list_bouquet_dated$Smart.Card.Number <- gsub("'","",list_bouquet_dated$Smart.Card.Number)
+list_bouquet_dated$Provisioning.Attribute <- gsub("'","",list_bouquet_dated$Provisioning.Attribute)
+list_alacarte$Smart.Card.Number <- gsub("'","",list_alacarte$Smart.Card.Number)
+list_alacarte$Provisioning.Attribute <- gsub("'","",list_alacarte$Provisioning.Attribute)
+
 #getmultiple hardware
 mulhw = list_bouq_al %>% select(Cust.Id,Provisioning.Attribute) %>% unique() 
 mulhw$Cust.Id <- trimws(mulhw$Cust.Id)
@@ -21,10 +26,10 @@ mulhw$Provisioning.Attribute <- trimws(mulhw$Provisioning.Attribute)
 mulwid = mulhw %>% group_by(Cust.Id) %>%
   filter(n() > 1) %>%
   ungroup() %>% select(Cust.Id) %>% unique()
-bq_mul = merge(list_bouquet_dated,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code)
-al_mul = merge(list_alacarte,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code)
-write.csv(bq_mul,"Bouquet_report_multiple_hardware_28092024.csv",row.names = F)
-write.csv(al_mul,"Alacarte_report_multiple_hardware_28092024.csv",row.names = F)
+bq_mul = merge(list_bouquet_dated,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code) %>% unique()
+al_mul = merge(list_alacarte,mulwid) %>% select(Cust.Id,Smart.Card.Number,Provisioning.Attribute,Bouquet_Channel,Month,Week,Service.Cas.Code) %>% unique()
+write.csv(bq_mul,"Output/Bouquet_report_multiple_hardware_28102024.csv",row.names = F)
+write.csv(al_mul,"Output/Alacarte_report_multiple_hardware_28102024.csv",row.names = F)
 
 list_active = read.csv(file.choose(new = F),colClasses = c(CASCODE="character")) # MQ active report
 list_active$STB <- gsub("'","",list_active$STB)
@@ -39,19 +44,32 @@ listActive = listActive %>% filter(!(SERVICE_CODE == 'DPOBUNDLESERV'))
 
 msrDetails = list_bouq_al %>% select(Cust.Id,Smart.Card.Number,Bouquet_Channel,Month,Week,Service.Cas.Code) %>% unique()
 msrDetails = msrDetails %>% unite("combined",c('Smart.Card.Number','Service.Cas.Code'),remove = F)
+msr_bq = list_bouquet_dated %>% select(Cust.Id,Smart.Card.Number,Bouquet_Channel,Month,Week,Service.Cas.Code) %>% unique()
+msr_bq = msr_bq %>% unite("combined",c('Smart.Card.Number','Service.Cas.Code'),remove = F)
+msr_al = list_alacarte %>% select(Cust.Id,Smart.Card.Number,Bouquet_Channel,Month,Week,Service.Cas.Code) %>% unique()
+msr_al = msr_al %>% unite("combined",c('Smart.Card.Number','Service.Cas.Code'),remove = F)
 
 
 listActvToMSR = merge(listActive,msrDetails, all.x = T)
-notInListActive = listActvToMSR %>% filter(is.na(listActvToMSR$Month))
-notInListActive = notInListActive %>% filter(!(notInListActive$CASCODE == ''))
+notInNTOMSR = listActvToMSR %>% filter(is.na(listActvToMSR$Month))
+notInNTOMSR = notInNTOMSR %>% filter(!(notInNTOMSR$CASCODE == ''))
+notInNTOMSRAl = notInNTOMSR %>% filter(str_detect(SERVICE_CODE, "^CH"))
+notInNTOMSRBq = notInNTOMSR %>% filter(!(str_detect(SERVICE_CODE, "^CH")))
 
-write.csv(notInListActive,"Output/Customer_Service_notin_MSRDetails.csv",row.names = F)
+write.csv(notInNTOMSRAl,"Output/Customer_Alacarte_Service_notin_MSRDetails.csv",row.names = F)
+write.csv(notInNTOMSRBq,"Output/Customer_Bouquet_Service_notin_MSRDetails.csv",row.names = F)
 
 ####find deleted service coming in MSR####
 MSRtoListActive = merge(msrDetails,listActive,all.x = T)
 notInListActiveData = MSRtoListActive %>% filter(is.na(MSRtoListActive$SERVICE_NAME))
-notInListActiveDataDel = merge(notInListActiveData,mulwid,all = T)
-write.csv(notInListActiveData,"Output/Extra_Services_Coming_In_MSR.csv",row.names = F)
+notInListActiveDataDel = anti_join(notInListActiveData, mulwid, by = "Cust.Id") %>% select(combined) %>% unique()
+notInListActiveBQ = merge(msr_bq,notInListActiveDataDel)
+notInListActiveAL = merge(msr_al,notInListActiveDataDel)
+write.csv(notInListActiveBQ,"Output/Extra_deactive_Bouquet_Services_Coming_In_MSR.csv",row.names = F)
+write.csv(notInListActiveAL,"Output/Extra_deactive_Alacarte_Services_Coming_In_MSR.csv",row.names = F)
+
+
+
 
 
 

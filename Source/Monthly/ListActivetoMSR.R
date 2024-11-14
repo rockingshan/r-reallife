@@ -160,6 +160,7 @@ write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Oc
 
 ####For IPTV Reporting####
 iptvreport = read.csv(file.choose())
+colnames(iptvreport) <- c("Plan.Name", "No.of.Subs.On.7th.Day", "No.of.Subs.On.14th.Day.14TH_DAY", "No.of.Subs.On.21st.Day", "No.of.Subs.On.28th.Day.28TH_DAY")
 singlepack_7 = read.csv(file.choose())
 singlepack_14 = read.csv(file.choose())
 singlepack_21 = read.csv(file.choose())
@@ -202,6 +203,11 @@ active_pivot = iptv_combo_bouq %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_bq_rpt = merge(bc_name,active_pivot)
 
+active_pivot_bq_pl = iptv_combo_bouq %>% 
+  group_by(Bouquet,Plan.Name) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+od_bq_rpt_pl = merge(bc_name,active_pivot_bq_pl)
 
 
 iptv_combo_ala = iptv_combo %>% filter(X == 'Alacarte') %>% select(Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day.14TH_DAY,
@@ -217,8 +223,20 @@ active_pivot = iptv_combo_ala %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_al_rpt = merge(bc_name,active_pivot)
 
+active_pivot_pl = iptv_combo_ala %>% 
+  group_by(Channel,Plan.Name) %>%
+  summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day.14TH_DAY),'Active_21st' = sum(No.of.Subs.On.21st.Day),
+            'Active_28th' = sum(No.of.Subs.On.28th.Day.28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
+od_al_rpt_pl = merge(bc_name,active_pivot)
+
+
 ##NTO report all
 write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Oct24.xlsx", sheetName="Bouquet", row.names=FALSE)
 write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Oct24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+
+##NTO report all
+write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Oct24.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Oct24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+
 
 
