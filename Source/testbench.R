@@ -711,3 +711,65 @@ DF1 = read.csv(file.choose())
 df2 = merge(DF,DF1)
 write.csv(df2,"df3.csv")
 
+####Find disconnected customers####
+discon_cus = read.csv(file.choose())
+discon_cus1 = discon_cus
+# Assuming your dataframe is named df
+discon_cus1$DISCONNECTED_DATE_7 <- as.Date(discon_cus1$DISCONNECTED_DATE_7, format="%d-%b-%y")
+
+# Group by Customer.Number and summarize to get the latest date, handling missing values
+result <- discon_cus1 %>%
+  group_by(Customer.Number) %>%
+  summarise(Latest_Date = max(DISCONNECTED_DATE_7, na.rm = TRUE), .groups = 'drop') %>%
+  filter(!is.infinite(Latest_Date))  # Remove rows where Latest_Date is -Inf
+write.csv(result,"sdfsf.csv")
+
+####zdelete delete####
+df = read.csv(file.choose())
+df = df %>% filter(!(PLAN_NAME == "zDelete Pairing"))
+write.csv(df,"13763246_LISTOFACTCUST_21112024.csv",row.names = F)
+inv = read.csv(file.choose())
+inv1 = inv %>% select(SERIAL_NUMBER,ITEM_DESCR) %>% unique()
+df1 = df %>% select(CUSTOMER_NBR,SC) %>% unique()
+df1$SC <- gsub("'","",df1$SC)
+newdf = merge(df1,inv1, by.x = "SC",by.y = "SERIAL_NUMBER",all.x = T)
+write.csv(newdf,"hjfgjg.csv")
+
+####date change of files ####
+update_timestamps <- function(folder_path) {
+  # List all files in the folder
+  files <- list.files(folder_path, full.names = TRUE)
+  
+  for (file in files) {
+    # Get the file name (without path)
+    file_name <- basename(file)
+    
+    # Check for each pattern and extract the timestamp accordingly
+    if (grepl("^VID[0-9]{14}\\.", file_name)) {
+      # Pattern: VIDYYYYMMDDHHMMSS.ext
+      timestamp_str <- substr(file_name, 4, 17)
+    } else if (grepl("^VID_[0-9]{8}_[0-9]{6}\\.", file_name)) {
+      # Pattern: VID_YYYYMMDD_HHMMSS.ext
+      timestamp_str <- gsub("_", "", substr(file_name, 5, 20))
+    } else if (grepl("^PXL_[0-9]{8}_[0-9]{9}\\.", file_name)) {
+      # Pattern: PXL_YYYYMMDD_HHMMSSXXX.ext (ignoring last 3 digits)
+      timestamp_str <- substr(file_name, 5, 18)  # YYYYMMDD_HHMMSS
+      timestamp_str <- gsub("_", "", substr(timestamp_str, 1, 15))  # Remove '_'
+    } else {
+      cat("Skipped file (doesn't match any pattern):", file_name, "\n")
+      next
+    }
+    
+    # Convert extracted timestamp to POSIXct
+    file_timestamp <- as.POSIXct(timestamp_str, format = "%Y%m%d%H%M%S", tz = "UTC")
+    
+    # Update the file's modification and access times
+    Sys.setFileTime(file, file_timestamp)
+    cat("Timestamps updated for:", file_name, "\n")
+  }
+}
+
+# Replace with your folder path
+folder_path <- "C:/Users/shant/Downloads/Photos-001"
+update_timestamps(folder_path)
+

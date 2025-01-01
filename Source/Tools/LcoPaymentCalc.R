@@ -2,8 +2,8 @@ library(tidyverse)
 library(dplyr)
 library(lubridate)
 
-lcoCode = 'MD0470'
-daterq = "2024-03-05"
+lcoCode = 'MD0030'
+daterq = "2024-12-31"
 listActive = read.csv(file.choose()) 
 colnames(listActive)[10] <- "VC"
 colnames(listActive)[11] <- "STB"
