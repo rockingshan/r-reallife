@@ -99,6 +99,16 @@ msrBouquet_old_filterred = msrBouquet_old %>%
 ##add single cas code pack
 msrBouquet_bq_all = rbind(msrBouquet_old_filterred,msrBouquet_combo_new_bouq)
 
+###Fix obsolete bouquets####
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "WBD Kids SD NT2"] <- "WBD Life SD NT2"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "WBD Kids HD NT2"] <- "WBD Life HD NT2"
+msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "WBD Kids SD NT2 @ 14"] <- "WBD Life SD NT2 @ 14"
+msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "WBD Kids HD NT2 @ 22"] <- "WBD Life HD NT2 @ 22"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "COLORS WALA BANGLA BUDGET HD NT2"] <- "COLORS WALA BANGLA VALUE HD NT2"
+msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "COLORS WALA BANGLA BUDGET HD NT2 @ 32"] <- "COLORS WALA BANGLA VALUE HD NT2 @ 54"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Colors WalaHindi Budget Plus NT2"] <- "Colors WalaHindi Value Plus NT2"
+msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "Colors WalaHindi Budget Plus NT2 @ 25"] <- "Colors WalaHindi Value Plus NT2 @ 34"
+
 ##all bouqet count
 msrBouqRpt = msrBouquet_bq_all %>% 
   group_by(Broadcaster.Name,Bouquet) %>%
@@ -143,16 +153,16 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Dec24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Dec24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Dec24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Dec24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Dec24.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Dec24.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Jan25.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Jan25.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 
@@ -231,12 +241,12 @@ od_al_rpt_pl = merge(bc_name,active_pivot)
 
 
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Dec24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Dec24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Dec24.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Dec24.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 
 

@@ -272,7 +272,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_DPO_count_November24.csv")
+write.csv(all_lco,"LCO_DPO_count_December24.csv")
 
 
 
@@ -329,11 +329,11 @@ royal_merge = merge(royal_act_2nd,base_plan_1st,by.x = "SC",by.y = "SC",all.x = 
 royal_merge$PLAN_NAME.y[royal_merge$PLAN_NAME.y == "Bronze basic"] <- "Bronze basic @ 155"
 royal_merge$aggregator <- as.numeric(gsub(".* @ (\\d+)$", "\\1", royal_merge$PLAN_NAME.y))
 royal_merge$aggregator[is.na(royal_merge$aggregator)] <- 0
-royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 295, 'Downgraded','Upgraded/Same'), .after = NULL)
+royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 325, 'Downgraded','Upgraded/Same'), .after = NULL)
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
 
-write.csv(royal_pivot, "295_pack_status_November24.csv",row.names = F)
+write.csv(royal_pivot, "325_pack_status_December24.csv",row.names = F)
 
 
 

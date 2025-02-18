@@ -773,3 +773,17 @@ update_timestamps <- function(folder_path) {
 folder_path <- "C:/Users/shant/Downloads/Photos-001"
 update_timestamps(folder_path)
 
+#merge channels ####
+# Sample data
+df <- read.csv(file.choose())
+
+# Combine channels into a single row for each plan
+df_combined <- df %>%
+  group_by(Plan.Name) %>%
+  summarize(Channels = toString(Channel), .groups = "drop")
+
+# View the result
+write.csv(df_combined,"sd.csv")
+
+
+
