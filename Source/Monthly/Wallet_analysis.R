@@ -65,8 +65,8 @@ lcowise_data_export(wallet)
 lco_pivot_table(wallet)
 
 
-crdr = read.csv(file.choose(new = F))
-crdr1 = crdr %>% filter(NOTE_TYPE %in% c("CR","DR"))
+crdr = read.csv(file.choose(new = F)) ##new credit note report from Reports screen
+crdr1 = crdr %>% filter(Note.Type %in% c("CR","DR"))
 #crdr1 = crdr1 %>% filter(!(ENTITY_CODE %in% hdnd_nm))
 write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())), row.names = FALSE)
 
@@ -80,11 +80,11 @@ wallet_filt = filter(wallet, Credit.Document.Type %in% dq) %>% select(Customer.N
 wallet_filt$Amount.Debit = round(wallet_filt$Amount.Debit,digits = 2)
 
 #rtu cr note
-rtu_cr = filter(crdr1, (ENTITY_CODE %in% direct_cus)) %>% filter(NOTE_TYPE == "CR")
-rtu_cr = rtu_cr %>% group_by(ENTITY_CODE) %>% summarise(cr_note = sum(ADJ_VALUE))
+rtu_cr = filter(crdr1, (Entity.Code %in% direct_cus)) %>% filter(Note.Type == "CR")
+rtu_cr = rtu_cr %>% group_by(Entity.Code) %>% summarise(cr_note = sum(Adj.Value))
 df = wallet_filt %>% group_by(Entity.Code,Entity.Name) %>% summarise(debit = sum(Amount.Debit))
 #customer_dt = wallet %>% group_by(Customer.Nbr) %>% summarise(Tot_debit = sum(Amount.Debit))
-final_bill = merge(df,rtu_cr,all.x = T,by.x = 'Entity.Code',by.y = 'ENTITY_CODE')
+final_bill = merge(df,rtu_cr,all.x = T,by.x = 'Entity.Code',by.y = 'Entity.Code')
 final_bill[is.na(final_bill)] <- 0
 final_bill = final_bill %>% mutate(Final_Bill = debit - cr_note)
 write.csv(final_bill, sprintf("Output/RTU_customers_bill_amount__%s_%g.csv",month(today() - months(1),label = TRUE, abbr = F),year(today())),row.names = F)

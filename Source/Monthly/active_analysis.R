@@ -272,7 +272,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_DPO_count_December24.csv")
+write.csv(all_lco,"LCO_DPO_count_January25.csv")
 
 
 
@@ -333,7 +333,7 @@ royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 325, 'Downgrad
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
 
-write.csv(royal_pivot, "325_pack_status_December24.csv",row.names = F)
+write.csv(royal_pivot, "325_pack_status_January25.csv",row.names = F)
 
 
 
@@ -354,3 +354,26 @@ colnames(actvAla)[5] <- "Channel.Name"
 actvAla = actvAla %>% relocate(PLAN_NAME)
 actvAll = rbind(actvOthChnl,actvAla)
 write.csv(actvAll,"ChannelWise_.csv",row.names = F)
+
+
+####Find top 5 Channels for Major broadcasters ####
+
+# Load active customer data
+active_data <- read.csv(file.choose())
+
+# Load servicewise channel data
+service_data <- read_xlsx(file.choose()) ##Make service and Channel broadcasters from package details file
+
+merged_data <- active_data %>%
+  left_join(service_data, by = "Service.Code", relationship = "many-to-many")
+
+# Count subscribers per channel
+channel_counts <- merged_data %>%
+  group_by(Broadcaster, Channel) %>%
+  summarise(Subscribers = n(), .groups = "drop")
+# Get top 5 channels per broadcaster
+top_channels <- channel_counts %>%
+  group_by(Broadcaster) %>%
+  slice_max(order_by = Subscribers, n = 10) %>%
+  ungroup()
+write.csv(top_channels,"top_channels.csv",row.names = F)

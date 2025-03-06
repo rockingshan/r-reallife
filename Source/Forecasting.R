@@ -2,6 +2,7 @@ library(readr)
 library(forecast)
 library(ggplot2)
 library(prophet)
+library(tidyverse)
 
 # Load time series data
 ts_data <- ts(AirPassengers, start=c(1949,1), frequency=12)
@@ -67,3 +68,61 @@ print(holt_model)
 future_customers <- holt_model$mean
 print(future_customers)
 
+###using prophet library
+
+# Load dataset
+customer_data <- read_csv(file.choose())
+
+# Convert Month column to Date format (YYYY-MM-DD)
+customer_data <- customer_data %>%
+  rename(ds = Month, y = Customers) %>%   # Prophet needs 'ds' and 'y' column names
+  mutate(ds = as.Date(paste0(ds, "-01"))) # Ensure proper date format
+# Initialize Prophet model
+model <- prophet()
+
+# Fit model to data
+model <- fit.prophet(model, customer_data)
+
+# Create future 12-month period
+future <- make_future_dataframe(model, periods = 12, freq = "month")
+
+# View future dates
+print(future)
+
+# Predict future values
+forecast <- predict(model, future)
+
+# View forecasted values
+head(forecast[, c("ds", "yhat", "yhat_lower", "yhat_upper")])
+
+# Plot the forecast
+plot(model, forecast) + ggtitle("Prophet Forecast for Customer Numbers")
+
+# Plot trend and seasonal components
+prophet_plot_components(model, forecast)
+
+##testing model acquracy
+# Split data into training (first part) and testing (last 12 months)
+train <- customer_data[1:(nrow(customer_data)-12), ]
+test <- customer_data[(nrow(customer_data)-11):nrow(customer_data), ]
+
+# Train model on training data
+model_train <- prophet()
+model_train <- fit.prophet(model_train, train)
+
+# Create future dates for testing period
+future_test <- make_future_dataframe(model_train, periods = 12, freq = "month")
+
+# Predict values for test set
+forecast_test <- predict(model_train, future_test)
+
+# Compute error metrics
+library(Metrics)
+
+mae_val <- mae(test$y, forecast_test$yhat[1:12]) 
+rmse_val <- rmse(test$y, forecast_test$yhat[1:12])
+mape_val <- mape(test$y, forecast_test$yhat[1:12])
+
+print(paste("MAE:", mae_val))
+print(paste("RMSE:", rmse_val))
+print(paste("MAPE:", mape_val, "%"))
