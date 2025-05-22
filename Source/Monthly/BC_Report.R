@@ -111,12 +111,12 @@ active_pivot = al_od_final %>%
             'Active_28th' = sum(No.of.Subs.On.28th.Day..28TH_DAY),'Average' = sum(Monthly.Subs.of.the.Channel))
 od_al_rpt_plan = merge(bc_name,active_pivot)
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_NTO_all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_NTO_all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/MSR_Report_NTO_all_Mar25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/MSR_Report_NTO_all_Mar25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Jan25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Jan25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Mar25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt_plan), file="Output/MSR_Report_NTO_Planwise_all_Mar25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 
 ###Required by STar ####
