@@ -13,4 +13,5 @@ Output/*.zip
 *.csv
 *.xlsx
 *.zip
+*.pdf
 packrat/lib*/

@@ -272,7 +272,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_DPO_count_March25.csv")
+write.csv(all_lco,"LCO_DPO_count_April25.csv")
 
 
 
@@ -333,7 +333,7 @@ royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 325, 'Downgrad
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
 
-write.csv(royal_pivot, "325_pack_status_March25.csv",row.names = F)
+write.csv(royal_pivot, "325_pack_status_April25.csv",row.names = F)
 
 
 
@@ -377,3 +377,9 @@ top_channels <- channel_counts %>%
   slice_max(order_by = Subscribers, n = 10) %>%
   ungroup()
 write.csv(top_channels,"top_channels.csv",row.names = F)
+
+
+####ABV CAS Data Make ####
+list_active <- mq_active_report()
+abvData = list_active %>% filter(VC.length == "ABV") %>% select(STB,VC,CASCODE) %>% unique()
+write.csv(x = abvData, file = file.choose())

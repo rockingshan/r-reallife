@@ -8,6 +8,7 @@ library(jsonlite)
 library(RDCOMClient)
 library(XML)
 library(plyr)
+library(svDialogs)
 
 source('Source/Functions.r')
 
@@ -786,4 +787,8 @@ df_combined <- df %>%
 write.csv(df_combined,"sd.csv")
 
 
+# Show a dialog box for text input
+date_dialog_result <- dlgInput("Enter a date (YYYY-MM-DD):", default = format(Sys.Date(), "%Y-%m-%d"))$res
 
+
+print(my_date_variable)

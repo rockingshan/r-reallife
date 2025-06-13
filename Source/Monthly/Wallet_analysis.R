@@ -200,6 +200,8 @@ wallet_plan = wallet_filt %>% filter((Service.Name == '')) %>% select(Plan.Detai
   group_by(Plan.Details) %>% summarise(Total_ded_W_TAX = sum(Amount.Debit))
 write.csv(wallet_plan,"PLANwise_amount_June23.csv")
 
+
+
 ####tescode####
 library(dplyr)
 
