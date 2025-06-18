@@ -341,89 +341,106 @@ plot1 <- ggplot() +
 print(plot1)
 
 # Create line plot of subscriber count trend
+title = "Subscriber Trend "
 plot2 <- ggplot(trend_subs, aes(x = report_date, y = total_subscribers)) +
   geom_line(color = "blue", size = 1.2) +
   geom_point(color = "red", size = 3) +
   geom_text(aes(label = total_subscribers), vjust = -0.5, size = 4) +
   labs(
-    title = "Subscriber Trend - Last 7 Days",
     x = "Date",
     y = "Total Subscribers"
   ) +
-  theme_minimal()
+  ggtitle(title) +
+  theme(title = element_text(size = 22, face = "bold", color = "darkblue", 
+                                  hjust = 0.5, vjust = 1.2, family = "serif"))
 
 # Show plot
 print(plot2)
 
 # Plot as horizontal bar chart
+title = paste("Top 10 Basic Packages on", latest_date)
 plot3 <- ggplot(top10_basic, aes(x = reorder(service_name, total_subscribers), y = total_subscribers)) +
-  geom_col(fill = "darkgreen") +
+  geom_col(fill = "skyblue") +
   coord_flip() +
   labs(
-    title = paste("Top 10 Basic Packages on", latest_date),
+    
     x = "Package Name",
     y = "Subscribers"
   ) +
-  theme_minimal()
+  ggtitle(title) +
+  theme(title = element_text(size = 19, face = "bold", color = "darkblue", 
+                             hjust = 0.5, vjust = 0.4, family = "serif"))+
+  theme(axis.text.y = element_text(face="bold", size = 10))
 
 # Show plot
 print(plot3)
 
 # Plot trend of top 5 packages
+title = "Top 5 Basic Packages Trend (3 Dates, Spanning 7–15 Days)"
 plot4 <- ggplot(trend_data, aes(x = as.Date(report_date), y = count, color = service_name, group = service_name)) +
   geom_line(size = 1.2) +
   geom_point(size = 3) +
   labs(
-    title = "Top 5 Basic Packages Trend (3 Dates, Spanning 7–15 Days)",
     x = "Date",
     y = "Subscriber Count",
     color = "Package"
-  ) +
-  theme_minimal()
+  ) +ggtitle(title) +
+  theme(title = element_text(size = 19, face = "bold", color = "darkblue", 
+                             hjust = 0.5, vjust = 0.4, family = "serif"))+
+  theme(axis.text.y = element_text(face="bold", size = 10))
 
 # Show plot
 print(plot4)
 
 # Plot using facet_wrap to show each city separately
+title = paste("Top 2 Basic Packages per City on", latest)
 plot5 <- ggplot(top2_city_packages, aes(x = reorder(service_name, total_count), y = total_count, fill = service_name)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ lco_city, scales = "free_y") +
   coord_flip() +
   labs(
-    title = paste("Top 2 Basic Packages per City on", latest),
     x = "Package",
     y = "Subscriber Count"
   ) +
-  theme_minimal()
+  ggtitle(title) +
+  theme(title = element_text(size = 18, face = "bold", color = "darkblue", 
+                             hjust = 0.5, vjust = 0.4, family = "serif"))+
+  theme(axis.text.y = element_text(face="bold", size = 10))
 
 # Show plot
 print(plot5)
 
 ##plot of top 10 alacarte
+title = paste("Top 10 Alacarte Services on", latest)
 plot6 <- ggplot(top10_alacarte, aes(x = reorder(service_name, total), y = total)) +
-  geom_col(fill = "orange") +
+  geom_col(fill = "skyblue") +
   coord_flip() +
   labs(
-    title = paste("Top 10 Alacarte Services on", latest),
     x = "Service Name",
     y = "Subscriber Count"
   ) +
-  theme_minimal()
+  ggtitle(title) +
+  theme(title = element_text(size = 18, face = "bold", color = "darkblue", 
+                             hjust = 0.5, vjust = 0.4, family = "serif"))+
+  theme(axis.text.y = element_text(face="bold", size = 10))
 
 # Show plot
 print(plot6)
 
 ##plot of top 3 alacarte per city
+title = paste("Top 3 Alacarte Services per City on", latest)
 plot7 <- ggplot(top3_alacarte_city, aes(x = reorder(service_name, total_count), y = total_count, fill = service_name)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ lco_city, scales = "free_y") +
   coord_flip() +
   labs(
-    title = paste("Top 3 Alacarte Services per City on", latest),
     x = "Service Name",
     y = "Subscriber Count"
   ) +
-  theme_minimal()
+  ggtitle(title) +
+  theme(title = element_text(size = 18, face = "bold", color = "darkblue", 
+                             hjust = 0.5, vjust = 0.4, family = "serif"))+
+  theme(axis.text.y = element_text(face="bold", size = 10))
 
 # Show plot
 print(plot7)
@@ -447,35 +464,12 @@ pdf(pdf_file, width = 11, height = 8.5)
 # Cover page
 grid.newpage()
 grid.text(paste("Subscriber Trends Report", "\nDate:", today_str), gp = gpar(fontsize = 22, fontface = "bold"))
-
-# Plot 1
-grid.newpage(); grid.draw(title1); grid.newpage(); print(plot1); grid.newpage(); grid.draw(insight1)
-
-# Plot 2
-grid.newpage(); grid.text("Plot 2: Subscriber Trend (Last 7 Dates)", gp = gpar(fontsize = 16, fontface = "bold"))
+print(plot1)
 print(plot2)
-grid.newpage(); grid.text("Insight: Shows how subscriber base is increasing or decreasing over time.", gp = gpar(fontsize = 12))
-
-# Plot 3
-grid.newpage(); grid.text("Plot 3: Top 10 Basic Packages", gp = gpar(fontsize = 16, fontface = "bold"))
 print(plot3)
-grid.newpage(); grid.text("Insight: Highlights the most subscribed basic packages as of the latest date.", gp = gpar(fontsize = 12))
-
-# Plot 4
-grid.newpage(); grid.text("Plot 4: Top 5 Basic Packages Trend", gp = gpar(fontsize = 16, fontface = "bold"))
 print(plot4)
-grid.newpage(); grid.text("Insight: Visualizes growth or decline in popularity of leading packages over time.", gp = gpar(fontsize = 12))
-
-# Plot 5
-grid.newpage(); grid.text("Plot 5: Top 2 Packages Per City", gp = gpar(fontsize = 16, fontface = "bold"))
 print(plot5)
-
-# Plot 6
-grid.newpage(); grid.text("Plot 6: Top 10 Alacarte Services", gp = gpar(fontsize = 16, fontface = "bold"))
 print(plot6)
-
-# Plot 7
-grid.newpage(); grid.text("Plot 7: Top 3 Alacarte Services Per City", gp = gpar(fontsize = 16, fontface = "bold"))
 print(plot7)
 
 dev.off()
