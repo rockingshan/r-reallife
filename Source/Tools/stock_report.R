@@ -6,7 +6,7 @@ customer_data = read.csv(file.choose(new = F)) ##customer master data
 #lcoarea = read.csv(file.choose(new = F))
 ####work on all area inventory file
 
-cardtype = c('Smart Card','ABV Smart Card','Sumavision SC','Gospell SC','Safeview SC','Nagra Cardless STB')
+cardtype = c('Smart Card','ABV Smart Card','Sumavision SC','Gospell SC','Safeview SC','Nagra Cardless STB','Conax SC')
 boxtype = c('MYBOX S427 SFVW','AGGRRESSIVE 5197','AGGRESSIVE 7C02 HD','SMT 3715 HD','AGGRESSIVE 5043 HD','Safeview STB','SMT 3281','ABV STB','SMT 3202','GOSPELL HD 7601U',
             'GOSPELL HD L316','GOSPELL K925','Gospell STB','GOSPELL SK9501','MYBOX H424 HD','MYBOX S427','Aggressive 3711 HD ABV','OVT HD 7C02','D LINK M4','JIUZHOU DTM 7C02 HD',
             'Aggressive 7611 HD','Aggressive 7649 HD ABV','Aggressive 7613 HD ABV','Aggressive 7629','OVT MPEG4 5C35','Nagra Cardless STB')

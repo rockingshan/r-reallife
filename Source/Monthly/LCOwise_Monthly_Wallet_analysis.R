@@ -1,7 +1,48 @@
 library(dplyr)
 library(readr)
 library(tidyr)
+library(stringr)
+library(lubridate)
 
+
+#### one file of wallet bill report ####
+wallet_bill = read.csv(file.choose())
+wallet_bill_p = wallet_bill %>% filter(!(Customer.Nbr == '')) %>% filter(!(Amount.Debit == 0))
+
+# Step 2: Convert Transaction Date to proper date format and add a Month column
+wallet_bill_m <- wallet_bill_p %>%
+  mutate(
+    Bill.Charge.Start.Date = as.Date(Bill.Charge.Start.Date, format = "%d/%m/%Y %I:%M:%S %p"),
+    Bill.Charge.End.Date = as.Date(Bill.Charge.End.Date, format = "%d/%m/%Y %I:%M:%S %p"),
+    Transaction.Date = as.Date(Transaction.Date, format = "%d/%m/%Y %I:%M:%S %p"),
+    Month = format(Transaction.Date, "%Y-%m")
+  )
+# Step 3: Group by Plan_Details and Month and calculate revenue
+monthly_revenue <- wallet_bill_m %>%
+  group_by(Plan.Details, Month) %>%
+  summarise(
+    Total.Revenue = sum(Amount.Debit, na.rm = TRUE),
+    Unique.Subs = n_distinct(Customer.Nbr),
+    .groups = "drop"
+  )
+
+# Step 4: Pivot wider for month-wise comparison
+revenue_wide <- monthly_revenue %>%
+  mutate(across(where(is.numeric), ~ round(., 2))) %>%
+  pivot_wider(
+    names_from = Month,
+    values_from = c(Total.Revenue, Unique.Subs),
+    names_glue = "{Month}.{.value}",
+    values_fill = 0
+  )
+
+##output
+write.csv(revenue_wide,"Monthwise_revenue_details.csv",row.names = F)
+  
+
+
+
+####comparing two months file with wallet new####
 # === Step 1: Load Data ===
 # Replace with actual file paths
 may_file <- file.choose()
