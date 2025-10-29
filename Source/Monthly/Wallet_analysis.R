@@ -73,7 +73,7 @@ write.csv(crdr1, sprintf("Output/Credit_Debit_Note_%s_%g.csv",month(today() - mo
 dq = c("INVOICE","SELFCARE-CRNOTE")
 
 ####Find Direct customers bills####
-direct_cus = c('MD0440','MBDML','MD0479','MD0478',"MD0493","MD0495")
+direct_cus = c('MD0440','MBDML','MD0479','MD0478',"MD0493","MD0495","MD0512","MD0515","MDOGH")
 wallet = filter(wallet, (Entity.Code %in% direct_cus))
 
 wallet_filt = filter(wallet, Credit.Document.Type %in% dq) %>% select(Customer.Nbr,Customer.Name,Unique.Id,Entity.Code,Entity.Name,Plan.Details,Service.Name,Amount.Debit,Billing.Frequency,Transaction.Date)
@@ -222,3 +222,7 @@ print(my_df)
 
 # View the resulting pivot table
 print(my_df)
+
+
+####find latest transaction####
+

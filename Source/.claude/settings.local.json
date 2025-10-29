@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/shant/Documents/r-reallife/**)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(Rscript:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

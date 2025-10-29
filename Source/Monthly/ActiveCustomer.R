@@ -2,11 +2,13 @@ library(tidyverse)
 library(dplyr)
 library(lubridate)
 
-activ_cust = read.csv(file.choose(new = F))
-active_cust_for_lookup = activ_cust %>% select(Entity.Code,Entity.Name) %>% unique()
 
 wallet = read.csv(file.choose(new = F),colClasses = c(Unique.Id="character"))
 #wallet = filter(wallet, !(Entity.Code %in% hdnd_nm))
+
+activ_cust = read.csv(file.choose(new = F))
+active_cust_for_lookup = activ_cust %>% select(Entity.Code,Entity.Name) %>% unique()
+
 
 
 active_pivot = activ_cust %>% 

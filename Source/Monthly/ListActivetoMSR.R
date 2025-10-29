@@ -11,6 +11,7 @@ active_to_msr_format <- function(){
   colnames(pack_details)[1] = "SERVICE_CODE"
   colnames(pack_details)[2] = "Broadcaster.Name"
   pack_details = pack_details %>% filter(!Broadcaster.Name %in% c("IndiaCast Media Distribution Pvt. Ltd.", "Star India Pvt. Ltd.","Free"))
+  list_active1$SERVICE_NAME <- ifelse(grepl("^MBIL", list_active1$SERVICE_CODE), list_active1$PLAN_NAME, list_active1$SERVICE_NAME)
   colnames(list_active1)[8] = "Plan.Name"
   listActiveBroadcast = merge(list_active1,pack_details,by = "SERVICE_CODE", all.x = T) %>% filter(!(is.na(Broadcaster.Name)))
   listActiveCount = listActiveBroadcast %>% group_by(LCO_CITY,Broadcaster.Name,Plan.Name,SERVICE_NAME) %>% summarise(Active.Cust = n())
@@ -27,6 +28,8 @@ singlepack_7 = read.csv(file.choose())
 singlepack_14 = read.csv(file.choose())
 singlepack_21 = read.csv(file.choose())
 singlepack_28 = read.csv(file.choose())
+
+bundles = read.csv(file.choose()) #import bundle plans alacarte file MQ folder
 
 msrAll7th = active_to_msr_format()
 colnames(msrAll7th)[5] <- 'No.of.Subs.On.7th.Day'
@@ -48,12 +51,12 @@ msrAllCombo = msrAllCombo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(sele
 ##
 #msrAllCombo = read.csv(file.choose())
 
-msrAlacarte = msrAllCombo %>% filter((Plan.Name %in% c("Alacarte Plan","Alacarte Discounted Special Price","Punjabi Channel Group","Telegu Channels Group","Odia Channel Group","English Channels Group")))
+msrAlacarte = msrAllCombo %>% filter((Plan.Name %in% bundles$Plan.Name))
 msrAlacarteSub = msrAlacarte %>% filter((SERVICE_NAME %in% c("Sidharth Odia Pack-1","Odisha Tv Bouqet 1")))
 msrAlacarte = msrAlacarte %>% filter(!(SERVICE_NAME %in% c("Sidharth Odia Pack-1","Odisha Tv Bouqet 1")))
 #colnames(msrAlacarte)[1] <- 'Broadcaster.Name'
 #colnames(msrAlacarte)[2] <- 'Plan.Name'
-msrBouquet = msrAllCombo %>% filter(!(Plan.Name %in% c("Alacarte Plan","Alacarte Discounted Special Price","Punjabi Channel Group","Telegu Channels Group","Odia Channel Group")))
+msrBouquet = msrAllCombo %>% filter(!(Plan.Name %in% bundles$Plan.Name))
 msrBouquet = rbind(msrBouquet,msrAlacarteSub)
 #colnames(msrBouquet)[1] <- 'Broadcaster.Name'
 #colnames(msrBouquet)[2] = "Plan.Name"
@@ -73,13 +76,13 @@ msrAlacarte = merge(msrAlacarte,serviceChannel,all.x = T)
 
 ####work on Bouqets#######
 msrBouquet = msrBouquet %>% filter(!(Broadcaster.Name %in% c("ABP News Network Pvt Limited","Free to AIR","Republic TV","DD")))
-msrBouquet_new = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(LCO_CITY,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day,
-                                                                                   No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day,Monthly.Subs.of.the.Channel)
-msrBouquet_new_7 = msrBouquet_new %>% select(LCO_CITY,Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
-msrBouquet_new_14 = msrBouquet_new %>% select(LCO_CITY,Plan.Name,No.of.Subs.On.14th.Day) %>% unique()
-msrBouquet_new_21 = msrBouquet_new %>% select(LCO_CITY,Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
-msrBouquet_new_28 = msrBouquet_new %>% select(LCO_CITY,Plan.Name,No.of.Subs.On.28th.Day) %>% unique()
-msrBouquet_new_avg = msrBouquet_new %>% select(LCO_CITY,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
+#msrBouquet_new = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(LCO_CITY,Broadcaster.Name,Plan.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day,
+#                                                                                   No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day,Monthly.Subs.of.the.Channel)
+msrBouquet_new_7 = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>% select(LCO_CITY,Plan.Name,No.of.Subs.On.7th.Day) %>% unique()
+msrBouquet_new_14 = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>%select(LCO_CITY,Plan.Name,No.of.Subs.On.14th.Day) %>% unique()
+msrBouquet_new_21 = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>%select(LCO_CITY,Plan.Name,No.of.Subs.On.21st.Day) %>% unique()
+msrBouquet_new_28 = msrBouquet %>% filter(Bouquet %in% bouquet_names$Bouquet) %>%select(LCO_CITY,Plan.Name,No.of.Subs.On.28th.Day) %>% unique()
+#msrBouquet_new_avg = msrBouquet %>% select(LCO_CITY,Plan.Name,Monthly.Subs.of.the.Channel) %>% unique()
 
 msrBouquet_new_7_pk = merge(msrBouquet_new_7,singlepack_7,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
 msrBouquet_new_14_pk = merge(msrBouquet_new_14,singlepack_14,all.y = F) %>% unique() %>% unite(combined, c('Plan.Name','Bouquet'),sep = "|")
@@ -107,7 +110,7 @@ msrBouquet_old_filterred = msrBouquet_old %>%
 ##add single cas code pack
 msrBouquet_bq_all = rbind(msrBouquet_old_filterred,msrBouquet_combo_new_bouq)
 
-###Fix obsolete bouquets####
+###Fix obsolete bouquets AND NAME PROBLEMS####
 msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "WBD Kids SD NT2"] <- "WBD Life SD NT2"
 msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "WBD Kids HD NT2"] <- "WBD Life HD NT2"
 msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "WBD Kids SD NT2 @ 14"] <- "WBD Life SD NT2 @ 14"
@@ -116,6 +119,12 @@ msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "COLORS WALA BANGLA BUDGE
 msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "COLORS WALA BANGLA BUDGET HD NT2 @ 32"] <- "COLORS WALA BANGLA VALUE HD NT2 @ 54"
 msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Colors WalaHindi Budget Plus NT2"] <- "Colors WalaHindi Value Plus NT2"
 msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "Colors WalaHindi Budget Plus NT2 @ 25"] <- "Colors WalaHindi Value Plus NT2 @ 34"
+
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Zee All-In-One Pack Bangla HD (A)"] <- "Zee All-In-One Pack Bangla HD A"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Zee All-in-One Pack Hindi SD (A)"] <- "Zee All-in-One Pack Hindi SD A"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Zee All-In-One Pack Hindi HD (A)"] <- "Zee All-In-One Pack Hindi HD A"
+msrBouquet_bq_all$Plan.Name[msrBouquet_bq_all$Plan.Name == "Happy India Smart -Bangla 2.0 @ 56"] <- "Happy India Smart - Bangla 2.0 @ 56"
+msrBouquet_bq_all$Bouquet[msrBouquet_bq_all$Bouquet == "Happy India Smart -Bangla 2.0"] <- "Happy India Smart - Bangla 2.0"
 
 ##all bouqet count
 msrBouqRpt = msrBouquet_bq_all %>% 
@@ -164,16 +173,16 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_June25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_June25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Oct25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Oct25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_June25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_June25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Oct25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Oct25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_June25.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_June25.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Oct25.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Oct25.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 
@@ -254,12 +263,12 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_June25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_June25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Oct25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Oct25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 # ##NTO report all
-# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_June25.xlsx", sheetName="Bouquet", row.names=FALSE)
-# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_June25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Oct25.xlsx", sheetName="Bouquet", row.names=FALSE)
+# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Oct25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 # 
 
 ####Weekly LCO wise Active customer for SITI ####
@@ -279,7 +288,7 @@ colnames(bq_report_proper) <- c("Lco.Code", "No.of.Subs.On.7th.Day", "No.of.Subs
 bq_report_proper = bq_report_proper %>% mutate(Average = rowMeans(across(where(is.numeric)), na.rm = TRUE))
 bq_report_area = merge(bq_report_proper,lco_details,all.x = T,all.y = F)
 bq_report_area = bq_report_area %>% select(Lco.Code,Business.Name,City,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day,No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day,Average)
-write.csv(bq_report_area,"Weekly_Active_subs_June25.csv",row.names = F)
+write.csv(bq_report_area,"Weekly_Active_subs_Oct25.csv",row.names = F)
 
 
 

@@ -254,17 +254,45 @@ write.csv(oplan_pivot,"Output/5_DPO_plan_count_Feb23.csv",row.names = F)
 
 
 ####FIND PENETRATION FOR STAR_wb####
-bouquet_names = read.csv(sprintf("https://drive.google.com/u/0/uc?id=1XvbGWeTDsxEvcvLFH1kFjPFBfSA-lP9K&export=download"))
-list_active_wb = list_active %>% filter(LCO_STATE == "WEST BENGAL")
-act_cust_count = count(list_active_wb %>% select(CUSTOMER_NBR) %>% unique())
-dpo_count = subset(list_active_wb, grepl('^MBIL',list_active_wb$PLAN_CODE,ignore.case = T))
-dpo_count = dpo_count %>% group_by(PLAN_NAME) %>% summarise(Active = n())
-dpo_count = dpo_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%"))
-bc_count = list_active_wb %>% filter(PLAN_NAME %in% bouquet_names$Bouquet)
-bc_count = bc_count %>% group_by(PLAN_NAME) %>% summarise(Active = n())
-bc_count = bc_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%"))
+bouquet_names = c(
+  "Disney Kids Pack NT4",
+  "SVP Bengali Hindi NT4",
+  "SVP Hindi NT4",
+  "SPP Bengali Hindi NT4",
+  "SVP Bengali Lite Hindi HD NT4",
+  "Disney Kids Pack HD NT4",
+  "SPP Bengali Lite Hindi HD NT4",
+  "SVP Lite Hindi HD NT4"
+)
+alacarte_names = c(
+  "Star Jalsha @ 19","Star Gold 2 @ 5","Star Sports 2 @ 19","Star Sports Select 1 @ 19","Star Sports 2 Hindi @ 19",
+  "Star Sports Select 2 @ 10","Star Gold Romance @ 3","Star Gold Thrills @ 2","Star Sports 1 Hindi @ 19","Star Plus @ 19",
+  "Star Jalsha HD @ 19","Star Gold @ 19","Star Movies @ 19","Star Sports 3 @ 19","Star Gold Select @ 7",
+  "Star Sports 2 Hindi HD @ 19","Star Sports Select HD1 @ 19","Star Sports Select HD2 @ 15","Star Bharat @ 15","Star Sports HD2 @ 19",
+  "Star Sports HD1 @ 19","Star Sports 1 HD Hindi @ 19","Star Movies Select HD @ 19","Star Gold HD @ 19","Star Sports Khel @ 1",
+  "Star Gold 2 HD @ 8","Star Plus HD @ 25","Star Movies HD @ 19","Star Sports 2 Tamil @ 19","Star Gold Select HD @ 10",
+  "Star Movies Select @ 10","Star Bharat HD @ 19","Star Sports 2 Telugu @ 19","Star Sports 2 Tamil HD @ 19","Star Sports 2 Telegu HD @ 19",
+  "Star Kiran @ 15","Star Pravah @ 6","Jalsha Movies @ 15","Jalsha Movies HD @ 19","Colors Bangla Cinema @ 15",
+  "Colors Bangla @ 7","Colors Cineplex Superhits","Colors Cineplex Bollywood","Colors Rishtey","Colors Cineplex @ 15",
+  "Colors @ 19","Colors Bangla HD @ 19","Colors HD @ 19","Colors Infinity HD @ 15","Colors Infinity @ 10","Colors Gujarati @ 6"
+)
+list_active = read.csv(file.choose())  #get new report
+act_cust_count = count(list_active %>% select(Customer.Nbr) %>% unique())
+dpo_count = subset(list_active, grepl('^MBIL',list_active$Plan.Code,ignore.case = T))
+dpo_count = dpo_count %>% group_by(Plan.Name) %>% summarise(Active = n())
+dpo_count = dpo_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%")) %>%
+  arrange(desc(Active))
+bc_count = list_active %>% filter(Service.Name %in% bouquet_names)
+bc_count = bc_count %>% group_by(Service.Name) %>% summarise(Active = n())
+bc_count = bc_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%")) %>%
+  arrange(desc(Active))
+alacarte_count = list_active %>% filter(Service.Name %in% alacarte_names)
+alacarte_count = alacarte_count %>% group_by(Service.Name) %>% summarise(Active = n())
+alacarte_count = alacarte_count %>% mutate(Penetration = paste0(round(Active/act_cust_count$n*100,2),"%")) %>%
+  arrange(desc(Active))
 write.csv(dpo_count,"dpo_count.csv")
-write.csv(bc_count,"bc_count.csv")
+write.csv(bc_count,"bouquet_count.csv")
+write.csv(alacarte_count,"alacarte_count.csv")
 
 ####lco dpo pack and customer count####
 ls_new_plan = subset(list_active, (grepl('^MBIL',list_active$PLAN_CODE,ignore.case = T)))
@@ -272,7 +300,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_DPO_count_June25.csv")
+write.csv(all_lco,"LCO_DPO_count_September25.csv")
 
 
 
@@ -333,7 +361,7 @@ royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 325, 'Downgrad
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
 
-write.csv(royal_pivot, "325_pack_status_June25.csv",row.names = F)
+write.csv(royal_pivot, "325_pack_status_September25.csv",row.names = F)
 
 
 

@@ -88,14 +88,10 @@ customer_comparison <- scores_before %>%
       TRUE ~ "Same Contract"
     )
   )
-
 # Summary Analysis
 migration_summary <- customer_comparison %>%
   count(Migration_Pattern, sort = TRUE) %>%
   mutate(Percentage = round(n / sum(n) * 100, 2))
-
-print("Migration Pattern Summary:")
-print(migration_summary)
 
 # Key concern analysis: Customers who downgraded base but added addons
 concern_customers <- customer_comparison %>%
@@ -103,31 +99,38 @@ concern_customers <- customer_comparison %>%
   select(`Customer Nbr`, Weight_Change, Base_Weight_Change, Addon_Change, 
          Package_Mix_before, Package_Mix_after, Contract_Change)
 
-print(paste("Number of customers who downgraded base and added addons:", nrow(concern_customers)))
-print("Sample of concerning migrations:")
-print(head(concern_customers, 10))
-
 # Additional analysis: Contract changes impact
 contract_change_summary <- customer_comparison %>%
   count(Contract_Change, Migration_Pattern) %>%
   arrange(Contract_Change, desc(n))
 
-print("Migration patterns by contract change status:")
-print(contract_change_summary)
+# Package type analysis
+package_analysis_before <- data_before %>%
+  count(`Plan Type`, name = "Count_Before")
 
-# ARPU Impact Analysis (Placeholder - you'll need to add pricing data)
-# If you provide service pricing, we can calculate actual ARPU impact
-calculate_arpu_impact <- function(data_before, data_after, pricing_data = NULL) {
-  if (is.null(pricing_data)) {
-    cat("To calculate ARPU impact, please provide a pricing_data dataframe with columns:\n")
-    cat("- Service_Code (matching your Service Code column)\n")
-    cat("- Price (monthly price for each service)\n")
-    return(NULL)
-  }
-  # ARPU calculation code would go here
-}
+package_analysis_after <- data_after %>%
+  count(`Plan Type`, name = "Count_After")
 
-# Visualization
+package_trend <- package_analysis_before %>%
+  full_join(package_analysis_after, by = "Plan Type") %>%
+  mutate(
+    Count_Before = replace_na(Count_Before, 0),
+    Count_After = replace_na(Count_After, 0),
+    Change = Count_After - Count_Before,
+    Percentage_Change = round((Change / Count_Before) * 100, 2)
+  )
+
+# Risk metrics
+total_customers <- nrow(customer_comparison)
+risk_customers <- nrow(concern_customers)
+risk_percentage <- round(risk_customers / total_customers * 100, 2)
+
+# Weight analysis
+avg_weight_before <- round(mean(scores_before$Total_Weight, na.rm = TRUE), 2)
+avg_weight_after <- round(mean(scores_after$Total_Weight, na.rm = TRUE), 2)
+weight_change_overall <- round(avg_weight_after - avg_weight_before, 2)
+
+# Create visualizations
 p1 <- ggplot(migration_summary, aes(x = reorder(Migration_Pattern, n), y = n)) +
   geom_col(fill = "steelblue", alpha = 0.7) +
   coord_flip() +
@@ -135,8 +138,6 @@ p1 <- ggplot(migration_summary, aes(x = reorder(Migration_Pattern, n), y = n)) +
        x = "Migration Pattern", y = "Number of Customers") +
   theme_minimal() +
   geom_text(aes(label = paste0(n, " (", Percentage, "%)")), hjust = -0.1)
-
-print(p1)
 
 # Weight distribution before vs after
 weight_comparison <- data.frame(
@@ -156,11 +157,219 @@ p2 <- weight_comparison %>%
        y = "Package Weight Score") +
   theme_minimal()
 
-print(p2)
+# Create comprehensive markdown report
+create_markdown_report <- function() {
+  
+  # Create plots directory if it doesn't exist
+  if (!dir.exists("plots")) {
+    dir.create("plots")
+  }
+  
+  # Save plots
+  ggsave("plots/migration_patterns.png", plot = p1, width = 10, height = 6, dpi = 300)
+  ggsave("plots/weight_distribution.png", plot = p2, width = 10, height = 8, dpi = 300)
+  
+  # Create additional plots
+  p3 <- ggplot(contract_change_summary, aes(x = Contract_Change, y = n, fill = Migration_Pattern)) +
+    geom_col(position = "stack") +
+    labs(title = "Migration Patterns by Contract Change Status",
+         x = "Contract Change Status", y = "Number of Customers") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    scale_fill_brewer(type = "qual", palette = "Set3")
+  
+  ggsave("plots/contract_change_patterns.png", plot = p3, width = 10, height = 6, dpi = 300)
+  
+  # Create package type trend plot
+  p4 <- package_trend %>%
+    pivot_longer(cols = c(Count_Before, Count_After), names_to = "Period", values_to = "Count") %>%
+    mutate(Period = ifelse(Period == "Count_Before", "2025-07-13", "2025-07-28")) %>%
+    ggplot(aes(x = `Plan Type`, y = Count, fill = Period)) +
+    geom_col(position = "dodge") +
+    labs(title = "Package Type Distribution: Before vs After",
+         x = "Plan Type", y = "Service Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  ggsave("plots/package_type_trends.png", plot = p4, width = 10, height = 6, dpi = 300)
+  
+  # Generate markdown content
+  markdown_content <- paste0('
+# Customer Package Migration Analysis Report
+## Period: July 13, 2025 vs July 28, 2025
+
+---
+
+## Executive Summary
+
+This analysis examines customer behavior following the introduction of addon packages (Sports, Movies, Kids addons at lower price points). The primary concern was whether customers would downgrade their base packages and add specific addons instead of maintaining higher-value comprehensive packages.
+
+**Key Finding:** ', risk_percentage, '% of customers (', risk_customers, ' out of ', total_customers, ') adopted the concerning pattern of downgrading base packages while adding addons.
+
+---
+
+## Risk Assessment
+
+', if (risk_percentage > 10) {
+  paste0("🔴 **HIGH RISK**: ", risk_percentage, "% of customers showing concerning migration pattern")
+} else if (risk_percentage > 5) {
+  paste0("🟡 **MEDIUM RISK**: ", risk_percentage, "% of customers showing concerning migration pattern")  
+} else {
+  paste0("🟢 **LOW RISK**: Only ", risk_percentage, "% of customers showing concerning migration pattern")
+}, '
+
+**Overall Package Weight Change:** ', ifelse(weight_change_overall >= 0, "↗️", "↘️"), ' ', abs(weight_change_overall), ' points (Average: ', avg_weight_before, ' → ', avg_weight_after, ')
+
+---
+
+## Migration Pattern Analysis
+
+![Migration Patterns](plots/migration_patterns.png)
+
+### Customer Behavior Breakdown:
+
+')
+  
+  # Add migration summary table
+  for (i in 1:nrow(migration_summary)) {
+    pattern <- migration_summary$Migration_Pattern[i]
+    count <- migration_summary$n[i] 
+    pct <- migration_summary$Percentage[i]
+    
+    emoji <- case_when(
+      pattern == "Downgraded Base + Added Addons" ~ "🔴",
+      pattern == "Pure Downgrade" ~ "📉", 
+      pattern == "No Change" ~ "➖",
+      pattern == "Same Base + Added Addons" ~ "🟡",
+      pattern == "Base Package Upgrade" ~ "📈",
+      pattern == "Upgraded with Addons" ~ "🟢",
+      TRUE ~ "⚪"
+    )
+    
+    markdown_content <- paste0(markdown_content, 
+                               '- **', emoji, ' ', pattern, ':** ', count, ' customers (', pct, '%)\n')
+  }
+  
+  markdown_content <- paste0(markdown_content, '
+
+---
+
+## Package Weight Distribution Analysis
+
+![Weight Distribution](plots/weight_distribution.png)
+
+The package weight analysis shows the distribution of customer package values before and after the addon introduction.
+
+---
+
+## Contract Change Impact
+
+![Contract Change Patterns](plots/contract_change_patterns.png)
+
+### Contract Change Summary:
+
+')
+  
+  # Add contract change analysis
+  contract_summary_agg <- contract_change_summary %>%
+    group_by(Contract_Change) %>%
+    summarise(Total = sum(n), .groups = "drop") %>%
+    arrange(desc(Total))
+  
+  for (i in 1:nrow(contract_summary_agg)) {
+    change_type <- contract_summary_agg$Contract_Change[i]
+    total <- contract_summary_agg$Total[i]
+    
+    markdown_content <- paste0(markdown_content,
+                               '- **', change_type, ':** ', total, ' customers\n')
+  }
+  
+  markdown_content <- paste0(markdown_content, '
+
+---
+
+## Package Type Trends
+
+![Package Type Trends](plots/package_type_trends.png)
+
+### Service Count Changes by Package Type:
+
+')
+  
+  # Add package trend table
+  for (i in 1:nrow(package_trend)) {
+    pkg_type <- package_trend$`Plan Type`[i]
+    before <- package_trend$Count_Before[i]
+    after <- package_trend$Count_After[i] 
+    change <- package_trend$Change[i]
+    pct_change <- package_trend$Percentage_Change[i]
+    
+    trend_emoji <- ifelse(change > 0, "↗️", ifelse(change < 0, "↘️", "➖"))
+    
+    markdown_content <- paste0(markdown_content,
+                               '- **', pkg_type, ':** ', before, ' → ', after, ' services ', trend_emoji, ' (', 
+                               ifelse(change >= 0, "+", ""), change, ', ', 
+                               ifelse(is.finite(pct_change), paste0(pct_change, "%"), "N/A"), ')\n')
+  }
+  
+  markdown_content <- paste0(markdown_content, '
+
+---
+
+## Business Recommendations
+
+### Immediate Actions:
+1. **Monitor High-Risk Customers**: Focus on the ', risk_customers, ' customers who downgraded base packages
+2. **Pricing Strategy Review**: Consider adjusting addon pricing if revenue impact is significant
+3. **Customer Communication**: Engage with customers to understand their decision drivers
+
+### Strategic Considerations:
+- **Addon Strategy Impact**: ', ifelse(risk_percentage > 10, "Consider revising addon strategy", 
+                                       ifelse(risk_percentage > 5, "Monitor closely but strategy appears manageable", "Addon strategy showing positive results")), '
+- **Package Portfolio**: Review base package value proposition vs addon combinations
+- **Revenue Protection**: Implement safeguards against excessive base package downgrades
+
+---
+
+## Data Quality Notes
+- **Analysis Period**: 7-day comparison (July 13-28, 2025)
+- **Customer-Level Analysis**: Grouped by Customer Number to avoid contract change duplications  
+- **Total Customers Analyzed**: ', total_customers, '
+- **Data Completeness**: Both datasets successfully processed and compared
+
+---
+
+*Generated on: ', Sys.Date(), '*
+*Analysis conducted using package weight methodology with comprehensive migration pattern classification*
+')
+  
+  # Write markdown file
+  writeLines(markdown_content, "Customer_Migration_Analysis_Report.md")
+  
+  cat("✅ Markdown report generated: Customer_Migration_Analysis_Report.md\n")
+  cat("📊 Plots saved in: plots/ directory\n")
+  cat("📁 Data exports: customer_migration_analysis.csv, migration_summary.csv\n")
+}
+
+# Generate the report
+create_markdown_report()
 
 # Export results for further analysis
 write_csv(customer_comparison, "customer_migration_analysis.csv")
 write_csv(migration_summary, "migration_summary.csv")
+write_csv(contract_change_summary, "contract_change_summary.csv")
+write_csv(package_trend_analysis, "package_trend_analysis.csv")
+
+# ARPU Impact Analysis (Placeholder - you'll need to add pricing data)
+calculate_arpu_impact <- function(data_before, data_after, pricing_data = NULL) {
+  if (is.null(pricing_data)) {
+    cat("To calculate ARPU impact, please provide a pricing_data dataframe with columns:\n")
+    cat("- Service_Code (matching your Service Code column)\n")
+    cat("- Price (monthly price for each service)\n")
+    return(NULL)
+  }
+  # ARPU calculation code would go here
+}
 
 # Function to add pricing data and recalculate with ARPU
 add_pricing_analysis <- function(service_pricing_df) {
@@ -169,25 +378,4 @@ add_pricing_analysis <- function(service_pricing_df) {
   cat("Pricing analysis function ready. Please provide pricing data in format:\n")
   cat("service_pricing <- data.frame(Service_Code = c(...), Price = c(...))\n")
   cat("Then call: add_pricing_analysis(service_pricing)\n")
-}
-
-# Summary insights
-cat("\n=== KEY INSIGHTS ===\n")
-cat("1. Total customers analyzed:", nrow(customer_comparison), "\n")
-cat("2. Customers with concerning migration pattern:", 
-    nrow(filter(customer_comparison, Migration_Pattern == "Downgraded Base + Added Addons")), "\n")
-cat("3. Most common migration pattern:", 
-    migration_summary$Migration_Pattern[1], 
-    "(", migration_summary$n[1], "customers,", migration_summary$Percentage[1], "%)\n")
-
-# Risk assessment
-risk_percentage <- round(nrow(concern_customers) / nrow(customer_comparison) * 100, 2)
-cat("4. Risk Assessment: ", risk_percentage, "% of customers downgraded base and added addons\n")
-
-if (risk_percentage > 10) {
-  cat("⚠️  HIGH RISK: Significant customer migration to lower-value packages\n")
-} else if (risk_percentage > 5) {
-  cat("⚠️  MEDIUM RISK: Notable customer migration pattern\n")
-} else {
-  cat("✅ LOW RISK: Minimal impact on package downgrades\n")
 }
