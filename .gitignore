@@ -1,6 +1,6 @@
 .Rproj.user
 .Rhistory
-.RData
+.RData*
 .Ruserdata
 Data/*.csv
 Data/*.xlsx
@@ -15,3 +15,7 @@ Output/*.zip
 *.zip
 *.pdf
 packrat/lib*/
+
+.RDataTmp
+.RDataTmp1
+.RDataTmp2
