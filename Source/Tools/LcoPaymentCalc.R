@@ -2,8 +2,8 @@ library(tidyverse)
 library(dplyr)
 library(lubridate)
 
-lcoCode = 'MD0030'
-daterq = "2024-12-31"
+lcoCode = 'MD0517'
+daterq = "2025-12-31"
 listActive = read.csv(file.choose()) 
 colnames(listActive)[10] <- "VC"
 colnames(listActive)[11] <- "STB"
@@ -25,7 +25,7 @@ listActiveFilter = listActive %>% select(CUSTOMER_NBR,CONTRACT_NUMBER,ENTITY_COD
 dueRenewalFilter = dueRenewal %>% filter(Contract.End.Date == daterq)
 listActivewithEndDate = merge(listActiveFilter,dueRenewalFilter, by.x = 'CONTRACT_NUMBER',by.y = 'Contract.Number')
 write.csv(listActivewithEndDate %>% select(CUSTOMER_NBR,BILLING_FREQUENCY) %>% unique(),"CUSTOMERS_END_BY_DATE.CSV",row.names = F)
-LcoPackWithPrice = merge(listActivewithEndDate,LCoFinalPricing, by.x = 'SERVICE_CODE', by.y = 'Plan.Code')
+LcoPackWithPrice = merge(listActivewithEndDate,LCoFinalPricing, by.x = 'SERVICE_CODE', by.y = 'Plan.Code',all.x = T)
 #import account number and days for renewal data. manually make after 
 renewReq = read.csv(file.choose())
 LcoPackWithPriceFinal = merge(LcoPackWithPrice,renewReq)

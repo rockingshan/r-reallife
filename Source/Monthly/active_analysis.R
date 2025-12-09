@@ -41,14 +41,14 @@ write.csv(active_cust, "customer.csv",row.names = F)
 #####Broadcaster wise channel value in Alacarte Plan
 act_ala = list_active_bc %>% filter(PLAN_NAME == 'Alacarte Plan') %>% select(CUSTOMER_NBR,PRI_STATE,ENTITY_NAME,LCO_CITY,STB,SERVICE_NAME,Broadcaster,MOBILE_PHONE,HOME_PHONE) %>% unique()
 
-###compare with SMS # RUN LIST_ACT_FLT FROM ABOVE FIRST
+###compare with SMS # RUN LIST_ACT_FLT FROM ABOVE FIRST####
 
 list_bouquet_dated = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ data bouquet
 list_alacarte = read.csv(file.choose(new = F),colClasses = c(Service.CAS.Code="character")) #import MQ alacarte details
 list_bouquet_dated$Set.Top.Box <- gsub("'","",list_bouquet_dated$Set.Top.Box)
 list_alacarte$Set.Top.Box <- gsub("'","",list_alacarte$Set.Top.Box)
 
-ls_bq_com = list_bouquet_dated %>% select(Customer.Number,Set.Top.Box,Service.CAS.Code,Bouquet) %>% unite(combined, c("Set.Top.Box","Service.CAS.Code"))
+ls_bq_com = list_bouquet_dated %>% select(Cust.Id,Set.Top.Box,Service.Cas.Code,Bouquet_Channel) %>% unite(combined, c("Set.Top.Box","Service.Cas.Code"))
 
 ls_act_com = list_active_flt %>% select(STB,CASCODE,ENTITY_CODE) %>% unite(combined, c("STB","CASCODE"))
 
@@ -58,7 +58,7 @@ bouquet_diff_flt = bouquet_diff %>% filter(is.na(ENTITY_CODE)) %>% separate(comb
 write.csv(bouquet_diff_flt, "Bouquets_in_MSR_notin_ListActive.csv",row.names = F)
 
 
-ls_al_com = list_alacarte %>% select(Customer.Number,Set.Top.Box,Service.CAS.Code,Channel.Name) %>% unite(combined, c("Set.Top.Box","Service.CAS.Code"))
+ls_al_com = list_alacarte %>% select(Cust.Id,Set.Top.Box,Service.Cas.Code,Bouquet_Channel) %>% unite(combined, c("Set.Top.Box","Service.Cas.Code"))
 
 ala_diff = merge(ls_al_com,ls_act_com,all.x = T,all.y = F)
 ala_diff_flt = ala_diff %>% filter(is.na(ENTITY_CODE)) %>% separate(combined,c("STB","cascode"))
@@ -300,7 +300,7 @@ plan_pivot = ls_new_plan %>% group_by(ENTITY_CODE,ENTITY_NAME,PLAN_NAME) %>% sum
 all_pivot = list_active %>% select(ENTITY_CODE,ENTITY_NAME,CUSTOMER_NBR) %>% unique() %>% group_by(ENTITY_CODE,ENTITY_NAME) %>% summarise(Active_customer = n())
 all_lco = merge(all_pivot,plan_pivot,all.y = T,all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco,"LCO_DPO_count_September25.csv")
+write.csv(all_lco,"LCO_DPO_count_October25.csv")
 
 
 
@@ -361,7 +361,7 @@ royal_merge = royal_merge %>% mutate(Status = ifelse(aggregator > 325, 'Downgrad
 royal_pivot = royal_merge %>% group_by(LCO_CITY,ENTITY_CODE,ENTITY_NAME,Status) %>% summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE),]
 
-write.csv(royal_pivot, "325_pack_status_September25.csv",row.names = F)
+write.csv(royal_pivot, "325_pack_status_October25.csv",row.names = F)
 
 
 
