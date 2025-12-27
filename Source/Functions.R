@@ -9,7 +9,17 @@ library(lubridate)
 ####MQ list of active customers report import
 mq_active_report <- function(){
   list_active = read.csv(file.choose(new = F), skip = 1, header = FALSE, colClasses = c("character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","character","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL","NULL") ) #import MQ data
-  colnames(list_active) <- c("CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME","LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME","STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE","PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL","HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1")
+  # Assign names to the first 23 columns you care about
+  colnames(list_active)[1:23] <- c(
+    "CUSTOMER_NBR","CONTRACT_NUMBER","ENTITY_CODE","ENTITY_NAME",
+    "LCO_CITY","LCO_STATE","FIRST_NAME","MIDDLE_NAME","LAST_NAME",
+    "STB","SC","SERVICE_NAME","SERVICE_CODE","CASCODE","PLAN_CODE",
+    "PLAN_NAME","BILLING_FREQUENCY","MOBILE_PHONE","EMAIL",
+    "HOME_PHONE","PRI_STATE","PRI_CITY","PRI_ADDRESS1"
+  )
+  
+  # Keep only the first 23 columns
+  list_active <- list_active[, 1:23]
   list_active$STB <- gsub("'","",list_active$STB)
   list_active$SC <- gsub("'","",list_active$SC)
   colnames(list_active)[10] <- "VC"
@@ -18,7 +28,8 @@ mq_active_report <- function(){
   list_active$VC.length <- gsub("8","GOSPELL",list_active$VC.length, fixed = TRUE)
   list_active$VC.length <- gsub("12","SAFEVIEW",list_active$VC.length, fixed = TRUE)
   list_active$VC.length <- gsub("15","NAGRA",list_active$VC.length, fixed = TRUE)
-  list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE) #REPLACE LENGTHS TO CAS NAMES
+  list_active$VC.length <- gsub("16","ABV",list_active$VC.length, fixed = TRUE)
+  list_active$VC.length <- gsub("11","CONAX",list_active$VC.length, fixed = TRUE)#REPLACE LENGTHS TO CAS NAMES
   return(list_active)
 }
 
