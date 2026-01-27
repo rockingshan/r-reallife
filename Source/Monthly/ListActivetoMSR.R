@@ -173,16 +173,16 @@ msrAlaAreaRpt = msrAlacarte_final %>%
   summarize('Active_7th' = sum(No.of.Subs.On.7th.Day),'Active_14th' = sum(No.of.Subs.On.14th.Day),'Active_21st' = sum(No.of.Subs.On.21st.Day),
             'Active_28th' = sum(No.of.Subs.On.28th.Day),'Average' = sum(Monthly.Subs.of.the.Channel))
 
-write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Nov25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Nov25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRpt), file="Output/MSR_Report_all_Dec25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRpt), file="Output/MSR_Report_all_Dec25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##planwise
-write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Nov25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Nov25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqRptPlan), file="Output/MSR_Report_Planwise_all_Dec25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaRptPlan), file="Output/MSR_Report_Planwise_all_Dec25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 ##areawise
-write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Nov25.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Nov25.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(msrBouqAreaRpt), file="Output/MSR_Report_Areawise_all_Dec25.xlsx", sheetName="Area_Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(msrAlaAreaRpt), file="Output/MSR_Report_Areawise_all_Dec25.xlsx", sheetName="Area_Alacarte", append=TRUE, row.names=FALSE)
 
 
 
@@ -263,12 +263,12 @@ od_al_rpt = merge(bc_name,active_pivot)
 
 
 ##NTO report all
-write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Nov25.xlsx", sheetName="Bouquet", row.names=FALSE)
-write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Nov25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+write.xlsx(as.data.frame(od_bq_rpt), file="Output/IPTV_MSR__all_Dec25.xlsx", sheetName="Bouquet", row.names=FALSE)
+write.xlsx(as.data.frame(od_al_rpt), file="Output/IPTV_MSR__all_Dec25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 
 # ##NTO report all
-# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Nov25.xlsx", sheetName="Bouquet", row.names=FALSE)
-# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Nov25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Dec25.xlsx", sheetName="Bouquet", row.names=FALSE)
+# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Dec25.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 # 
 
 ####Weekly LCO wise Active customer for SITI ####
@@ -288,7 +288,7 @@ colnames(bq_report_proper) <- c("Lco.Code", "No.of.Subs.On.7th.Day", "No.of.Subs
 bq_report_proper = bq_report_proper %>% mutate(Average = rowMeans(across(where(is.numeric)), na.rm = TRUE))
 bq_report_area = merge(bq_report_proper,lco_details,all.x = T,all.y = F)
 bq_report_area = bq_report_area %>% select(Lco.Code,Business.Name,City,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day,No.of.Subs.On.21st.Day,No.of.Subs.On.28th.Day,Average)
-write.csv(bq_report_area,"Weekly_Active_subs_nov25.csv",row.names = F)
+write.csv(bq_report_area,"Weekly_Active_subs_Dec25.csv",row.names = F)
 
 
 

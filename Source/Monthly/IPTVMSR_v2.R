@@ -266,25 +266,25 @@ subs_summary <- function(df_raw, state_name, singlepack_7, singlepack_14, single
                        year(today()))
   
   # Create workbook
-  wb <- createWorkbook()
+  wb <- openxlsx::createWorkbook()
   
   # Add Bouquet sheet if data exists
   if(nrow(od_bq_rpt) > 0) {
-    addWorksheet(wb, "Bouquet")
+    openxlsx::addWorksheet(wb, "Bouquet")
     writeData(wb, "Bouquet", od_bq_rpt, rowNames = FALSE)
     cat("Added Bouquet sheet with", nrow(od_bq_rpt), "rows\n")
   }
   
   # Add Alacarte sheet if data exists
   if(nrow(od_al_rpt) > 0) {
-    addWorksheet(wb, "Alacarte")
+    openxlsx::addWorksheet(wb, "Alacarte")
     writeData(wb, "Alacarte", od_al_rpt, rowNames = FALSE)
     cat("Added Alacarte sheet with", nrow(od_al_rpt), "rows\n")
   }
   
   # Save workbook only if we have at least one sheet
   if(length(names(wb)) > 0) {
-    saveWorkbook(wb, file_name, overwrite = TRUE)
+    openxlsx::saveWorkbook(wb, file_name, overwrite = TRUE)
     cat("Excel file saved successfully:", file_name, "\n")
     
     # Verify file exists

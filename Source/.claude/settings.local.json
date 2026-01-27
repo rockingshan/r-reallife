@@ -4,7 +4,8 @@
       "Read(//c/Users/shant/Documents/r-reallife/**)",
       "Bash(dir:*)",
       "Bash(findstr:*)",
-      "Bash(Rscript:*)"
+      "Bash(Rscript:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
