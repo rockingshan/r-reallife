@@ -60,12 +60,15 @@ CONFIG <- list(
 #' @param encoding Character encoding (default: "UTF-8")
 #' @return Dataframe
 load_google_sheet <- function(url, encoding = "UTF-8") {
-  tryCatch({
-    read.csv(url, encoding = encoding)
-  }, error = function(e) {
-    message("Error loading Google Sheet: ", e$message)
-    return(NULL)
-  })
+  tryCatch(
+    {
+      read.csv(url, encoding = encoding)
+    },
+    error = function(e) {
+      message("Error loading Google Sheet: ", e$message)
+      return(NULL)
+    }
+  )
 }
 
 #' Filter data by LCO area pattern
@@ -85,12 +88,15 @@ filter_by_area <- function(df, pattern = NULL) {
 #' @param output_dir Output directory
 safe_write_csv <- function(df, filename, output_dir = CONFIG$output_dir) {
   filepath <- file.path(output_dir, filename)
-  tryCatch({
-    write.csv(df, filepath, row.names = FALSE)
-    message("✓ Saved: ", filepath)
-  }, error = function(e) {
-    message("✗ Error saving ", filename, ": ", e$message)
-  })
+  tryCatch(
+    {
+      write.csv(df, filepath, row.names = FALSE)
+      message("✓ Saved: ", filepath)
+    },
+    error = function(e) {
+      message("✗ Error saving ", filename, ": ", e$message)
+    }
+  )
 }
 
 #' Add TRAI names and relocate column
@@ -171,7 +177,11 @@ process_plan_config <- function(plan_config, pack_details) {
 #' @param service_channel_map Service to channel mapping
 #' @param trai_names TRAI names lookup
 #' @return Dataframe with FTA channel counts
-process_bronze_basic <- function(list_bouquet_dated, service_channel_map, trai_names) {
+process_bronze_basic <- function(
+  list_bouquet_dated,
+  service_channel_map,
+  trai_names
+) {
   basic_bouquet <- list_bouquet_dated %>%
     filter(CHANNEL_NAME_5 == "Bronze Basic") %>%
     select(Cust.Id, CHANNEL_NAME_5, Plan.Name) %>%
@@ -181,8 +191,12 @@ process_bronze_basic <- function(list_bouquet_dated, service_channel_map, trai_n
     group_by(Plan.Name, CHANNEL_NAME_5) %>%
     summarize(Active_count = n(), .groups = "drop")
 
-  Bronze_merged <- merge(Bronze_pivot, service_channel_map,
-                        by.x = "CHANNEL_NAME_5", by.y = "Service.Name") %>%
+  Bronze_merged <- merge(
+    Bronze_pivot,
+    service_channel_map,
+    by.x = "CHANNEL_NAME_5",
+    by.y = "Service.Name"
+  ) %>%
     select(Plan.Name, CHANNEL_NAME_5, Channel, Active_count)
 
   colnames(Bronze_merged)[4] <- "Monthly.Subs.of.the.Channel"
@@ -200,14 +214,22 @@ process_bronze_basic <- function(list_bouquet_dated, service_channel_map, trai_n
 #' @param plan_config Single pack configuration
 #' @param service_channel_map Service to channel mapping
 #' @return Dataframe with DPO bouquet data
-process_dpo_bouquets <- function(bc_bouquet_filtered, plan_config, service_channel_map) {
+process_dpo_bouquets <- function(
+  bc_bouquet_filtered,
+  plan_config,
+  service_channel_map
+) {
   bc_dpo_spread <- merge(bc_bouquet_filtered, plan_config)
 
   bc_dpo_bouq <- bc_dpo_spread %>%
     filter(X == "Bouquet")
 
-  bc_dpo_bouq_merged <- merge(bc_dpo_bouq, service_channel_map,
-                              by.x = "Bouquet", by.y = "Service.Name") %>%
+  bc_dpo_bouq_merged <- merge(
+    bc_dpo_bouq,
+    service_channel_map,
+    by.x = "Bouquet",
+    by.y = "Service.Name"
+  ) %>%
     select(Plan.Name, Bouquet, Channel, Active_count)
 
   colnames(bc_dpo_bouq_merged)[4] <- "Monthly.Subs.of.the.Channel"
@@ -255,18 +277,31 @@ process_broadcaster_bouquets <- function(Bouquet_merged, plan_names) {
 #' @param plan_config Single pack config
 #' @param area_config Area configuration (name, filter_pattern, prefix)
 #' @return List of report dataframes
-generate_cable_pmr <- function(list_bouquet_dated, list_alacarte, service_channel_map,
-                               plan_names, trai_names, plan_config, area_config) {
-
+generate_cable_pmr <- function(
+  list_bouquet_dated,
+  list_alacarte,
+  service_channel_map,
+  plan_names,
+  trai_names,
+  plan_config,
+  area_config
+) {
   message(sprintf("\n=== Processing Cable PMR for %s ===", area_config$name))
 
   # Filter by area if needed
-  list_bouquet_dated <- filter_by_area(list_bouquet_dated, area_config$filter_pattern)
+  list_bouquet_dated <- filter_by_area(
+    list_bouquet_dated,
+    area_config$filter_pattern
+  )
   list_alacarte <- filter_by_area(list_alacarte, area_config$filter_pattern)
 
   # 1. Process Bronze Basic (FTA)
   message("  Processing Bronze Basic (FTA) channels...")
-  fta_report <- process_bronze_basic(list_bouquet_dated, service_channel_map, trai_names)
+  fta_report <- process_bronze_basic(
+    list_bouquet_dated,
+    service_channel_map,
+    trai_names
+  )
   safe_write_csv(fta_report, paste0(area_config$prefix, "FTA_Channels.csv"))
 
   # 2. Process all bouquets (excluding Bronze Basic)
@@ -278,8 +313,12 @@ generate_cable_pmr <- function(list_bouquet_dated, list_alacarte, service_channe
     summarize(Active_count = n(), .groups = "drop") %>%
     filter(CHANNEL_NAME_5 != "Bronze Basic")
 
-  Bouquet_merged <- merge(bq_try, service_channel_map,
-                         by.x = "CHANNEL_NAME_5", by.y = "Service.Name") %>%
+  Bouquet_merged <- merge(
+    bq_try,
+    service_channel_map,
+    by.x = "CHANNEL_NAME_5",
+    by.y = "Service.Name"
+  ) %>%
     select(Plan.Name, CHANNEL_NAME_5, Channel, Active_count)
 
   colnames(Bouquet_merged)[4] <- "Monthly.Subs.of.the.Channel"
@@ -292,19 +331,35 @@ generate_cable_pmr <- function(list_bouquet_dated, list_alacarte, service_channe
   # 4. Merge and categorize
   bc_dpo_spread <- merge(bc_bouquet_filtered, plan_config)
 
-  bc_dpo_bouq_merged <- process_dpo_bouquets(bc_bouquet_filtered, plan_config, service_channel_map)
+  bc_dpo_bouq_merged <- process_dpo_bouquets(
+    bc_bouquet_filtered,
+    plan_config,
+    service_channel_map
+  )
   bc_bouquet_filtered_al <- process_dpo_alacarte(bc_dpo_spread)
-  bc_bouquet_filtered_noDPO <- process_broadcaster_bouquets(Bouquet_merged, plan_names)
+  bc_bouquet_filtered_noDPO <- process_broadcaster_bouquets(
+    Bouquet_merged,
+    plan_names
+  )
 
   # 5. Combine all bouquet types
   message("  Combining all bouquet types...")
-  bC_bouqet_final <- rbind(bc_dpo_bouq_merged, bc_bouquet_filtered_al, bc_bouquet_filtered_noDPO)
-  bC_bouqet_final$Monthly.Subs.of.the.Channel <- as.numeric(bC_bouqet_final$Monthly.Subs.of.the.Channel)
+  bC_bouqet_final <- rbind(
+    bc_dpo_bouq_merged,
+    bc_bouquet_filtered_al,
+    bc_bouquet_filtered_noDPO
+  )
+  bC_bouqet_final$Monthly.Subs.of.the.Channel <- as.numeric(
+    bC_bouqet_final$Monthly.Subs.of.the.Channel
+  )
 
   # 6. Create pivot by channel and package type
   bC_bouqet_final_pivot <- bC_bouqet_final %>%
     group_by(Channel, PackType) %>%
-    summarize(TotalMonthlySubs = sum(Monthly.Subs.of.the.Channel), .groups = "drop") %>%
+    summarize(
+      TotalMonthlySubs = sum(Monthly.Subs.of.the.Channel),
+      .groups = "drop"
+    ) %>%
     pivot_wider(names_from = PackType, values_from = TotalMonthlySubs)
 
   # 7. Add TRAI names and reorganize columns
@@ -324,10 +379,14 @@ generate_cable_pmr <- function(list_bouquet_dated, list_alacarte, service_channe
 
   # 9. Save reports
   message("  Saving bouquet and alacarte reports...")
-  safe_write_csv(bc_bq_final_pvt_trai,
-                paste0(area_config$prefix, "Broadcaster Bouquet report PMR.csv"))
-  safe_write_csv(bc_ala_pvt_trai,
-                paste0(area_config$prefix, "Broadcaster Alacarte report PMR.csv"))
+  safe_write_csv(
+    bc_bq_final_pvt_trai,
+    paste0(area_config$prefix, "Broadcaster Bouquet report PMR.csv")
+  )
+  safe_write_csv(
+    bc_ala_pvt_trai,
+    paste0(area_config$prefix, "Broadcaster Alacarte report PMR.csv")
+  )
 
   # 10. Quarterly reports
   message("  Generating quarterly reports...")
@@ -350,7 +409,11 @@ generate_cable_pmr <- function(list_bouquet_dated, list_alacarte, service_channe
   ala_subs <- list_alacarte %>% select(Cust.Id, Lco.Code) %>% unique()
   all_sub <- rbind(bq_subs, ala_subs) %>% unique()
 
-  message(sprintf("  Total unique subscribers for %s: %d", area_config$name, nrow(all_sub)))
+  message(sprintf(
+    "  Total unique subscribers for %s: %d",
+    area_config$name,
+    nrow(all_sub)
+  ))
 
   return(list(
     fta = fta_report,
@@ -372,7 +435,9 @@ load_iptv_data_interactive <- function() {
   main_file <- file.choose()
 
   message("\n=== LOAD IPTV SINGLE PACK CONFIGS (4 weeks) ===")
-  message("NOTE: These are IPTV-specific single pack configs (different from Cable)")
+  message(
+    "NOTE: These are IPTV-specific single pack configs (different from Cable)"
+  )
 
   message("\nSelect IPTV Single Pack Config - 7th day...")
   singlepack_7 <- read.csv(file.choose())
@@ -399,15 +464,28 @@ load_iptv_data_interactive <- function() {
 #' @param main_file Path to main IPTV Excel file
 #' @param default_state Default state for blank entries
 #' @return Cleaned IPTV dataframe
-clean_iptv_data <- function(main_file, default_state = CONFIG$iptv_default_state) {
+clean_iptv_data <- function(
+  main_file,
+  default_state = CONFIG$iptv_default_state
+) {
   # Load main data
   main_data <- read_excel(main_file, sheet = 1, skip = 2)
 
   # Rename columns
   colnames(main_data) <- c(
-    "Plan_Name", "Date", "Account_No", "Subscriber", "Mobile_No",
-    "STB_No", "VC_Number", "User_ID", "From_Date", "To_Date",
-    "Partner_Name", "State", "Plan_Code"
+    "Plan_Name",
+    "Date",
+    "Account_No",
+    "Subscriber",
+    "Mobile_No",
+    "STB_No",
+    "VC_Number",
+    "User_ID",
+    "From_Date",
+    "To_Date",
+    "Partner_Name",
+    "State",
+    "Plan_Code"
   )
 
   # Clean and transform
@@ -416,7 +494,11 @@ clean_iptv_data <- function(main_file, default_state = CONFIG$iptv_default_state
       Date = as.Date(Date),
       From_Date = as.Date(From_Date),
       To_Date = as.Date(To_Date),
-      Plan_Type = ifelse(grepl("HD", Plan_Name, ignore.case = TRUE), "HD", "SD"),
+      Plan_Type = ifelse(
+        grepl("HD", Plan_Name, ignore.case = TRUE),
+        "HD",
+        "SD"
+      ),
       State = case_when(
         is.na(State) | State == "" | trimws(State) == "" ~ default_state,
         TRUE ~ trimws(State)
@@ -448,12 +530,19 @@ extract_iptv_snapshots <- function(main_data) {
     mutate(Date_Label = day_labels[as.character(Date)]) %>%
     filter(!is.na(Date_Label)) %>%
     select(-Date) %>%
-    pivot_wider(names_from = Date_Label, values_from = Unique_Subs, values_fill = 0)
+    pivot_wider(
+      names_from = Date_Label,
+      values_from = Unique_Subs,
+      values_fill = 0
+    )
 
   # Aggregate by Plan_Code
   summary_table %>%
     group_by(Plan_Code) %>%
-    summarise(across(contains("Subs"), \(x) sum(x, na.rm = TRUE)), .groups = "drop")
+    summarise(
+      across(contains("Subs"), \(x) sum(x, na.rm = TRUE)),
+      .groups = "drop"
+    )
 }
 
 #' Merge IPTV data with single pack configs
@@ -479,41 +568,76 @@ merge_iptv_packages <- function(iptvreport, singlepack_list) {
     rename_with(~"No.of.Subs.On.28th.Day", contains("28th"))
 
   # Merge with package data
-  iptv_nw_7_pk <- merge(iptv_nw_7, singlepack_list$singlepack_7,
-                        by.x = "Plan_Code", by.y = "Code", all.y = TRUE) %>%
+  iptv_nw_7_pk <- merge(
+    iptv_nw_7,
+    singlepack_list$singlepack_7,
+    by.x = "Plan_Code",
+    by.y = "Code",
+    all.y = TRUE
+  ) %>%
     unique() %>%
     unite(combined, c('Plan_Code', 'Bouquet'), sep = "|")
 
-  iptv_nw_14_pk <- merge(iptv_nw_14, singlepack_list$singlepack_14,
-                         by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>%
+  iptv_nw_14_pk <- merge(
+    iptv_nw_14,
+    singlepack_list$singlepack_14,
+    by.x = "Plan_Code",
+    by.y = "Code",
+    all.y = FALSE
+  ) %>%
     unique() %>%
     unite(combined, c('Plan_Code', 'Bouquet'), sep = "|")
 
-  iptv_nw_21_pk <- merge(iptv_nw_21, singlepack_list$singlepack_21,
-                         by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>%
+  iptv_nw_21_pk <- merge(
+    iptv_nw_21,
+    singlepack_list$singlepack_21,
+    by.x = "Plan_Code",
+    by.y = "Code",
+    all.y = FALSE
+  ) %>%
     unique() %>%
     unite(combined, c('Plan_Code', 'Bouquet'), sep = "|")
 
-  iptv_nw_28_pk <- merge(iptv_nw_28, singlepack_list$singlepack_28,
-                         by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>%
+  iptv_nw_28_pk <- merge(
+    iptv_nw_28,
+    singlepack_list$singlepack_28,
+    by.x = "Plan_Code",
+    by.y = "Code",
+    all.y = FALSE
+  ) %>%
     unique() %>%
     unite(combined, c('Plan_Code', 'Bouquet'), sep = "|")
 
   # Combine all weeks
-  iptv_combo <- merge(iptv_nw_7_pk, iptv_nw_14_pk, by = "combined", all = TRUE) %>%
+  iptv_combo <- merge(
+    iptv_nw_7_pk,
+    iptv_nw_14_pk,
+    by = "combined",
+    all = TRUE
+  ) %>%
     merge(iptv_nw_21_pk, by = "combined", all = TRUE) %>%
     merge(iptv_nw_28_pk, all = TRUE) %>%
     separate(combined, into = c("Code", "Bouquet"), sep = "\\|")
 
   # Convert to numeric and calculate average
   iptv_combo[is.na(iptv_combo)] <- 0
-  iptv_combo$No.of.Subs.On.7th.Day <- as.numeric(iptv_combo$No.of.Subs.On.7th.Day)
-  iptv_combo$No.of.Subs.On.14th.Day <- as.numeric(iptv_combo$No.of.Subs.On.14th.Day)
-  iptv_combo$No.of.Subs.On.21th.Day <- as.numeric(iptv_combo$No.of.Subs.On.21th.Day)
-  iptv_combo$No.of.Subs.On.28th.Day <- as.numeric(iptv_combo$No.of.Subs.On.28th.Day)
+  iptv_combo$No.of.Subs.On.7th.Day <- as.numeric(
+    iptv_combo$No.of.Subs.On.7th.Day
+  )
+  iptv_combo$No.of.Subs.On.14th.Day <- as.numeric(
+    iptv_combo$No.of.Subs.On.14th.Day
+  )
+  iptv_combo$No.of.Subs.On.21th.Day <- as.numeric(
+    iptv_combo$No.of.Subs.On.21th.Day
+  )
+  iptv_combo$No.of.Subs.On.28th.Day <- as.numeric(
+    iptv_combo$No.of.Subs.On.28th.Day
+  )
 
   iptv_combo %>%
-    mutate(Monthly.Subs.of.the.Channel = rowMeans(select(., starts_with("No.of"))))
+    mutate(
+      Monthly.Subs.of.the.Channel = rowMeans(select(., starts_with("No.of")))
+    )
 }
 
 #' Process IPTV bouquet data
@@ -525,8 +649,15 @@ process_iptv_bouquet <- function(iptv_combo, service_channel_map, trai_names) {
   # Filter bouquets
   iptv_combo_bouq <- iptv_combo %>%
     filter(X == 'Bouquet') %>%
-    select(Broadcaster.Name, Bouquet, No.of.Subs.On.7th.Day, No.of.Subs.On.14th.Day,
-           No.of.Subs.On.21th.Day, No.of.Subs.On.28th.Day, Monthly.Subs.of.the.Channel)
+    select(
+      Broadcaster.Name,
+      Bouquet,
+      No.of.Subs.On.7th.Day,
+      No.of.Subs.On.14th.Day,
+      No.of.Subs.On.21th.Day,
+      No.of.Subs.On.28th.Day,
+      Monthly.Subs.of.the.Channel
+    )
 
   # Get broadcaster names
   bc_name <- iptv_combo_bouq %>%
@@ -535,11 +666,21 @@ process_iptv_bouquet <- function(iptv_combo, service_channel_map, trai_names) {
     na.omit()
 
   # Ensure numeric
-  iptv_combo_bouq$No.of.Subs.On.7th.Day <- as.numeric(iptv_combo_bouq$No.of.Subs.On.7th.Day)
-  iptv_combo_bouq$No.of.Subs.On.14th.Day <- as.numeric(iptv_combo_bouq$No.of.Subs.On.14th.Day)
-  iptv_combo_bouq$No.of.Subs.On.21th.Day <- as.numeric(iptv_combo_bouq$No.of.Subs.On.21th.Day)
-  iptv_combo_bouq$No.of.Subs.On.28th.Day <- as.numeric(iptv_combo_bouq$No.of.Subs.On.28th.Day)
-  iptv_combo_bouq$Monthly.Subs.of.the.Channel <- as.numeric(iptv_combo_bouq$Monthly.Subs.of.the.Channel)
+  iptv_combo_bouq$No.of.Subs.On.7th.Day <- as.numeric(
+    iptv_combo_bouq$No.of.Subs.On.7th.Day
+  )
+  iptv_combo_bouq$No.of.Subs.On.14th.Day <- as.numeric(
+    iptv_combo_bouq$No.of.Subs.On.14th.Day
+  )
+  iptv_combo_bouq$No.of.Subs.On.21th.Day <- as.numeric(
+    iptv_combo_bouq$No.of.Subs.On.21th.Day
+  )
+  iptv_combo_bouq$No.of.Subs.On.28th.Day <- as.numeric(
+    iptv_combo_bouq$No.of.Subs.On.28th.Day
+  )
+  iptv_combo_bouq$Monthly.Subs.of.the.Channel <- as.numeric(
+    iptv_combo_bouq$Monthly.Subs.of.the.Channel
+  )
 
   # Create pivot
   active_pivot <- iptv_combo_bouq %>%
@@ -557,8 +698,12 @@ process_iptv_bouquet <- function(iptv_combo, service_channel_map, trai_names) {
   od_bq_rpt <- merge(bc_name, active_pivot)
 
   # Map to channels
-  Bouquet_merged <- merge(od_bq_rpt, service_channel_map,
-                         by.x = "Bouquet", by.y = "Service.Name") %>%
+  Bouquet_merged <- merge(
+    od_bq_rpt,
+    service_channel_map,
+    by.x = "Bouquet",
+    by.y = "Service.Name"
+  ) %>%
     group_by(Channel) %>%
     summarise(Total = sum(Average), .groups = "drop")
 
@@ -574,8 +719,15 @@ process_iptv_alacarte <- function(iptv_combo, trai_names) {
   # Filter alacarte
   iptv_combo_ala <- iptv_combo %>%
     filter(X == 'Alacarte') %>%
-    select(Broadcaster.Name, Bouquet, No.of.Subs.On.7th.Day, No.of.Subs.On.14th.Day,
-           No.of.Subs.On.21th.Day, No.of.Subs.On.28th.Day, Monthly.Subs.of.the.Channel)
+    select(
+      Broadcaster.Name,
+      Bouquet,
+      No.of.Subs.On.7th.Day,
+      No.of.Subs.On.14th.Day,
+      No.of.Subs.On.21th.Day,
+      No.of.Subs.On.28th.Day,
+      Monthly.Subs.of.the.Channel
+    )
 
   colnames(iptv_combo_ala)[2] <- 'Channel'
 
@@ -628,7 +780,11 @@ generate_iptv_pmr <- function(iptv_data, service_channel_map, trai_names) {
 
   # Process bouquets
   message("  Processing IPTV bouquets...")
-  bouquet_report <- process_iptv_bouquet(iptv_combo, service_channel_map, trai_names)
+  bouquet_report <- process_iptv_bouquet(
+    iptv_combo,
+    service_channel_map,
+    trai_names
+  )
   safe_write_csv(bouquet_report, "IPTV_DPO_bouquet_count.csv")
 
   # Process alacarte
@@ -652,10 +808,11 @@ generate_iptv_pmr <- function(iptv_data, service_channel_map, trai_names) {
 #' @param process_cable Boolean - process cable PMR (default: TRUE)
 #' @param process_iptv Boolean - process IPTV PMR (default: TRUE)
 #' @param interactive Boolean - use interactive file selection (default: TRUE)
-main_generate_pmr <- function(process_cable = TRUE,
-                              process_iptv = TRUE,
-                              interactive = TRUE) {
-
+main_generate_pmr <- function(
+  process_cable = TRUE,
+  process_iptv = TRUE,
+  interactive = TRUE
+) {
   message("╔════════════════════════════════════════════════════════════╗")
   message("║       PMR REPORT GENERATOR - OPTIMIZED VERSION             ║")
   message("╚════════════════════════════════════════════════════════════╝")
@@ -673,10 +830,15 @@ main_generate_pmr <- function(process_cable = TRUE,
     mq_data <- load_mq_data_interactive()
 
     # Process plan config for CABLE
-    service_channel_map <- process_plan_config(mq_data$plan_config, mq_data$pack_details)
+    service_channel_map <- process_plan_config(
+      mq_data$plan_config,
+      mq_data$pack_details
+    )
 
     # Load single pack config for Cable DPO processing
-    message("\n=== CABLE TV: Select Single Pack Config file for DPO processing ===")
+    message(
+      "\n=== CABLE TV: Select Single Pack Config file for DPO processing ==="
+    )
     cable_plan_config <- read.csv(file.choose())
 
     # Process each area
