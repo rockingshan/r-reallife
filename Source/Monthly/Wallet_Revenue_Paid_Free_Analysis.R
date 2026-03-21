@@ -3,6 +3,8 @@ library(readr)
 library(tidyr)
 library(stringr)
 library(lubridate)
+library(ggplot2)
+library(zoo)
 
 cat("========================================\n")
 cat("WALLET REVENUE & CUSTOMER ANALYSIS\n")
@@ -10,23 +12,29 @@ cat("========================================\n\n")
 
 # Step 1: Load wallet transaction data
 cat("Step 1: Loading wallet transaction data...\n")
-wallet_data <- read.csv(file.choose())
+wallet_file <- file.choose()
+wallet_data <- read.csv(wallet_file)
 cat("   Loaded", nrow(wallet_data), "rows\n\n")
+
 
 # Step 2: Load LCO Master Report for City mapping
 cat("Step 2: Loading LCO Master Report for city mapping...\n")
-lco_master_path <- "C:\\Users\\shant\\Downloads\\MQ report download\\16279489_LCOMasterReport.CSV"
-lco_master <- read.csv(lco_master_path, header = TRUE) %>%
-  select(Entity.Code, City) %>%
-  distinct()
+lco_master_file <- file.choose()
+lco_master <- read.csv(lco_master_file, header = TRUE) %>%
+  dplyr::rename(Entity.Code = `Lco.Code`) %>%   # convert new header to expected name
+  dplyr::select(Entity.Code, City) %>%
+  dplyr::distinct()
+lco_master$Entity.Code <- gsub("'","",lco_master$Entity.Code) # Remove any leading apostrophes from Entity Codes
 cat("   Loaded", nrow(lco_master), "LCO-City mappings\n\n")
+
 
 # Step 3: Load valid base plan names
 cat("Step 3: Loading valid base plan names...\n")
-valid_plans_path <- "C:\\Users\\shant\\Documents\\ALL_PLAN_NAMES_NEWOLD_august25.csv"
-valid_plans <- read.csv(valid_plans_path, header = TRUE)
+valid_plans_file <- file.choose()
+valid_plans <- read.csv(valid_plans_file, header = TRUE)
 valid_plan_names <- valid_plans$Bouquet
 cat("   Loaded", length(valid_plan_names), "valid base plans\n\n")
+
 
 # Step 4: Clean and prepare wallet data
 cat("Step 4: Preparing wallet data...\n")
@@ -40,13 +48,29 @@ wallet_clean <- wallet_data %>%
     Amount.Debit = as.numeric(gsub("[^0-9.]", "", as.character(Amount.Debit))),
     # Replace NA with 0
     Amount.Debit = ifelse(is.na(Amount.Debit), 0, Amount.Debit)
-  ) %>%
-  # Join with LCO Master to add City information
-  left_join(lco_master, by = "Entity.Code")
+  ) 
 
 cat("   Cleaned data has", nrow(wallet_clean), "rows\n")
 cat("   Date range:", min(wallet_clean$Transaction.Date, na.rm = TRUE), "to",
     max(wallet_clean$Transaction.Date, na.rm = TRUE), "\n\n")
+
+# Step 4b: Replace demo entity codes with actual entity codes derived from Customer.Nbr
+cat("Step 4b: Resolving demo entity codes to actual entities...\n")
+
+demo_entities <- c("MDBQA","MDCNDP","MDHCNJV","MDSKWJV","MDKH")
+
+wallet_clean <- wallet_clean %>%
+  mutate(
+    Derived.Entity.Code = sub("^[0-9]+", "", Customer.Nbr),
+    Entity.Code = ifelse(Entity.Code %in% demo_entities,
+                         Derived.Entity.Code,
+                         Entity.Code)
+  ) %>%
+  select(-Derived.Entity.Code) %>%
+  # Join with LCO Master to add City information
+  left_join(lco_master, by = "Entity.Code")
+
+cat("   Demo entity corrections applied\n\n")
 
 # Step 5: Filter for valid base plans only
 cat("Step 5: Filtering for valid base plans...\n")
@@ -218,6 +242,170 @@ overall_journey_summary <- customer_journey %>%
   )
 
 cat("   Completed customer journey analysis\n\n")
+
+###Additional analysis added on 2026-03-10
+# Step X1: Free → Paid Conversion Lag Analysis
+cat("Calculating Free → Paid conversion lag...\n")
+
+customer_conversion_lag <- wallet_valid_plans %>%
+  group_by(Customer.Nbr) %>%
+  summarise(
+    First_Free_Date = if (any(Amount.Debit == 0))
+        min(Transaction.Date[Amount.Debit == 0])
+      else as.Date(NA),
+
+    First_Paid_Date = if (any(Amount.Debit != 0))
+        min(Transaction.Date[Amount.Debit != 0])
+      else as.Date(NA),
+
+    .groups = "drop"
+  ) %>%
+  mutate(
+    Lag_Months =
+      ifelse(
+        is.na(First_Free_Date) | is.na(First_Paid_Date),
+        NA,
+        (as.numeric(format(First_Paid_Date,"%Y")) -
+         as.numeric(format(First_Free_Date,"%Y"))) * 12 +
+        (as.numeric(format(First_Paid_Date,"%m")) -
+         as.numeric(format(First_Free_Date,"%m")))
+      ),
+
+    Lag_Category = case_when(
+      is.na(Lag_Months) ~ "Never_Converted",
+      Lag_Months <= 1 ~ "Convert_1_Month",
+      Lag_Months <= 2 ~ "Convert_2_Month",
+      TRUE ~ "Convert_3plus_Month"
+    )
+  )
+
+conversion_lag_summary <- customer_conversion_lag %>%
+  count(Lag_Category)
+
+write.csv(customer_conversion_lag,
+          "Customer_Conversion_Lag_Details.csv",
+          row.names = FALSE)
+
+write.csv(conversion_lag_summary,
+          "Customer_Conversion_Lag_Summary.csv",
+          row.names = FALSE)
+
+
+#Free Abuse Pattern Detection
+cat("Calculating Free abuse patterns...\n")
+
+free_abuse_customers <- wallet_valid_plans %>%
+  filter(Amount.Debit == 0) %>%
+  group_by(Customer.Nbr, Entity.Code) %>%
+  summarise(
+    Free_Months = n_distinct(Month),
+    .groups = "drop"
+  )
+
+free_abuse_summary <- free_abuse_customers %>%
+  group_by(Entity.Code) %>%
+  summarise(
+    Customers_with_Free = n(),
+    Avg_Free_Months = round(mean(Free_Months),2),
+    Max_Free_Months = max(Free_Months),
+    Multi_Free_Customers = sum(Free_Months > 1),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Avg_Free_Months))
+
+write.csv(free_abuse_customers,
+          "Customer_Free_Months_Details.csv",
+          row.names = FALSE)
+
+write.csv(free_abuse_summary,
+          "LCO_Free_Abuse_Summary.csv",
+          row.names = FALSE)
+
+#Activation Month Cohort Analysis
+cat("Calculating Activation Cohort Analysis...\n")
+
+customer_activation <- wallet_valid_plans %>%
+  group_by(Customer.Nbr) %>%
+  summarise(
+    Activation_Month = min(Month),
+    .groups = "drop"
+  )
+
+cohort_data <- wallet_valid_plans %>%
+  left_join(customer_activation, by = "Customer.Nbr") %>%
+  mutate(
+    Month_Index = as.numeric(as.yearmon(Month) -
+                             as.yearmon(Activation_Month))
+  )
+
+cohort_summary <- cohort_data %>%
+  group_by(Activation_Month, Month_Index) %>%
+  summarise(
+    Customers = n_distinct(Customer.Nbr),
+    Paid_Customers = n_distinct(Customer.Nbr[Amount.Debit != 0]),
+    .groups = "drop"
+  )
+
+write.csv(cohort_summary,
+          "Activation_Cohort_Analysis.csv",
+          row.names = FALSE)
+
+#Revenue Loss from Customers Who Never Paid
+cat("Calculating revenue loss from never-paid customers...\n")
+
+avg_arpu <- mean(wallet_valid_plans$Amount.Debit[wallet_valid_plans$Amount.Debit > 0], na.rm = TRUE)
+
+never_paid <- customer_journey %>%
+  filter(Customer_Journey == "Always_Free")
+
+revenue_loss_summary <- never_paid %>%
+  group_by(Entity.Code) %>%
+  summarise(
+    Always_Free_Customers = n(),
+    Estimated_Revenue_Loss = round(Always_Free_Customers * avg_arpu,2),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Estimated_Revenue_Loss))
+
+write.csv(revenue_loss_summary,
+          "LCO_Revenue_Loss_from_Free_Customers.csv",
+          row.names = FALSE)
+
+#Retention Curve (Free User Retention)
+cat("Generating retention curve data...\n")
+
+free_users <- wallet_valid_plans %>%
+  filter(Amount.Debit == 0)
+
+first_free <- free_users %>%
+  group_by(Customer.Nbr) %>%
+  summarise(
+    First_Free_Month = min(Month),
+    .groups = "drop"
+  )
+
+retention_data <- wallet_valid_plans %>%
+  left_join(first_free, by = "Customer.Nbr") %>%
+  filter(!is.na(First_Free_Month)) %>%
+  mutate(
+    Month_Index = as.numeric(as.yearmon(Month) -
+                             as.yearmon(First_Free_Month))
+  )
+
+retention_curve <- retention_data %>%
+  group_by(Month_Index) %>%
+  summarise(
+    Customers = n_distinct(Customer.Nbr),
+    Paid_Customers = n_distinct(Customer.Nbr[Amount.Debit != 0]),
+    Free_Customers = n_distinct(Customer.Nbr[Amount.Debit == 0]),
+    .groups = "drop"
+  ) %>%
+  arrange(Month_Index)
+
+write.csv(retention_curve,
+          "Free_User_Retention_Curve.csv",
+          row.names = FALSE)
+
 
 # Step 11: City-Level Analysis
 cat("Step 10: Performing city-level analysis...\n")

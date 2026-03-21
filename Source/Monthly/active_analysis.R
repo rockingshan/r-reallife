@@ -98,11 +98,11 @@ act_ala = list_active_bc %>%
 
 list_bouquet_dated = read.csv(
   file.choose(new = F),
-  colClasses = c(Service.CAS.Code = "character", Set.Top.Box = "character")
+  colClasses = c(Service.Cas.Code = "character", Set.Top.Box = "character")
 ) #import MQ data bouquet
 list_alacarte = read.csv(
   file.choose(new = F),
-  colClasses = c(Service.CAS.Code = "character", Set.Top.Box = "character")
+  colClasses = c(Service.Cas.Code = "character", Set.Top.Box = "character")
 ) #import MQ alacarte details
 list_bouquet_dated$Set.Top.Box <- gsub("'", "", list_bouquet_dated$Set.Top.Box)
 list_alacarte$Set.Top.Box <- gsub("'", "", list_alacarte$Set.Top.Box)
