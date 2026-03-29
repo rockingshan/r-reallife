@@ -2,7 +2,11 @@ library(tidyverse)
 library(dplyr)
 #library(gapminder)
 #library(qdapTools)
-source('Source/Functions.r')
+# ensure `here` is available and source the file from the project root
+if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+fp <- here::here("Source", "Functions.R")
+if (!file.exists(fp)) stop("File not found: ", fp)
+source(fp)
 
 ##opens a window to select files,
 list_active <- mq_active_report()
@@ -603,7 +607,7 @@ all_pivot = list_active %>%
   summarise(Active_customer = n())
 all_lco = merge(all_pivot, plan_pivot, all.y = T, all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco, "LCO_DPO_count_December25.csv")
+write.csv(all_lco, "LCO_DPO_count_February26.csv")
 
 
 ###old plans
@@ -766,7 +770,7 @@ royal_pivot = royal_merge %>%
   summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE), ]
 
-write.csv(royal_pivot, "325_pack_status_December25.csv", row.names = F)
+write.csv(royal_pivot, "325_pack_status_February26.csv", row.names = F)
 
 
 ####Find channelwise package count areawise ####
