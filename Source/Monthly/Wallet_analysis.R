@@ -4,6 +4,51 @@ library(readxl)
 library(stringr)
 library(lubridate)
 
+# Helper function to get the correct 7-zip executable based on OS
+get_7zip_path <- function() {
+  os <- Sys.info()["sysname"]
+  
+  if (os == "Windows") {
+    # Windows: Use standard 7-Zip installation path
+    path <- "C:\\Program Files\\7-Zip\\7z.exe"
+    if (!file.exists(path)) {
+      # Try alternative path (32-bit on 64-bit Windows)
+      path <- "C:\\Program Files (x86)\\7-Zip\\7z.exe"
+    }
+    if (!file.exists(path)) {
+      stop("7-Zip not found. Please install 7-Zip or add it to PATH.")
+    }
+    return(path)
+    
+  } else if (os == "Linux") {
+    # Linux: Use system 7z command (install via: sudo apt install p7zip-full)
+    path <- "7z"
+    # Verify 7z is available
+    if (system2("which", args = "7z", stdout = FALSE, stderr = FALSE) != 0) {
+      stop("7-Zip not found. Please install it using: sudo apt install p7zip-full")
+    }
+    return(path)
+    
+  } else if (os == "Darwin") {
+    # macOS: Use system 7z or Homebrew installed version
+    path <- "7z"
+    # Check common Homebrew path first
+    if (file.exists("/usr/local/bin/7z")) {
+      path <- "/usr/local/bin/7z"
+    } else if (file.exists("/opt/homebrew/bin/7z")) {
+      # Apple Silicon Mac
+      path <- "/opt/homebrew/bin/7z"
+    }
+    if (system2("which", args = "7z", stdout = FALSE, stderr = FALSE) != 0) {
+      stop("7-Zip not found. Please install it using: brew install p7zip")
+    }
+    return(path)
+    
+  } else {
+    stop(paste("Unsupported operating system:", os))
+  }
+}
+
 #function definitions....
 
 area_wise_op <- function(wallet_in) {
@@ -31,7 +76,7 @@ area_wise_op <- function(wallet_in) {
     ),
     files = zip_area_files,
     flags = " a -tzip -sdel",
-    zip = "C:\\Program Files\\7-Zip\\7Z"
+    zip = get_7zip_path()  # OS-independent path
   )
 }
 
@@ -98,7 +143,7 @@ lcowise_data_export <- function(wallet_in) {
       ),
       files = zip_lco_files,
       flags = " a -tzip -sdel",
-      zip = "C:\\Program Files\\7-Zip\\7Z"
+      zip = get_7zip_path()  # OS-independent path
     )
   }
 }

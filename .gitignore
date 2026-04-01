@@ -8,6 +8,7 @@ Data/*.xlx
 Data/*.txt
 Output/*.csv
 Output/*.xlsx
+Output/*.docx
 Output/*.xlx
 Output/*.zip
 *.csv
@@ -19,3 +20,4 @@ packrat/lib*/
 .RDataTmp
 .RDataTmp1
 .RDataTmp2
+Output/Mar26/IPTV_Subscriber_Report_February_2026.docx
