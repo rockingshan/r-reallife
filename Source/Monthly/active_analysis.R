@@ -607,7 +607,7 @@ all_pivot = list_active %>%
   summarise(Active_customer = n())
 all_lco = merge(all_pivot, plan_pivot, all.y = T, all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco, "LCO_DPO_count_February26.csv")
+write.csv(all_lco, "LCO_DPO_count_March26.csv")
 
 
 ###old plans
@@ -770,7 +770,7 @@ royal_pivot = royal_merge %>%
   summarise(Count = n())
 royal_pivot <- royal_pivot[order(royal_pivot$ENTITY_CODE), ]
 
-write.csv(royal_pivot, "325_pack_status_February26.csv", row.names = F)
+write.csv(royal_pivot, "325_pack_status_March26.csv", row.names = F)
 
 
 ####Find channelwise package count areawise ####

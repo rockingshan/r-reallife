@@ -243,6 +243,26 @@ overall_journey_summary <- customer_journey %>%
 
 cat("   Completed customer journey analysis\n\n")
 
+# Step 11: Customer-Level Monthly Bill Amount (Wide Format)
+cat("Step 11: Creating customer-level monthly bill amount table...\n")
+
+customer_monthly_bill <- wallet_valid_plans %>%
+  group_by(Customer.Nbr, Entity.Code, Month) %>%
+  summarise(
+    Bill_Amount = sum(Amount.Debit, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    id_cols = c(Customer.Nbr, Entity.Code),
+    names_from = Month,
+    values_from = Bill_Amount
+  ) %>%
+  arrange(Customer.Nbr)
+
+output_file_10 <- "Wallet_Customer_Monthly_Bill_Amount.csv"
+write.csv(customer_monthly_bill, output_file_10, row.names = FALSE)
+cat("   Saved:", output_file_10, "\n\n")
+
 ###Additional analysis added on 2026-03-10
 # Step X1: Free → Paid Conversion Lag Analysis
 cat("Calculating Free → Paid conversion lag...\n")
@@ -574,7 +594,8 @@ cat("City Revenue Trend Summary:\n")
 print(city_revenue_trend %>% select(City, Trend_Status, Revenue_Change_Pct, ARPU_Change_Pct))
 
 cat("\n========================================\n")
-cat("Analysis complete! 9 files generated.\n")
+cat("Analysis complete! 10 files generated.\n")
 cat("  - 5 LCO-level files\n")
 cat("  - 4 City-level files\n")
+cat("  - 1 Customer-level file\n")
 cat("========================================\n")

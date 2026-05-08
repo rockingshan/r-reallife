@@ -394,7 +394,7 @@ writeData(wb1, "Bouquet", as.data.frame(msrBouqRpt))
 addWorksheet(wb1, "Alacarte")
 writeData(wb1, "Alacarte", as.data.frame(msrAlaRpt))
 
-saveWorkbook(wb1, "Output/MSR_Report_all_Feb26.xlsx", overwrite = TRUE)
+saveWorkbook(wb1, "Output/MSR_Report_all_Mar26.xlsx", overwrite = TRUE)
 
 
 # -------- Planwise --------
@@ -406,7 +406,7 @@ writeData(wb2, "Bouquet", as.data.frame(msrBouqRptPlan))
 addWorksheet(wb2, "Alacarte")
 writeData(wb2, "Alacarte", as.data.frame(msrAlaRptPlan))
 
-saveWorkbook(wb2, "Output/MSR_Report_Planwise_all_Feb26.xlsx", overwrite = TRUE)
+saveWorkbook(wb2, "Output/MSR_Report_Planwise_all_Mar26.xlsx", overwrite = TRUE)
 
 
 # -------- Areawise --------
@@ -418,7 +418,15 @@ writeData(wb3, "Area_Bouquet", as.data.frame(msrBouqAreaRpt))
 addWorksheet(wb3, "Area_Alacarte")
 writeData(wb3, "Area_Alacarte", as.data.frame(msrAlaAreaRpt))
 
-saveWorkbook(wb3, "Output/MSR_Report_Areawise_all_Feb26.xlsx", overwrite = TRUE)
+saveWorkbook(wb3, "Output/MSR_Report_Areawise_all_Mar26.xlsx", overwrite = TRUE)
+
+
+
+
+
+
+
+
 
 
 ####For IPTV Reporting####
@@ -583,21 +591,21 @@ od_al_rpt = merge(bc_name, active_pivot)
 ##NTO report all
 write.xlsx(
   as.data.frame(od_bq_rpt),
-  file = "Output/IPTV_MSR__all_Feb26.xlsx",
+  file = "Output/IPTV_MSR__all_Mar26.xlsx",
   sheetName = "Bouquet",
   row.names = FALSE
 )
 write.xlsx(
   as.data.frame(od_al_rpt),
-  file = "Output/IPTV_MSR__all_Feb26.xlsx",
+  file = "Output/IPTV_MSR__all_Mar26.xlsx",
   sheetName = "Alacarte",
   append = TRUE,
   row.names = FALSE
 )
 
 # ##NTO report all
-# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Feb26.xlsx", sheetName="Bouquet", row.names=FALSE)
-# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Feb26.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
+# write.xlsx(as.data.frame(od_bq_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Mar26.xlsx", sheetName="Bouquet", row.names=FALSE)
+# write.xlsx(as.data.frame(od_al_rpt_pl), file="Output/IPTV_MSR_Planwise_all_Mar26.xlsx", sheetName="Alacarte", append=TRUE, row.names=FALSE)
 #
 
 ####Weekly LCO wise Active customer for SITI ####
@@ -641,7 +649,7 @@ bq_report_area = bq_report_area %>%
     No.of.Subs.On.28th.Day,
     Average
   )
-write.csv(bq_report_area, "Weekly_Active_subs_Feb26.csv", row.names = F)
+write.csv(bq_report_area, "Weekly_Active_subs_Mar26.csv", row.names = F)
 
 
 ####plan name replacements if changes done####
