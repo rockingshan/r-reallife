@@ -189,7 +189,8 @@ direct_cus = c(
   "MD0515",
   "MDOGH",
   "MDHRO",
-  "MD0521"
+  "MD0521",
+  "MDZTPN"
 )
 wallet = filter(wallet, (Entity.Code %in% direct_cus))
 

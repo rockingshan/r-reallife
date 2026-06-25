@@ -607,7 +607,7 @@ all_pivot = list_active %>%
   summarise(Active_customer = n())
 all_lco = merge(all_pivot, plan_pivot, all.y = T, all.x = F)
 all_lco$DPO_Count[is.na(all_lco$DPO_Count)] <- 0
-write.csv(all_lco, "LCO_DPO_count_March26.csv")
+write.csv(all_lco, "LCO_DPO_count_May26.csv")
 
 
 ###old plans

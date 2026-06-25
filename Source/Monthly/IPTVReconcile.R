@@ -1,35 +1,53 @@
 library(tidyverse)
 library(dplyr)
 library(readxl)
-library(xlsx)
+library(openxlsx)
 library(stringr)
 library(janitor)
 
-smsReport = read_xlsx(file.choose(), skip = 1) #IPTV all ciustomer report
-drmReport = read_xlsx(file.choose()) #export STB from DRM
-#packConfig = read_xlsx(file.choose(), skip = 2) ##pacakagewise Channel details
-##clean colnames
-#packConfig <- janitor::clean_names(packConfig)
-smsReport <- janitor::clean_names(smsReport)
-drmReport <- janitor::clean_names(drmReport)
+# ── INPUT FILES ────────────────────────────────────────────────────────────────
+cat("Paste path for SMS Report (IPTV all customer report): ")
+SMS_REPORT_PATH <- trimws(readLines(con = stdin(), n = 1))
 
-#packCodes = packConfig %>% select(package_name,plan_code) %>% unique()
-#colnames(packCodes)[1] = "video_plan"
+cat("Paste path for DRM Report (Export STB from DRM): ")
+DRM_REPORT_PATH <- trimws(readLines(con = stdin(), n = 1))
+# ──────────────────────────────────────────────────────────────────────────────
 
-#smsReportMod = merge(smsReport,packCodes,all.x = T)
-drmReportMod = drmReport %>% select(cas_serial_number,signature,packages,status)
+smsReport <- readxl::read_xlsx(SMS_REPORT_PATH, skip = 1)
+drmReport <- readxl::read_xlsx(DRM_REPORT_PATH)
 
-##Make columns proper
-drmReportMod$status <- gsub("a","Active",drmReportMod$status)
-drmReportMod$status <- gsub("d","Inactive",drmReportMod$status)
-smsReport$customer_status <- gsub("Suspended","Inactive",smsReport$customer_status)
+# packConfig <- read_xlsx(PACK_CONFIG_PATH, skip = 2)
+# packConfig <- janitor::clean_names(packConfig)
 
-## make combine column
-smsReport = smsReport %>% unite(combined, c('userid','video_plan_code','customer_status'),sep = "|",remove = F)
-drmReportMod = drmReportMod %>% unite(combined, c('cas_serial_number','packages','status'),sep = "|",remove = F)
+## Clean column names
+smsReport  <- janitor::clean_names(smsReport)
+drmReport  <- janitor::clean_names(drmReport)
 
-finalData = merge(smsReport,drmReportMod,by.x = 'userid',by.y = 'cas_serial_number',all.x = T)
-nf = finalData[finalData[,3]!= finalData[,16],]  ###find the mismatch between two column data
-nf = nf %>% filter(!(is.na(userid)))
-write.csv(nf, "Output/IPTV_reconcile.csv",row.names = F)
+# packCodes  <- packConfig %>% select(package_name, plan_code) %>% unique()
+# colnames(packCodes)[1] <- "video_plan"
+# smsReportMod <- merge(smsReport, packCodes, all.x = TRUE)
 
+drmReportMod <- drmReport %>%
+  select(cas_serial_number, signature, packages, status)
+
+## Normalise status labels
+drmReportMod$status       <- gsub("a", "Active",   drmReportMod$status)
+drmReportMod$status       <- gsub("d", "Inactive", drmReportMod$status)
+smsReport$customer_status <- gsub("Suspended", "Inactive", smsReport$customer_status)
+
+## Build combined key columns
+smsReport    <- smsReport    %>% unite(combined, c("userid", "video_plan_code", "customer_status"),   sep = "|", remove = FALSE)
+drmReportMod <- drmReportMod %>% unite(combined, c("cas_serial_number", "packages", "status"), sep = "|", remove = FALSE)
+
+## Merge and filter mismatches
+finalData <- merge(smsReport, drmReportMod, by.x = "userid", by.y = "cas_serial_number", all.x = TRUE)
+nf <- finalData[finalData[, 3] != finalData[, 16], ]   # mismatch between combined columns
+nf <- nf %>% filter(!is.na(userid))
+
+## Write output
+dir.create("Output", showWarnings = FALSE)
+
+write.csv(nf, "Output/IPTV_reconcile.csv", row.names = FALSE)
+write.xlsx(nf, "Output/IPTV_reconcile.xlsx", rowNames = FALSE)
+
+cat("Done! Output written to Output/IPTV_reconcile.csv and .xlsx\n")
