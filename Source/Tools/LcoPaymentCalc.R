@@ -54,9 +54,9 @@ library(lubridate)
 # PARAMETERS  –  edit these before each run
 # =============================================================================
 
-lcoCode  <- 'MD0524'       # LCO entity code to filter on
-end_date <- "2026-06-30"   # Mandatory: last contract end date to include (YYYY-MM-DD)
-start_date <- "2026-06-01"         # Optional: first contract end date to include (YYYY-MM-DD)
+lcoCode  <- 'MD0030'       # LCO entity code to filter on
+end_date <- "2026-07-31"   # Mandatory: last contract end date to include (YYYY-MM-DD)
+start_date <- "2026-07-28"         # Optional: first contract end date to include (YYYY-MM-DD)
                            #           set to NULL to include everything up to end_date
 
 # =============================================================================
@@ -107,11 +107,18 @@ LCoFinalPricing$Plan.Code <- gsub("FTAPLAN", "FTA", LCoFinalPricing$Plan.Code)
 
 listActiveFilter <- listActive %>%
   select(CUSTOMER_NBR, CONTRACT_NUMBER, ENTITY_CODE, ENTITY_NAME,
-         STB, VC, SERVICE_CODE, SERVICE_NAME, BILLING_FREQUENCY) %>%
+         STB, VC, SERVICE_CODE, SERVICE_NAME, BILLING_FREQUENCY,PLAN_CODE,PLAN_NAME) %>%
   filter(ENTITY_CODE %in% lcoCode) %>%
   filter(!(SERVICE_CODE == 'DPOBUNDLESERV')) %>%   # exclude bundle wrapper rows
   unique()
 
+listActiveFilter1 = listActiveFilter
+
+listActiveFilter1$PLAN_CODE[listActiveFilter1$PLAN_NAME == 'Alacarte Plan'] <-
+  listActiveFilter1$SERVICE_CODE[listActiveFilter1$PLAN_NAME == 'Alacarte Plan']
+
+listActiveFilter2 = listActiveFilter1 %>% select(CUSTOMER_NBR, CONTRACT_NUMBER, ENTITY_CODE, ENTITY_NAME,
+         STB, VC, BILLING_FREQUENCY,PLAN_CODE) %>% unique()
 # =============================================================================
 # 4. FILTER CONTRACTS BY DATE RANGE
 # =============================================================================
@@ -127,7 +134,7 @@ dueRenewalFilter <- dueRenewal %>%
 # =============================================================================
 
 listActivewithEndDate <- merge(
-  listActiveFilter,
+  listActiveFilter2,
   dueRenewalFilter,
   by.x = 'CONTRACT_NUMBER',
   by.y = 'Contract.Number'
@@ -151,7 +158,7 @@ message("Exported CUSTOMERS_END_BY_DATE.CSV — add a 'Days' column and save as 
 LcoPackWithPrice <- merge(
   listActivewithEndDate,
   LCoFinalPricing,
-  by.x = 'SERVICE_CODE',
+  by.x = 'PLAN_CODE',
   by.y = 'Plan.Code',
   all.x = TRUE   # keep rows even if no price match (Price will be NA — review these)
 )

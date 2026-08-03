@@ -176,50 +176,70 @@ subs_summary <- function(df_raw, state_name, singlepack_7, singlepack_14, single
     group_by(Plan_Code) %>%
     summarise(across(contains("Subs"), \(x) sum(x, na.rm = TRUE)), .groups = "drop")
   
-  # Extract data for each day
-  iptv_nw_7 <- iptvreport %>% 
-    select(Plan_Code, any_of("No.of.Subs.On.7th.Day")) %>% 
-    rename_with(~"No.of.Subs.On.7th.Day", contains("7th"))
-  
-  iptv_nw_14 <- iptvreport %>% 
-    select(Plan_Code, any_of("No.of.Subs.On.14th.Day")) %>%
-    rename_with(~"No.of.Subs.On.14th.Day", contains("14th"))
-  
-  iptv_nw_21 <- iptvreport %>% 
-    select(Plan_Code, any_of("No.of.Subs.On.21th.Day")) %>%
-    rename_with(~"No.of.Subs.On.21th.Day", contains("21"))
-  
-  iptv_nw_28 <- iptvreport %>% 
-    select(Plan_Code, any_of("No.of.Subs.On.28th.Day")) %>%
-    rename_with(~"No.of.Subs.On.28th.Day", contains("28th"))
-  
-  # Merge with package data
-  iptv_nw_7_pk <- merge(iptv_nw_7, singlepack_7, by.x = "Plan_Code", by.y = "Code", all.y = TRUE) %>% 
-    unique() %>% 
-    unite(combined, c('Plan_Code','Bouquet'), sep = "|")
-  
-  iptv_nw_14_pk <- merge(iptv_nw_14, singlepack_14, by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>% 
-    unique() %>% 
-    unite(combined, c('Plan_Code','Bouquet'), sep = "|")
-  
-  iptv_nw_21_pk <- merge(iptv_nw_21, singlepack_21, by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>% 
-    unique() %>% 
-    unite(combined, c('Plan_Code','Bouquet'), sep = "|")
-  
-  iptv_nw_28_pk <- merge(iptv_nw_28, singlepack_28, by.x = "Plan_Code", by.y = "Code", all.y = FALSE) %>% 
-    unique() %>% 
-    unite(combined, c('Plan_Code','Bouquet'), sep = "|")
-  
-  # Combine all data
-  iptv_combo = merge(iptv_nw_7_pk,iptv_nw_14_pk, by.x = "combined", by.y = "combined", all = T)
-  iptv_combo = merge(iptv_combo,iptv_nw_21_pk, by.x = "combined", by.y = "combined", all = T)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-  iptv_combo = merge(iptv_combo, iptv_nw_28_pk, all = T) %>% separate(combined, into = c("Code","Bouquet"),sep = "\\|")
-  iptv_combo[is.na(iptv_combo)] <- 0
-  iptv_combo$No.of.Subs.On.7th.Day = as.numeric(iptv_combo$No.of.Subs.On.7th.Day)
-  iptv_combo$No.of.Subs.On.14th.Day = as.numeric(iptv_combo$No.of.Subs.On.14th.Day)
-  iptv_combo$No.of.Subs.On.21th.Day = as.numeric(iptv_combo$No.of.Subs.On.21th.Day)
-  iptv_combo$No.of.Subs.On.28th.Day = as.numeric(iptv_combo$No.of.Subs.On.28th.Day)
-  iptv_combo = iptv_combo %>% mutate(Monthly.Subs.of.the.Channel = rowMeans(select(iptv_combo, starts_with("No.of"))))
+  # Attach each week's subscriber count to that week's package configuration.
+  # Keeping the four weeks as rows first is important: a bouquet may legitimately
+  # exist in only one configuration and must not be removed by a later join.
+  package_key_columns <- c("Code", "Broadcaster.Name", "Bouquet", "X")
+  weekly_count_columns <- c(
+    "No.of.Subs.On.7th.Day",
+    "No.of.Subs.On.14th.Day",
+    "No.of.Subs.On.21th.Day",
+    "No.of.Subs.On.28th.Day"
+  )
+
+  build_weekly_package_data <- function(package_config, count_column) {
+    missing_columns <- setdiff(package_key_columns, names(package_config))
+    if(length(missing_columns) > 0) {
+      stop(
+        "Package configuration is missing required column(s): ",
+        paste(missing_columns, collapse = ", ")
+      )
+    }
+
+    # A date may be absent for a state. In that case its configuration still
+    # contributes rows, but its subscriber count is correctly zero.
+    if(count_column %in% names(iptvreport)) {
+      plan_counts <- iptvreport %>%
+        transmute(
+          Code = trimws(as.character(Plan_Code)),
+          Weekly_Subs = as.numeric(.data[[count_column]])
+        )
+    } else {
+      plan_counts <- tibble(Code = character(), Weekly_Subs = numeric())
+    }
+
+    weekly_data <- package_config %>%
+      transmute(
+        Code = trimws(as.character(Code)),
+        Broadcaster.Name = as.character(Broadcaster.Name),
+        Bouquet = as.character(Bouquet),
+        X = as.character(X)
+      ) %>%
+      filter(!is.na(Code), Code != "", !is.na(Bouquet), Bouquet != "") %>%
+      distinct() %>%
+      left_join(plan_counts, by = "Code") %>%
+      mutate(Weekly_Subs = coalesce(Weekly_Subs, 0))
+
+    weekly_data[[count_column]] <- weekly_data$Weekly_Subs
+    weekly_data %>% select(-Weekly_Subs)
+  }
+
+  iptv_combo <- bind_rows(
+    build_weekly_package_data(singlepack_7, weekly_count_columns[1]),
+    build_weekly_package_data(singlepack_14, weekly_count_columns[2]),
+    build_weekly_package_data(singlepack_21, weekly_count_columns[3]),
+    build_weekly_package_data(singlepack_28, weekly_count_columns[4])
+  ) %>%
+    group_by(across(all_of(package_key_columns))) %>%
+    summarise(
+      across(all_of(weekly_count_columns), ~ sum(.x, na.rm = TRUE)),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      Monthly.Subs.of.the.Channel = rowMeans(
+        pick(all_of(weekly_count_columns))
+      )
+    )
   
   # Process Bouquet data
   iptv_combo_bouq = iptv_combo %>% filter(X == 'Bouquet') %>% select(Broadcaster.Name,Bouquet,No.of.Subs.On.7th.Day,No.of.Subs.On.14th.Day,

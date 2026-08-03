@@ -792,3 +792,11 @@ date_dialog_result <- dlgInput("Enter a date (YYYY-MM-DD):", default = format(Sy
 
 
 print(my_date_variable)
+
+
+#some query reagrding wallet bills report ####
+df = read.csv(file.choose())
+plan = read.csv2(file.choose())
+df_baseplan = merge(df,plan)
+df_free = df_baseplan %>% filter (Amount.Debit == 0)
+write.csv(df_free,"Free_transactions.csv")
